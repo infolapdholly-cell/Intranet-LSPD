@@ -1,0 +1,403 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <link rel="icon" type="image/png" href="https://r2.fivemanage.com/XEcvh0aBGRYhLzNNcRsQI/lspdnouveau.png">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LSPD — Amendes & PV</title>
+  <link rel="stylesheet" href="style.css">
+  
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="LSPD">
+  <meta name="theme-color" content="#1458a0">
+  <link rel="apple-touch-icon" href="https://r2.fivemanage.com/XEcvh0aBGRYhLzNNcRsQI/lspdnouveau.png">
+</head>
+<body>
+<div class="app-shell">
+<div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
+  <div class="topbar">
+    <div class="tb-left">
+      <button class="tb-menu-btn" onclick="toggleSidebar()">☰</button>
+      <img class="tb-logo" src="https://r2.fivemanage.com/XEcvh0aBGRYhLzNNcRsQI/lspdnouveau.png" alt="LSPD">
+      <div class="tb-sep" style="width:1px;height:26px;background:var(--border)"></div>
+      <div class="tb-title">L.S.P.D</div>
+      <div class="tb-sep" style="width:1px;height:26px;background:var(--border)"></div>
+      <div class="tb-page">AMENDES & PV</div>
+    </div>
+    <div class="tb-right">
+      <div class="tb-time" id="tbClock">--:--:--</div>
+      <span class="tb-grade g-recruit" id="tbGrade">RECRUIT</span>
+      <span class="tb-name" id="tbName">Officier</span>
+      <button class="btn-out" onclick="logout()">Déconnexion</button>
+    </div>
+  </div>
+  <div class="shell">
+    <div class="sidebar" id="sidebar"></div>
+    <div class="main">
+      <div class="page-head">
+        <div class="page-head-left">
+          <h2>AMENDES & PV</h2>
+          <p>// GESTION DES INFRACTIONS ROUTIÈRES ET AMENDES</p>
+        </div>
+        <div style="display:flex;gap:8px">
+          <button class="btn btn-ghost btn-sm" onclick="window.print()">📋 Imprimer liste liste</button>
+          <button class="btn btn-primary" id="btnNew">+ Nouvelle amende</button>
+        </div>
+      </div>
+
+      <div class="stats-grid" style="grid-template-columns:repeat(4,1fr)">
+        <div class="stat-box blue"><div class="stat-lbl">TOTAL AMENDES</div><div class="stat-val" id="sTotal">—</div></div>
+        <div class="stat-box red"><div class="stat-lbl">IMPAYÉES</div><div class="stat-val" id="sImpayees">—</div></div>
+        <div class="stat-box green"><div class="stat-lbl">PAYÉES</div><div class="stat-val" id="sPayees">—</div></div>
+        <div class="stat-box gold"><div class="stat-lbl">MONTANT TOTAL</div><div class="stat-val" id="sMontant">—</div></div>
+      </div>
+
+      <div class="search-bar">
+        <input type="text" id="searchInput" placeholder="Rechercher par nom, plaque, motif..." oninput="filterAmendes()">
+        <select id="filterStatut" onchange="filterAmendes()">
+          <option value="">Tous les statuts</option>
+          <option value="Impayée">Impayées</option>
+          <option value="Payée">Payées</option>
+        </select>
+        <select id="filterMotif" onchange="filterAmendes()">
+          <option value="">Tous les motifs</option>
+        </select>
+      </div>
+
+      <div class="card">
+        <div class="card-body" style="padding:0">
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>RÉFÉRENCE</th>
+                  <th>CONTREVENANT</th>
+                  <th>PLAQUE</th>
+                  <th>MOTIF</th>
+                  <th>MONTANT</th>
+                  <th>OFFICIER</th>
+                  <th>DATE</th>
+                  <th>STATUT</th>
+                  <th>ACTIONS</th>
+                </tr>
+              </thead>
+              <tbody id="amendesTable">
+                <tr><td colspan="9" style="text-align:center;padding:30px;color:var(--muted);font-family:'Share Tech Mono',monospace;font-size:11px">CHARGEMENT...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL NOUVELLE AMENDE -->
+<div class="modal-bg" id="modalAmende">
+  <div class="modal">
+    <div class="modal-head">
+      <div class="modal-title" id="modalTitle">NOUVELLE AMENDE / PV</div>
+      <button class="modal-close" onclick="closeModal('modalAmende')">×</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-grid g2" style="margin-bottom:12px">
+        <div class="fg"><label>Nom du contrevenant</label><input id="aNom" placeholder="Nom Prénom"></div>
+        <div class="fg"><label>Plaque d'immatriculation</label><input id="aPlaque" placeholder="ex: ABC-123"></div>
+        <div class="fg"><label>Motif</label>
+          <select id="aMotif">
+            <option value="Excès de vitesse">Excès de vitesse</option>
+            <option value="Grillage de feu rouge">Grillage de feu rouge</option>
+            <option value="Stationnement interdit">Stationnement interdit</option>
+            <option value="Conduite sans permis">Conduite sans permis</option>
+            <option value="Conduite en état d'ivresse">Conduite en état d'ivresse</option>
+            <option value="Usage du téléphone au volant">Usage du téléphone au volant</option>
+            <option value="Défaut d'assurance">Défaut d'assurance</option>
+            <option value="Véhicule non conforme">Véhicule non conforme</option>
+            <option value="Fuite après accident">Fuite après accident</option>
+            <option value="Conduite dangereuse">Conduite dangereuse</option>
+            <option value="Autre infraction routière">Autre infraction routière</option>
+          </select>
+        </div>
+        <div class="fg"><label>Montant ($)</label><input type="number" id="aMontant" placeholder="ex: 500" min="0"></div>
+        <div class="fg"><label>Officier verbalisateur</label><input id="aOfficier"></div>
+        <div class="fg"><label>Date de l'infraction</label><input type="date" id="aDate"></div>
+        <div class="fg"><label>Lieu</label><input id="aLieu" placeholder="ex: Vinewood Blvd"></div>
+        <div class="fg"><label>Statut</label>
+          <select id="aStatut">
+            <option value="Impayée">Impayée</option>
+            <option value="Payée">Payée</option>
+          </select>
+        </div>
+      </div>
+      <div class="fg"><label>Notes supplémentaires</label><textarea id="aNotes" placeholder="Détails de l'infraction..."></textarea></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('modalAmende')">Annuler</button>
+      <button class="btn btn-primary" onclick="saveAmende()">Enregistrer</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+  import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+  import { getFirestore, collection, addDoc, getDocs, doc, updateDoc, deleteDoc, query, orderBy } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+  import { initPage, startClock, showToast, openModal, closeModal, setupModalClose, statusBadge, addLog, generateRef, getPerms, captureModal } from './utils.js';
+  import { printAmende } from './pdf-templates.js';
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyA4GxYd32GNs5EDjjm2UI1a0d25YxigMVU",
+    authDomain: "lspd-intranet-2aed9.firebaseapp.com",
+    projectId: "lspd-intranet-2aed9",
+    storageBucket: "lspd-intranet-2aed9.firebasestorage.app",
+    messagingSenderId: "780922925382",
+    appId: "1:780922925382:web:a32d5e89bcff75bd8b3547"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const auth = getAuth(app);
+  const db = getFirestore(app);
+
+  let allAmendes = [];
+  let editingId = null;
+  let userGrade = 'recruit';
+
+  startClock('tbClock');
+  setupModalClose();
+  window.closeModal = closeModal;
+  window.captureModal = captureModal;
+  
+
+  initPage(auth, db, onAuthStateChanged, 'amendes').then(async ({ grade, name, perms }) => {
+    userGrade = grade;
+    const p = perms;
+    if (!p.canWrite) document.getElementById('btnNew').style.display = 'none';
+    else document.getElementById('btnNew').addEventListener('click', () => { editingId = null; document.getElementById('modalTitle').textContent = 'NOUVELLE AMENDE / PV'; openModal('modalAmende'); });
+    document.getElementById('aOfficier').value = name;
+    document.getElementById('aDate').value = new Date().toISOString().split('T')[0];
+    await loadAmendes();
+  });
+
+  async function loadAmendes() {
+    try {
+      const snap = await getDocs(query(collection(db, 'amendes'), orderBy('createdAt', 'desc')));
+      allAmendes = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+      updateStats();
+      renderAmendes(allAmendes);
+      populateMotifFilter();
+    } catch(e) { console.error(e); }
+  }
+
+  function updateStats() {
+    const impayees = allAmendes.filter(a => a.statut === 'Impayée');
+    const payees = allAmendes.filter(a => a.statut === 'Payée');
+    const totalMontant = allAmendes.reduce((sum, a) => sum + (parseFloat(a.montant) || 0), 0);
+    document.getElementById('sTotal').textContent = allAmendes.length;
+    document.getElementById('sImpayees').textContent = impayees.length;
+    document.getElementById('sPayees').textContent = payees.length;
+    document.getElementById('sMontant').textContent = '$' + totalMontant.toLocaleString('fr-FR');
+  }
+
+  function populateMotifFilter() {
+    const motifs = [...new Set(allAmendes.map(a => a.motif).filter(Boolean))];
+    const sel = document.getElementById('filterMotif');
+    sel.innerHTML = '<option value="">Tous les motifs</option>' + motifs.map(m => `<option value="${m}">${m}</option>`).join('');
+  }
+
+  function renderAmendes(list) {
+    const tb = document.getElementById('amendesTable');
+    if (!list.length) {
+      tb.innerHTML = '<tr><td colspan="9"><div class="empty-state"><div class="ei">💰</div><p>AUCUNE AMENDE ENREGISTRÉE</p></div></td></tr>';
+      return;
+    }
+    tb.innerHTML = list.map(a => `
+      <tr>
+        <td style="font-family:'Share Tech Mono',monospace;font-size:11px;color:var(--muted)">${a.reference || '—'}</td>
+        <td><strong>${a.nom || '—'}</strong></td>
+        <td style="font-family:'Share Tech Mono',monospace;font-size:12px">${a.plaque || '—'}</td>
+        <td style="font-size:12px">${a.motif || '—'}</td>
+        <td style="font-family:'Share Tech Mono',monospace;color:${a.statut==='Payée'?'var(--success)':'var(--danger-l)'}"><strong>$${parseFloat(a.montant||0).toLocaleString('fr-FR')}</strong></td>
+        <td style="font-size:12px">${a.officier || '—'}</td>
+        <td style="font-family:'Share Tech Mono',monospace;font-size:11px">${a.date || '—'}</td>
+        <td>${statusBadge(a.statut)}</td>
+        <td style="display:flex;gap:4px;flex-wrap:wrap">
+          <button class="btn btn-ghost btn-sm" onclick="printPV('${a.id}')" title="Imprimer PV">🖨️</button>
+          ${userGrade.toLowerCase() !== 'recruit' ? `
+            <button class="btn btn-ghost btn-sm" onclick="toggleStatut('${a.id}','${a.statut}')" title="Changer statut">${a.statut==='Impayée'?'✅':'↩️'}</button>
+            <button class="btn btn-ghost btn-sm" onclick="editAmende('${a.id}')" title="Modifier">✏️</button>
+            <button class="btn btn-danger btn-sm" onclick="deleteAmende('${a.id}')" title="Supprimer">🗑️</button>
+          ` : ''}
+        </td>
+      </tr>`).join('');
+  }
+
+  window.filterAmendes = function() {
+    const q = document.getElementById('searchInput').value.toLowerCase();
+    const s = document.getElementById('filterStatut').value;
+    const m = document.getElementById('filterMotif').value;
+    renderAmendes(allAmendes.filter(a =>
+      (a.nom+' '+a.plaque+' '+a.motif).toLowerCase().includes(q) &&
+      (!s || a.statut === s) &&
+      (!m || a.motif === m)
+    ));
+  };
+
+  window.saveAmende = async function() {
+    const payload = {
+      reference: editingId ? (allAmendes.find(a=>a.id===editingId)?.reference || generateRef('PV')) : generateRef('PV'),
+      nom: document.getElementById('aNom').value.trim(),
+      plaque: document.getElementById('aPlaque').value.trim().toUpperCase(),
+      motif: document.getElementById('aMotif').value,
+      montant: parseFloat(document.getElementById('aMontant').value) || 0,
+      officier: document.getElementById('aOfficier').value,
+      date: document.getElementById('aDate').value,
+      lieu: document.getElementById('aLieu').value,
+      statut: document.getElementById('aStatut').value,
+      notes: document.getElementById('aNotes').value,
+      updatedAt: new Date().toISOString()
+    };
+    if (!payload.nom) { showToast('Le nom est obligatoire', 'error'); return; }
+    try {
+      if (editingId) {
+        await updateDoc(doc(db, 'amendes', editingId), payload);
+        showToast('Amende mise à jour', 'success');
+      } else {
+        payload.createdAt = new Date().toISOString();
+        await addDoc(collection(db, 'amendes'), payload);
+        await addLog(db, 'Amende', `PV émis pour ${payload.nom} — ${payload.motif} — $${payload.montant}`);
+        showToast('Amende enregistrée', 'success');
+      }
+      closeModal('modalAmende');
+      await loadAmendes();
+    } catch(e) { showToast('Erreur: '+e.message, 'error'); }
+  };
+
+  window.toggleStatut = async function(id, current) {
+    const newStatut = current === 'Impayée' ? 'Payée' : 'Impayée';
+    await updateDoc(doc(db, 'amendes', id), { statut: newStatut });
+    await addLog(db, 'Amende', `Statut modifié → ${newStatut}`);
+    await loadAmendes();
+    showToast('Statut mis à jour', 'success');
+  };
+
+  window.editAmende = function(id) {
+    const a = allAmendes.find(x => x.id === id);
+    if (!a) return;
+    editingId = id;
+    document.getElementById('modalTitle').textContent = 'MODIFIER AMENDE';
+    document.getElementById('aNom').value = a.nom || '';
+    document.getElementById('aPlaque').value = a.plaque || '';
+    document.getElementById('aMotif').value = a.motif || '';
+    document.getElementById('aMontant').value = a.montant || '';
+    document.getElementById('aOfficier').value = a.officier || '';
+    document.getElementById('aDate').value = a.date || '';
+    document.getElementById('aLieu').value = a.lieu || '';
+    document.getElementById('aStatut').value = a.statut || 'Impayée';
+    document.getElementById('aNotes').value = a.notes || '';
+    openModal('modalAmende');
+  };
+
+  window.deleteAmende = async function(id) {
+    if (!confirm('Supprimer cette amende ?')) return;
+    await deleteDoc(doc(db, 'amendes', id));
+    await loadAmendes();
+    showToast('Amende supprimée', 'success');
+  };
+
+  window.printPV = function(id) {
+    const a = allAmendes.find(x => x.id === id);
+    if (!a) return;
+    const w = window.open('', '_blank');
+    w.document.write(`<!DOCTYPE html><html><head><title>PV — ${a.reference}</title>
+    <style>
+      body { font-family: Arial, sans-serif; padding: 40px; max-width: 700px; margin: 0 auto; color: #000; }
+      .header { display: flex; align-items: center; justify-content: space-between; border-bottom: 3px solid #003087; padding-bottom: 16px; margin-bottom: 24px; }
+      .header-left h1 { font-size: 22px; color: #003087; margin: 0; }
+      .header-left p { font-size: 12px; color: #666; margin: 4px 0 0; }
+      .ref { font-family: monospace; font-size: 14px; font-weight: bold; color: #003087; background: #e8f0fe; padding: 6px 12px; border-radius: 4px; }
+      .section { margin-bottom: 20px; }
+      .section h2 { font-size: 13px; font-weight: bold; text-transform: uppercase; color: #003087; border-bottom: 1px solid #003087; padding-bottom: 4px; margin-bottom: 12px; letter-spacing: 2px; }
+      .row { display: flex; margin-bottom: 8px; }
+      .lbl { font-weight: bold; min-width: 200px; font-size: 13px; }
+      .val { font-size: 13px; }
+      .statut { display: inline-block; padding: 4px 12px; border-radius: 4px; font-weight: bold; font-size: 12px; }
+      .impayee { background: #fee; color: #c00; border: 1px solid #c00; }
+      .payee { background: #efe; color: #060; border: 1px solid #060; }
+      .signature-section { display: grid; grid-template-columns: 1fr 1fr; gap: 40px; margin-top: 40px; }
+      .sig-box { border-top: 1px solid #000; padding-top: 8px; font-size: 12px; text-align: center; }
+      .sig-space { height: 60px; }
+      .footer { margin-top: 30px; font-size: 11px; color: #666; text-align: center; border-top: 1px solid #ccc; padding-top: 12px; }
+    </style>
+    </head><body>
+    <div class="header">
+      <div class="header-left">
+        <h1>🔵 LSPD — PROCÈS-VERBAL</h1>
+        <p>Los Santos Police Department — Département des Infractions</p>
+      </div>
+      <div class="ref">${a.reference || '—'}</div>
+    </div>
+
+    <div class="section">
+      <h2>Informations du Contrevenant</h2>
+      <div class="row"><span class="lbl">Nom complet :</span><span class="val">${a.nom || '—'}</span></div>
+      <div class="row"><span class="lbl">Plaque d'immatriculation :</span><span class="val">${a.plaque || '—'}</span></div>
+    </div>
+
+    <div class="section">
+      <h2>Détails de l'Infraction</h2>
+      <div class="row"><span class="lbl">Motif :</span><span class="val"><strong>${a.motif || '—'}</strong></span></div>
+      <div class="row"><span class="lbl">Lieu :</span><span class="val">${a.lieu || '—'}</span></div>
+      <div class="row"><span class="lbl">Date :</span><span class="val">${a.date || '—'}</span></div>
+      <div class="row"><span class="lbl">Montant de l'amende :</span><span class="val"><strong style="font-size:16px">$${parseFloat(a.montant||0).toLocaleString('fr-FR')}</strong></span></div>
+      ${a.notes ? `<div class="row"><span class="lbl">Notes :</span><span class="val">${a.notes}</span></div>` : ''}
+    </div>
+
+    <div class="section">
+      <h2>Traitement</h2>
+      <div class="row"><span class="lbl">Officier verbalisateur :</span><span class="val">${a.officier || '—'}</span></div>
+      <div class="row"><span class="lbl">Statut :</span><span class="val"><span class="statut ${a.statut==='Payée'?'payee':'impayee'}">${a.statut || '—'}</span></span></div>
+    </div>
+
+    <div class="signature-section">
+      <div class="sig-box">
+        <div class="sig-space"></div>
+        Signature de l'Officier
+      </div>
+      <div class="sig-box">
+        <div class="sig-space"></div>
+        Signature du Contrevenant
+      </div>
+    </div>
+
+    <div class="footer">
+      Document généré le ${new Date().toLocaleString('fr-FR')} — LSPD Intranet — Réf: ${a.reference || '—'}
+    </div>
+</body></html>`);
+    w.document.close();
+    setTimeout(() => w.print(), 500);
+  };
+
+  window.printAmende = function(id) {
+    const item = allAmendes.find(x => x.id === id);
+    if (!item) { showToast('Élément introuvable', 'error'); return; }
+    printAmende(item, 'LSPD', 'https://r2.fivemanage.com/XEcvh0aBGRYhLzNNcRsQI/lspdnouveau.png');
+  };
+
+  window.logout = async function() {
+    try {
+      const user = auth.currentUser;
+      if (user) {
+        await deleteDoc(doc(db, 'online', user.uid));
+      }
+    } catch(e) { console.warn('Logout online removal failed:', e); }
+    await signOut(auth);
+    sessionStorage.clear();
+    window.location.href = 'index.html';
+  };
+</script>
+</body>
+</html>

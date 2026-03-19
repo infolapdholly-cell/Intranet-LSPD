@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <link rel="icon" type="image/png" href="https://r2.fivemanage.com/XEcvh0aBGRYhLzNNcRsQI/lspdnouveau.png">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LSPD — Saisies</title>
+  <link rel="stylesheet" href="style.css">
+  <style>
+    .saisie-type-icon { font-size:32px; text-align:center; width:50px; flex-shrink:0; }
+    .type-colors {
+      'Drogue':'rgba(125,60,152,.15)','Arme':'rgba(192,57,43,.15)',
+      'Véhicule':'rgba(37,137,208,.15)','Argent':'rgba(201,170,77,.15)',
+      'Autre':'rgba(68,94,122,.15)'
+    }
+  </style>
+  
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="LSPD">
+  <meta name="theme-color" content="#1458a0">
+  <link rel="apple-touch-icon" href="https://r2.fivemanage.com/XEcvh0aBGRYhLzNNcRsQI/lspdnouveau.png">
+</head>
+<body>
+<div class="app-shell">
+<div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
+  <div class="topbar">
+    <div class="tb-left">
+      <button class="tb-menu-btn" onclick="toggleSidebar()">☰</button>
+      <img class="tb-logo" src="https://r2.fivemanage.com/XEcvh0aBGRYhLzNNcRsQI/lspdnouveau.png" alt="LSPD" onerror="this.style.display='none'">
+      <div class="tb-sep" style="width:1px;height:26px;background:var(--border)"></div>
+      <div class="tb-title">L.S.P.D</div>
+      <div class="tb-sep" style="width:1px;height:26px;background:var(--border)"></div>
+      <div class="tb-page">SAISIES JUDICIAIRES</div>
+    </div>
+    <div class="tb-right">
+      <div class="tb-time" id="tbClock">--:--:--</div>
+      <span class="tb-grade" id="tbGrade">—</span>
+      <span class="tb-name" id="tbName">Officier</span>
+      <button class="btn-out" onclick="logout()">Déconnexion</button>
+    </div>
+  </div>
+  <div class="shell">
+    <div class="sidebar" id="sidebar"></div>
+    <div class="main">
+      <div class="page-head">
+        <div class="page-head-left">
+          <h2>SAISIES JUDICIAIRES</h2>
+          <p>// BASE DE DONNÉES DES BIENS SAISIS — LSPD</p>
+        </div>
+        <div style="display:flex;gap:8px">
+          <button class="btn btn-ghost btn-sm" onclick="window.captureModal('detailBody')">📸 Capturer</button>
+          <button class="btn btn-primary" id="btnNew" style="display:none">+ Nouvelle saisie</button>
+        </div>
+      </div>
+
+      <!-- STATS -->
+      <div class="stats-grid">
+        <div class="stat-box blue"><div class="stat-lbl">TOTAL SAISIES</div><div class="stat-val" id="sTotal">—</div></div>
+        <div class="stat-box gold"><div class="stat-lbl">EN ATTENTE</div><div class="stat-val" id="sAttente">—</div></div>
+        <div class="stat-box green"><div class="stat-lbl">VALIDÉES</div><div class="stat-val" id="sValidee">—</div></div>
+        <div class="stat-box red"><div class="stat-lbl">DÉTRUITES</div><div class="stat-val" id="sDetruite">—</div></div>
+      </div>
+
+      <!-- SEARCH -->
+      <div class="search-bar">
+        <input type="text" id="searchInput" placeholder="Rechercher par suspect, type, officier, référence..." oninput="filterSaisies()">
+        <select id="filterType" onchange="filterSaisies()">
+          <option value="">Tous les types</option>
+          <option>Drogue</option><option>Arme</option><option>Véhicule</option>
+          <option>Argent</option><option>Document</option><option>Électronique</option><option>Autre</option>
+        </select>
+        <select id="filterStatut" onchange="filterSaisies()">
+          <option value="">Tous les statuts</option>
+          <option>En attente</option><option>Validée</option>
+          <option>Détruite</option><option>Restituée</option>
+        </select>
+      </div>
+
+      <!-- TABLE -->
+      <div class="card">
+        <div class="card-body" style="padding:0">
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>N° DOSSIER</th>
+                  <th>TYPE</th>
+                  <th>SUSPECT</th>
+                  <th>DESCRIPTION</th>
+                  <th>OFFICIER</th>
+                  <th>DATE</th>
+                  <th>LIEU</th>
+                  <th>RÉF. ARRESTATION</th>
+                  <th>STATUT</th>
+                  <th>ACTIONS</th>
+                </tr>
+              </thead>
+              <tbody id="saisisTable">
+                <tr><td colspan="10" style="text-align:center;padding:30px;color:var(--muted);font-family:'Share Tech Mono',monospace;font-size:11px">CHARGEMENT...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL FORM -->
+<div class="modal-bg" id="modalSaisie">
+  <div class="modal" style="max-width:680px">
+    <div class="modal-head">
+      <div class="modal-title" id="modalTitle">NOUVELLE SAISIE</div>
+      <button class="modal-close" onclick="closeModal('modalSaisie')">×</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-grid g2" style="margin-bottom:12px">
+        <div class="fg"><label>Nom du suspect</label><input id="sNom" placeholder="Nom Prénom"></div>
+        <div class="fg"><label>Type de saisie</label>
+          <select id="sType">
+            <option>Drogue</option><option>Arme</option><option>Véhicule</option>
+            <option>Argent</option><option>Document</option><option>Électronique</option><option>Autre</option>
+          </select>
+        </div>
+        <div class="fg"><label>Officier responsable</label><input id="sOfficier"></div>
+        <div class="fg"><label>Date de saisie</label><input type="date" id="sDate"></div>
+        <div class="fg"><label>Lieu</label><input id="sLieu" placeholder="Ex: Grove Street"></div>
+        <div class="fg"><label>Statut</label>
+          <select id="sStatut">
+            <option>En attente</option><option>Validée</option>
+            <option>Détruite</option><option>Restituée</option>
+          </select>
+        </div>
+        <div class="fg"><label>Réf. arrestation liée</label><input id="sRefArrestation" placeholder="ex: ARR-260317-1234"></div>
+        <div class="fg"><label>Quantité</label><input id="sQuantite" placeholder="ex: 500g, 3 unités, 2500$"></div>
+      </div>
+      <div class="fg"><label>Description complète</label>
+        <textarea id="sDescription" style="min-height:100px" placeholder="Détails de la saisie, état, marque, numéro de série..."></textarea>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('modalSaisie')">Annuler</button>
+      <button class="btn btn-primary" onclick="saveSaisie()">Enregistrer</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL DETAIL -->
+<div class="modal-bg" id="modalDetail">
+  <div class="modal" style="max-width:620px">
+    <div class="modal-head">
+      <div class="modal-title" id="detailTitle">FICHE SAISIE</div>
+      <button class="modal-close" onclick="closeModal('modalDetail')">×</button>
+    </div>
+    <div class="modal-body" id="detailBody"></div>
+    <div class="modal-footer" id="detailFooter"></div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+  import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+  import { getFirestore, collection, addDoc, getDocs, doc, updateDoc, deleteDoc, query, orderBy } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+  import { initPage, startClock, showToast, openModal, closeModal, setupModalClose, statusBadge, addLog, generateRef, getPerms, captureModal } from './utils.js';
+  import { printSaisie } from './pdf-templates.js';
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyA4GxYd32GNs5EDjjm2UI1a0d25YxigMVU",
+    authDomain: "lspd-intranet-2aed9.firebaseapp.com",
+    projectId: "lspd-intranet-2aed9",
+    storageBucket: "lspd-intranet-2aed9.firebasestorage.app",
+    messagingSenderId: "780922925382",
+    appId: "1:780922925382:web:a32d5e89bcff75bd8b3547"
+  };
+
+  const DISCORD_WEBHOOK = 'https://discordapp.com/api/webhooks/1483556229757407352/ppGX0Dz4hVbprqgCVG5R6ZCLKNrsHcisBdAUQmjM0rNJwBcWHHoLv58j3RHIKxXzJWJ0';
+
+  const TYPE_COLORS_DISCORD = {
+    'Drogue': 0x7D3C98, 'Arme': 0xC0392B, 'Véhicule': 0x2589D0,
+    'Argent': 0xC9AA4D, 'Document': 0x1E9E56, 'Électronique': 0x1458A0, 'Autre': 0x445E7A
+  };
+
+  async function sendDiscordSaisie(saisie, officier, action = 'nouvelle') {
+    try {
+      const isNew = action === 'nouvelle';
+      const isStatut = action === 'statut';
+      await fetch(DISCORD_WEBHOOK, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          embeds: [{
+            title: isNew ? `📦 NOUVELLE SAISIE — ${saisie.type||'—'}` : `🔄 SAISIE MISE À JOUR — ${saisie.reference||'—'}`,
+            color: TYPE_COLORS_DISCORD[saisie.type] || 0x445E7A,
+            fields: [
+              { name: '📋 N° Dossier', value: saisie.reference || '—', inline: true },
+              { name: `${TYPE_ICONS[saisie.type]||'📦'} Type`, value: saisie.type || '—', inline: true },
+              { name: '⚖️ Statut', value: saisie.statut || '—', inline: true },
+              { name: '👤 Suspect', value: `**${saisie.nom||'—'}**`, inline: true },
+              { name: '📏 Quantité', value: saisie.quantite || '—', inline: true },
+              { name: '📍 Lieu', value: saisie.lieu || '—', inline: true },
+              { name: '👮 Officier', value: officier || saisie.officier || '—', inline: true },
+              ...(saisie.refArrestation ? [{ name: '🔗 Réf. Arrestation', value: saisie.refArrestation, inline: true }] : []),
+              ...(saisie.description ? [{ name: '📝 Description', value: saisie.description.slice(0,200), inline: false }] : []),
+            ],
+            footer: { text: 'LSPD Intranet - Saisies Judiciaires • Holly V' },
+            timestamp: new Date().toISOString()
+          }]
+        })
+      });
+    } catch(e) { console.warn('Discord webhook failed:', e); }
+  }
+
+  const app = initializeApp(firebaseConfig);
+  const auth = getAuth(app);
+  const db = getFirestore(app);
+
+  let allSaisies = [], editingId = null, userPerms = {};
+
+  const TYPE_ICONS = {
+    'Drogue':'💊', 'Arme':'🔫', 'Véhicule':'🚗',
+    'Argent':'💰', 'Document':'📄', 'Électronique':'📱', 'Autre':'📦'
+  };
+
+  const TYPE_COLORS = {
+    'Drogue':'rgba(125,60,152,.2)', 'Arme':'rgba(192,57,43,.2)',
+    'Véhicule':'rgba(37,137,208,.2)', 'Argent':'rgba(201,170,77,.2)',
+    'Document':'rgba(30,158,86,.2)', 'Électronique':'rgba(37,137,208,.15)', 'Autre':'rgba(68,94,122,.2)'
+  };
+
+  startClock('tbClock');
+  setupModalClose();
+  window.closeModal = closeModal;
+  window.captureModal = captureModal;
+  
+
+  initPage(auth, db, onAuthStateChanged, 'saisies').then(async ({ grade, name, perms }) => {
+    userPerms = perms;
+    if (perms.canWrite) {
+      document.getElementById('btnNew').style.display = '';
+      document.getElementById('btnNew').addEventListener('click', () => newSaisie());
+    }
+    document.getElementById('sOfficier').value = name;
+    document.getElementById('sDate').value = new Date().toISOString().split('T')[0];
+    await loadSaisies();
+  });
+
+  async function loadSaisies() {
+    try {
+      const snap = await getDocs(query(collection(db, 'saisies'), orderBy('createdAt', 'desc')));
+      allSaisies = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+      document.getElementById('sTotal').textContent = allSaisies.length;
+      document.getElementById('sAttente').textContent = allSaisies.filter(s => s.statut === 'En attente').length;
+      document.getElementById('sValidee').textContent = allSaisies.filter(s => s.statut === 'Validée').length;
+      document.getElementById('sDetruite').textContent = allSaisies.filter(s => s.statut === 'Détruite').length;
+      renderSaisies(allSaisies);
+    } catch(e) { console.error(e); }
+  }
+
+  function renderSaisies(list) {
+    const tb = document.getElementById('saisisTable');
+    if (!list.length) {
+      tb.innerHTML = '<tr><td colspan="10"><div class="empty-state"><div class="ei">📦</div><p>AUCUNE SAISIE ENREGISTRÉE</p></div></td></tr>';
+      return;
+    }
+    tb.innerHTML = list.map(s => `
+      <tr style="background:${TYPE_COLORS[s.type]||'transparent'}">
+        <td style="font-family:'Share Tech Mono',monospace;font-size:11px;color:var(--muted);white-space:nowrap">${s.reference||'—'}</td>
+        <td><span style="font-size:18px">${TYPE_ICONS[s.type]||'📦'}</span> <span style="font-size:12px">${s.type||'—'}</span></td>
+        <td><strong>${s.nom||'—'}</strong></td>
+        <td style="font-size:12px;max-width:160px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${s.quantite?`<strong>${s.quantite}</strong> — `:''}${s.description||'—'}</td>
+        <td style="font-size:12px">${s.officier||'—'}</td>
+        <td style="font-family:'Share Tech Mono',monospace;font-size:11px;white-space:nowrap">${s.date||'—'}</td>
+        <td style="font-size:12px">${s.lieu||'—'}</td>
+        <td style="font-family:'Share Tech Mono',monospace;font-size:10px;color:var(--muted)">${s.refArrestation||'—'}</td>
+        <td>${statutSaisieBadge(s.statut)}</td>
+        <td style="display:flex;gap:4px">
+          <button class="btn btn-ghost btn-sm" onclick="viewSaisie('${s.id}')">👁️</button>
+          <button class="btn btn-ghost btn-sm" onclick="window.printSaisie('{id}')" title="PDF">📄</button>
+          ${userPerms.canWrite ? `<button class="btn btn-ghost btn-sm" onclick="editSaisie('${s.id}')">✏️</button>` : ''}
+          ${userPerms.canDelete ? `<button class="btn btn-danger btn-sm" onclick="deleteSaisie('${s.id}')">🗑️</button>` : ''}
+        </td>
+      </tr>`).join('');
+  }
+
+  function statutSaisieBadge(s) {
+    const map = {
+      'En attente': 'b-open',
+      'Validée': 'b-active',
+      'Détruite': 'b-dead',
+      'Restituée': 'b-closed'
+    };
+    return `<span class="badge ${map[s]||'b-inactive'}">${s||'—'}</span>`;
+  }
+
+  window.filterSaisies = function() {
+    const q = document.getElementById('searchInput').value.toLowerCase();
+    const t = document.getElementById('filterType').value;
+    const s = document.getElementById('filterStatut').value;
+    renderSaisies(allSaisies.filter(x =>
+      ((x.nom||'')+' '+(x.type||'')+' '+(x.officier||'')+' '+(x.reference||'')+' '+(x.refArrestation||'')).toLowerCase().includes(q) &&
+      (!t||x.type===t) && (!s||x.statut===s)
+    ));
+  };
+
+  function newSaisie() {
+    editingId = null;
+    document.getElementById('modalTitle').textContent = 'NOUVELLE SAISIE';
+    ['sNom','sLieu','sRefArrestation','sQuantite','sDescription'].forEach(id => document.getElementById(id).value = '');
+    document.getElementById('sType').value = 'Drogue';
+    document.getElementById('sStatut').value = 'En attente';
+    openModal('modalSaisie');
+  }
+
+  window.editSaisie = function(id) {
+    const s = allSaisies.find(x => x.id === id);
+    if (!s) return;
+    editingId = id;
+    document.getElementById('modalTitle').textContent = 'MODIFIER SAISIE';
+    document.getElementById('sNom').value = s.nom||'';
+    document.getElementById('sType').value = s.type||'Drogue';
+    document.getElementById('sOfficier').value = s.officier||'';
+    document.getElementById('sDate').value = s.date||'';
+    document.getElementById('sLieu').value = s.lieu||'';
+    document.getElementById('sStatut').value = s.statut||'En attente';
+    document.getElementById('sRefArrestation').value = s.refArrestation||'';
+    document.getElementById('sQuantite').value = s.quantite||'';
+    document.getElementById('sDescription').value = s.description||'';
+    openModal('modalSaisie');
+  };
+
+  window.saveSaisie = async function() {
+    const nom = document.getElementById('sNom').value.trim();
+    if (!nom) { showToast('Le nom du suspect est obligatoire', 'error'); return; }
+    const payload = {
+      reference: editingId ? (allSaisies.find(s=>s.id===editingId)?.reference || generateRef('SAI')) : generateRef('SAI'),
+      nom,
+      type: document.getElementById('sType').value,
+      officier: document.getElementById('sOfficier').value,
+      date: document.getElementById('sDate').value,
+      lieu: document.getElementById('sLieu').value,
+      statut: document.getElementById('sStatut').value,
+      refArrestation: document.getElementById('sRefArrestation').value,
+      quantite: document.getElementById('sQuantite').value,
+      description: document.getElementById('sDescription').value,
+      updatedAt: new Date().toISOString()
+    };
+    try {
+      if (editingId) {
+        const officierName2 = document.getElementById('tbName')?.textContent || 'Inconnu';
+        // Restituée ou Détruite → supprimer automatiquement
+        if (payload.statut === 'Restituée' || payload.statut === 'Détruite') {
+          await sendDiscordSaisie(payload, officierName2, 'statut');
+          await addLog(db, `Saisie ${payload.statut.toLowerCase()} et supprimée`, `${payload.type} — ${nom}`);
+          await deleteDoc(doc(db, 'saisies', editingId));
+          showToast(`Saisie ${payload.statut.toLowerCase()} et supprimée ✓`, 'success');
+        } else {
+          await updateDoc(doc(db, 'saisies', editingId), payload);
+          await addLog(db, 'Saisie modifiée', `${payload.type} — ${nom}`);
+          await sendDiscordSaisie(payload, officierName2, 'statut');
+          showToast('Saisie mise à jour', 'success');
+        }
+      } else {
+        payload.createdAt = new Date().toISOString();
+        await addDoc(collection(db, 'saisies'), payload);
+        await addLog(db, 'Saisie enregistrée', `${payload.type} — ${nom} — ${payload.quantite}`);
+        const officierName = document.getElementById('tbName')?.textContent || 'Inconnu';
+        await sendDiscordSaisie(payload, officierName, 'nouvelle');
+        showToast('Saisie enregistrée', 'success');
+      }
+      closeModal('modalSaisie'); editingId = null;
+      await loadSaisies();
+    } catch(e) { showToast('Erreur: '+e.message, 'error'); }
+  };
+
+  window.deleteSaisie = async function(id) {
+    if (!confirm('Supprimer cette saisie ?')) return;
+    const s = allSaisies.find(x=>x.id===id);
+    await deleteDoc(doc(db, 'saisies', id));
+    await addLog(db, 'Saisie supprimée', `${s?.type||''} — ${s?.nom||''}`);
+    await loadSaisies();
+    showToast('Saisie supprimée', 'success');
+  };
+
+  window.viewSaisie = function(id) {
+    const s = allSaisies.find(x=>x.id===id);
+    if (!s) return;
+    document.getElementById('detailTitle').textContent = `${TYPE_ICONS[s.type]||'📦'} SAISIE — ${s.reference||'—'}`;
+    document.getElementById('detailBody').innerHTML = `
+      <div style="background:${TYPE_COLORS[s.type]||'var(--surface2)'};border:1px solid var(--border);border-radius:8px;padding:16px;margin-bottom:16px;display:flex;align-items:center;gap:14px">
+        <div style="font-size:48px">${TYPE_ICONS[s.type]||'📦'}</div>
+        <div>
+          <div style="font-family:'Orbitron',monospace;font-size:16px;font-weight:700;margin-bottom:6px">${s.type||'—'}</div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap">${statutSaisieBadge(s.statut)}</div>
+          ${s.quantite?`<div style="font-family:'Share Tech Mono',monospace;font-size:13px;color:var(--gold);margin-top:6px">Quantité : ${s.quantite}</div>`:''}
+        </div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px">
+        <div><div style="font-family:'Share Tech Mono',monospace;font-size:9px;color:var(--muted);letter-spacing:2px;margin-bottom:3px">SUSPECT</div><div style="font-size:14px;font-weight:700">${s.nom||'—'}</div></div>
+        <div><div style="font-family:'Share Tech Mono',monospace;font-size:9px;color:var(--muted);letter-spacing:2px;margin-bottom:3px">N° DOSSIER</div><div style="font-family:'Share Tech Mono',monospace;font-size:13px">${s.reference||'—'}</div></div>
+        <div><div style="font-family:'Share Tech Mono',monospace;font-size:9px;color:var(--muted);letter-spacing:2px;margin-bottom:3px">OFFICIER</div><div style="font-size:13px">${s.officier||'—'}</div></div>
+        <div><div style="font-family:'Share Tech Mono',monospace;font-size:9px;color:var(--muted);letter-spacing:2px;margin-bottom:3px">DATE</div><div style="font-family:'Share Tech Mono',monospace;font-size:13px">${s.date||'—'}</div></div>
+        <div><div style="font-family:'Share Tech Mono',monospace;font-size:9px;color:var(--muted);letter-spacing:2px;margin-bottom:3px">LIEU</div><div style="font-size:13px">${s.lieu||'—'}</div></div>
+        <div><div style="font-family:'Share Tech Mono',monospace;font-size:9px;color:var(--muted);letter-spacing:2px;margin-bottom:3px">RÉF. ARRESTATION</div><div style="font-family:'Share Tech Mono',monospace;font-size:12px;color:var(--accent-b)">${s.refArrestation||'—'}</div></div>
+      </div>
+      ${s.description?`<div><div style="font-family:'Share Tech Mono',monospace;font-size:9px;color:var(--muted);letter-spacing:2px;margin-bottom:6px">DESCRIPTION</div><div style="font-size:13px;line-height:1.6;padding:12px;background:var(--surface2);border-radius:5px">${s.description}</div></div>`:''}
+    `;
+    document.getElementById('detailFooter').innerHTML = `
+      <button class="btn btn-ghost" onclick="closeModal('modalDetail')">Fermer</button>
+      <button class="btn btn-ghost" onclick="printSaisie('${s.id}')">🖨️ Imprimer</button>
+      ${userPerms.canWrite?`<button class="btn btn-primary" onclick="closeModal('modalDetail');editSaisie('${s.id}')">✏️ Modifier</button>`:''}
+    `;
+    openModal('modalDetail');
+  };
+
+window.printSaisie = function(id) {
+    const s = allSaisies.find(x => x.id === id);
+    if (!s) return;
+    printSaisie(s, 'LSPD', 'https://r2.fivemanage.com/XEcvh0aBGRYhLzNNcRsQI/lspdnouveau.png');
+  };
+
+  window.logout = async function() {
+    try {
+      const user = auth.currentUser;
+      if (user) await deleteDoc(doc(db, 'online', user.uid));
+    } catch(e) {}
+    await signOut(auth);
+    sessionStorage.clear();
+    window.location.href = 'index.html';
+  };
+</script>
+</body>
+</html>

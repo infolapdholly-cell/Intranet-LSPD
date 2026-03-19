@@ -1,0 +1,522 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <link rel="icon" type="image/png" href="https://r2.fivemanage.com/XEcvh0aBGRYhLzNNcRsQI/lspdnouveau.png">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LSPD Intranet — Connexion</title>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg:#070b12; --bg2:#0a0f1a; --surface:#0d1526; --surface2:#111d35;
+      --border:#1e3352; --border2:#253f63;
+      --accent:#1a5fb4; --accent-b:#3b8fe8; --accent-l:#6aafff;
+      --accent-glow:rgba(59,143,232,.18); --accent-bg:rgba(59,143,232,.07);
+      --text:#e2eaf6; --text2:#97aec8; --muted:#4a6585;
+      --danger:#d63031; --danger-l:#ff6b6b;
+      --success:#22c75e;
+      --gold:#d4a843; --gold-l:#f0c96a;
+      --radius:9px;
+    }
+    *,*::before,*::after { box-sizing:border-box; margin:0; padding:0; }
+    html, body { height:100%; }
+
+    body {
+      font-family:'Inter',sans-serif;
+      background:var(--bg);
+      color:var(--text);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      min-height:100vh;
+      overflow:hidden;
+      position:relative;
+    }
+
+    /* GRILLE DE FOND */
+    .bg-grid {
+      position:fixed; inset:0; z-index:0;
+      background-image:
+        linear-gradient(rgba(59,143,232,.04) 1px,transparent 1px),
+        linear-gradient(90deg,rgba(59,143,232,.04) 1px,transparent 1px);
+      background-size:48px 48px;
+      animation:gridMove 30s linear infinite;
+    }
+    @keyframes gridMove { to{transform:translateY(48px)} }
+
+    /* RADIAL GLOW */
+    .bg-glow {
+      position:fixed; inset:0; z-index:1;
+      background:radial-gradient(ellipse 60% 60% at 50% 45%, rgba(26,95,180,.12) 0%, transparent 70%);
+      pointer-events:none;
+    }
+
+    /* LOGO EN FOND */
+    .bg-logo {
+      position:fixed; top:50%; left:50%;
+      transform:translate(-50%,-50%);
+      width:65vw; max-width:650px;
+      opacity:.04;
+      filter:blur(3px);
+      z-index:2;
+      pointer-events:none;
+      animation:bgBreathe 8s ease-in-out infinite;
+    }
+    @keyframes bgBreathe { 0%,100%{opacity:.035} 50%{opacity:.06} }
+
+    /* LIGNES SCANLINES */
+    .bg-scanlines {
+      position:fixed; inset:0; z-index:3;
+      background:repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,.12) 2px, rgba(0,0,0,.12) 4px);
+      pointer-events:none;
+      opacity:.3;
+    }
+
+    /* CONTAINER PRINCIPAL */
+    .login-wrap {
+      position:relative; z-index:10;
+      width:100%; max-width:420px;
+      padding:24px;
+      animation:riseUp .6s cubic-bezier(.34,1.56,.64,1) both;
+    }
+    @keyframes riseUp { from{opacity:0;transform:translateY(30px)} to{opacity:1;transform:none} }
+
+    /* LOGO SECTION */
+    .login-logo {
+      text-align:center;
+      margin-bottom:28px;
+    }
+    .logo-ring {
+      width:90px; height:90px;
+      margin:0 auto 16px;
+      border-radius:50%;
+      background:radial-gradient(circle, rgba(59,143,232,.15) 0%, transparent 70%);
+      border:1px solid rgba(59,143,232,.25);
+      display:flex; align-items:center; justify-content:center;
+      position:relative;
+      animation:logoPulse 4s ease-in-out infinite;
+    }
+    .logo-ring::before {
+      content:'';
+      position:absolute; inset:-6px;
+      border-radius:50%;
+      border:1px solid rgba(59,143,232,.12);
+    }
+    @keyframes logoPulse {
+      0%,100%{box-shadow:0 0 20px rgba(59,143,232,.2)}
+      50%{box-shadow:0 0 40px rgba(59,143,232,.4), 0 0 80px rgba(59,143,232,.1)}
+    }
+    .logo-ring img {
+      width:55px; height:55px;
+      object-fit:contain;
+      filter:drop-shadow(0 0 10px rgba(59,143,232,.7));
+    }
+    .login-logo h1 {
+      font-family:'Syne',sans-serif;
+      font-size:22px; font-weight:800;
+      letter-spacing:8px;
+      background:linear-gradient(135deg, var(--text), var(--accent-l));
+      -webkit-background-clip:text; -webkit-text-fill-color:transparent;
+      background-clip:text;
+      margin-bottom:6px;
+    }
+    .login-logo .subtitle {
+      font-family:'JetBrains Mono',monospace;
+      font-size:10px;
+      color:var(--accent-b);
+      letter-spacing:4px;
+      opacity:.8;
+    }
+
+    /* SÉPARATEUR */
+    .deco {
+      display:flex; align-items:center; gap:12px;
+      margin:0 0 22px;
+    }
+    .deco-line { flex:1; height:1px; background:linear-gradient(90deg,transparent,var(--border2),transparent); }
+    .deco span {
+      font-family:'JetBrains Mono',monospace;
+      font-size:8px; color:var(--muted);
+      letter-spacing:3px; white-space:nowrap;
+    }
+
+    /* CARTE LOGIN */
+    .login-card {
+      background:rgba(13,21,38,.92);
+      backdrop-filter:blur(20px);
+      border:1px solid var(--border2);
+      border-radius:16px;
+      padding:30px 28px;
+      position:relative;
+      overflow:hidden;
+      box-shadow:0 20px 60px rgba(0,0,0,.6), 0 0 0 1px rgba(59,143,232,.06);
+    }
+    .login-card::before {
+      content:'';
+      position:absolute; top:0; left:0; right:0;
+      height:2px;
+      background:linear-gradient(90deg,transparent,var(--accent-b),transparent);
+    }
+    .login-card::after {
+      content:'';
+      position:absolute; bottom:-40px; right:-40px;
+      width:120px; height:120px;
+      border-radius:50%;
+      background:radial-gradient(circle, rgba(59,143,232,.06) 0%, transparent 70%);
+    }
+
+    /* STATUS INDICATOR */
+    .status-bar {
+      display:flex; align-items:center; gap:8px;
+      margin-bottom:22px;
+      padding:8px 12px;
+      background:rgba(34,199,94,.06);
+      border:1px solid rgba(34,199,94,.2);
+      border-radius:var(--radius);
+    }
+    .status-dot {
+      width:6px; height:6px; border-radius:50%;
+      background:var(--success);
+      animation:dotPulse 2s ease infinite;
+      box-shadow:0 0 6px var(--success);
+    }
+    @keyframes dotPulse { 0%,100%{opacity:1} 50%{opacity:.4} }
+    .status-text {
+      font-family:'JetBrains Mono',monospace;
+      font-size:9px; color:var(--success);
+      letter-spacing:2px;
+    }
+
+    /* CHAMPS */
+    .field { margin-bottom:16px; }
+    .field label {
+      display:block;
+      font-size:10px; font-weight:700;
+      letter-spacing:2px; text-transform:uppercase;
+      color:var(--text2);
+      margin-bottom:7px;
+    }
+    .field-input-wrap { position:relative; }
+    .field-icon {
+      position:absolute; left:13px; top:50%;
+      transform:translateY(-50%);
+      font-size:14px; opacity:.4;
+      pointer-events:none;
+    }
+    .field input {
+      width:100%;
+      padding:11px 14px 11px 40px;
+      background:var(--surface2);
+      border:1px solid var(--border);
+      border-radius:var(--radius);
+      color:var(--text);
+      font-family:'JetBrains Mono',monospace;
+      font-size:13px;
+      outline:none;
+      transition:border-color .2s, box-shadow .2s, background .2s;
+    }
+    .field input:focus {
+      border-color:var(--accent-b);
+      box-shadow:0 0 0 3px rgba(59,143,232,.15);
+      background:rgba(59,143,232,.04);
+    }
+    .field input::placeholder { color:var(--muted); opacity:.7; }
+    .field input.error { border-color:var(--danger); box-shadow:0 0 0 3px rgba(214,48,49,.15); }
+
+    /* MESSAGE ERREUR */
+    .err-msg {
+      display:none;
+      background:rgba(214,48,49,.08);
+      border:1px solid rgba(214,48,49,.3);
+      border-radius:var(--radius);
+      padding:10px 14px;
+      font-family:'JetBrains Mono',monospace;
+      font-size:11px; color:var(--danger-l);
+      margin-bottom:16px;
+      animation:shake .4s ease;
+    }
+    .err-msg.show { display:flex; align-items:center; gap:8px; }
+    @keyframes shake {
+      0%,100%{transform:translateX(0)}
+      20%{transform:translateX(-6px)}
+      40%{transform:translateX(6px)}
+      60%{transform:translateX(-4px)}
+      80%{transform:translateX(4px)}
+    }
+
+    /* BOUTON */
+    .btn-login {
+      width:100%; margin-top:6px;
+      padding:13px;
+      background:linear-gradient(135deg,var(--accent),var(--accent-b));
+      border:none; border-radius:var(--radius);
+      color:#fff;
+      font-family:'Syne',sans-serif;
+      font-size:13px; font-weight:700;
+      letter-spacing:4px;
+      text-transform:uppercase;
+      transition:all .2s;
+      cursor:pointer;
+      position:relative; overflow:hidden;
+      box-shadow:0 4px 16px rgba(59,143,232,.3);
+    }
+    .btn-login:hover {
+      transform:translateY(-1px);
+      box-shadow:0 6px 24px rgba(59,143,232,.5);
+      filter:brightness(1.1);
+    }
+    .btn-login:active { transform:translateY(0); }
+    .btn-login:disabled { opacity:.5; cursor:not-allowed; transform:none; }
+    .btn-login::after {
+      content:'';
+      position:absolute; inset:0;
+      background:linear-gradient(135deg,rgba(255,255,255,.1),transparent);
+      pointer-events:none;
+    }
+
+    /* FOOTER */
+    .login-footer {
+      text-align:center;
+      margin-top:20px;
+      font-family:'JetBrains Mono',monospace;
+      font-size:9px; color:var(--muted);
+      letter-spacing:2px;
+    }
+
+    /* OVERLAY ACCÈS REFUSÉ */
+    #deniedOverlay {
+      display:none;
+      position:fixed; inset:0; z-index:9999;
+      background:rgba(150,10,10,.95);
+      backdrop-filter:blur(8px);
+      align-items:center; justify-content:center;
+    }
+    #deniedOverlay.show { display:flex; animation:overlayIn .2s ease; }
+    @keyframes overlayIn { from{opacity:0} to{opacity:1} }
+
+    .denied-box {
+      text-align:center;
+      animation:deniedPulse 1s ease infinite alternate;
+    }
+    @keyframes deniedPulse { from{transform:scale(1)} to{transform:scale(1.02)} }
+    .denied-icon { font-size:90px; margin-bottom:20px; filter:drop-shadow(0 0 30px rgba(255,255,255,.3)); }
+    .denied-title {
+      font-family:'Syne',sans-serif;
+      font-size:38px; font-weight:800;
+      color:#fff; letter-spacing:8px;
+      text-shadow:0 0 40px rgba(255,100,100,.6);
+      margin-bottom:10px;
+    }
+    .denied-sub {
+      font-family:'JetBrains Mono',monospace;
+      font-size:13px; color:rgba(255,255,255,.7);
+      letter-spacing:3px; margin-bottom:6px;
+    }
+    .denied-count {
+      font-family:'JetBrains Mono',monospace;
+      font-size:11px; color:rgba(255,255,255,.4);
+      letter-spacing:2px; margin-top:20px;
+    }
+
+    @media (max-width:480px) {
+      .login-wrap { padding:16px; }
+      .login-card { padding:22px 18px; }
+      .login-logo h1 { font-size:18px; letter-spacing:6px; }
+    }
+  </style>
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="LSPD">
+  <meta name="theme-color" content="#1a5fb4">
+  <link rel="apple-touch-icon" href="https://r2.fivemanage.com/XEcvh0aBGRYhLzNNcRsQI/lspdnouveau.png">
+</head>
+<body>
+
+<!-- FOND -->
+<div class="bg-grid"></div>
+<div class="bg-glow"></div>
+<img class="bg-logo" src="https://r2.fivemanage.com/XEcvh0aBGRYhLzNNcRsQI/lspdnouveau.png" alt="" onerror="this.style.display='none'">
+<div class="bg-scanlines"></div>
+
+<!-- OVERLAY ACCÈS REFUSÉ -->
+<div id="deniedOverlay">
+  <div class="denied-box">
+    <div class="denied-icon">⛔</div>
+    <div class="denied-title">ACCÈS REFUSÉ</div>
+    <div class="denied-sub">IDENTIFIANTS INCORRECTS</div>
+    <div class="denied-sub">CONNEXION NON AUTORISÉE</div>
+    <div class="denied-count" id="deniedCount"></div>
+  </div>
+</div>
+
+<!-- FORMULAIRE -->
+<div class="login-wrap">
+  <div class="login-logo">
+    <div class="logo-ring">
+      <img src="https://r2.fivemanage.com/XEcvh0aBGRYhLzNNcRsQI/lspdnouveau.png" alt="LSPD" onerror="this.style.display='none'">
+    </div>
+    <h1>L · S · P · D</h1>
+    <div class="subtitle">INTRANET — ACCÈS SÉCURISÉ</div>
+  </div>
+
+  <div class="deco">
+    <div class="deco-line"></div>
+    <span>AUTHENTIFICATION REQUISE</span>
+    <div class="deco-line"></div>
+  </div>
+
+  <div class="login-card">
+    <div class="status-bar">
+      <div class="status-dot"></div>
+      <div class="status-text">SYSTÈME EN LIGNE — LOS SANTOS POLICE DEPARTMENT</div>
+    </div>
+
+    <div class="field">
+      <label>Identifiant</label>
+      <div class="field-input-wrap">
+        <span class="field-icon">✉</span>
+        <input type="email" id="liEmail" placeholder="officier@lspd.gov" autocomplete="username">
+      </div>
+    </div>
+
+    <div class="field">
+      <label>Mot de passe</label>
+      <div class="field-input-wrap">
+        <span class="field-icon">🔒</span>
+        <input type="password" id="liPass" placeholder="••••••••" autocomplete="current-password">
+      </div>
+    </div>
+
+    <div class="err-msg" id="liErr">
+      <span>⚠</span><span id="liErrText">Identifiants incorrects.</span>
+    </div>
+
+    <button class="btn-login" id="liBtn" onclick="doLogin()">CONNEXION</button>
+  </div>
+
+  <div class="login-footer">LSPD INTRANET v7.0 — HÉBERGÉ PAR HOLLY V — ACCÈS RÉSERVÉ</div>
+</div>
+
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+  import { getAuth, signInWithEmailAndPassword, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+  import { getFirestore, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyA4GxYd32GNs5EDjjm2UI1a0d25YxigMVU",
+    authDomain: "lspd-intranet-2aed9.firebaseapp.com",
+    projectId: "lspd-intranet-2aed9",
+    storageBucket: "lspd-intranet-2aed9.firebasestorage.app",
+    messagingSenderId: "780922925382",
+    appId: "1:780922925382:web:a32d5e89bcff75bd8b3547"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const auth = getAuth(app);
+  const db = getFirestore(app);
+
+  onAuthStateChanged(auth, async user => {
+    if (user) {
+      await refreshGrade(user);
+      window.location.href = 'dashboard.html';
+    }
+  });
+
+  async function refreshGrade(user) {
+    try {
+      const snap = await getDoc(doc(db, 'users', user.uid));
+      if (snap.exists()) {
+        const data = snap.data();
+        const grade = (data.grade || 'cadet').toLowerCase();
+        const name = data.displayName || user.email;
+        localStorage.setItem('lspd_grade', grade);
+        localStorage.setItem('lspd_name', name);
+        localStorage.setItem('lspd_uid', user.uid);
+        sessionStorage.setItem('lspd_grade', grade);
+        sessionStorage.setItem('lspd_name', name);
+        sessionStorage.setItem('lspd_uid', user.uid);
+        await setDoc(doc(db, 'online', user.uid), {
+          uid: user.uid, displayName: name, grade,
+          connectedAt: new Date().toISOString(),
+          lastSeen: new Date().toISOString()
+        });
+      }
+    } catch(e) { console.warn('Grade refresh failed:', e); }
+  }
+
+  window.doLogin = async function() {
+    const email = document.getElementById('liEmail').value.trim();
+    const pass = document.getElementById('liPass').value;
+    const btn = document.getElementById('liBtn');
+    const err = document.getElementById('liErr');
+    const errText = document.getElementById('liErrText');
+    const emailInput = document.getElementById('liEmail');
+    const passInput = document.getElementById('liPass');
+
+    err.classList.remove('show');
+    emailInput.classList.remove('error');
+    passInput.classList.remove('error');
+
+    if (!email) { emailInput.classList.add('error'); return; }
+    if (!pass)  { passInput.classList.add('error'); return; }
+
+    btn.disabled = true;
+    btn.textContent = 'VÉRIFICATION...';
+
+    try {
+      const cred = await signInWithEmailAndPassword(auth, email, pass);
+      await refreshGrade(cred.user);
+
+      setInterval(async () => {
+        try {
+          await setDoc(doc(db, 'online', cred.user.uid), { lastSeen: new Date().toISOString() }, { merge: true });
+        } catch(e) {}
+      }, 5 * 60 * 1000);
+
+      btn.textContent = 'AUTHENTIFIÉ ✓';
+      btn.style.background = 'linear-gradient(135deg,#1a9e4a,#22c75e)';
+
+      // Détecter première connexion
+      if (pass === '123456') {
+        setTimeout(() => { window.location.href = 'change-password.html'; }, 600);
+      } else {
+        setTimeout(() => { window.location.href = 'dashboard.html'; }, 600);
+      }
+    } catch(e) {
+      let msg = 'Identifiants incorrects. Accès refusé.';
+      if (e.code === 'auth/too-many-requests') msg = 'Trop de tentatives. Réessayez plus tard.';
+      if (e.code === 'auth/invalid-email') msg = 'Adresse email invalide.';
+
+      errText.textContent = msg;
+      err.classList.add('show');
+      passInput.classList.add('error');
+
+      const overlay = document.getElementById('deniedOverlay');
+      const countEl = document.getElementById('deniedCount');
+      overlay.classList.add('show');
+
+      let secs = 5;
+      countEl.textContent = `Réessayez dans ${secs} secondes...`;
+
+      const timer = setInterval(() => {
+        secs--;
+        if (secs > 0) {
+          countEl.textContent = `Réessayez dans ${secs} seconde${secs > 1 ? 's' : ''}...`;
+        } else {
+          clearInterval(timer);
+          overlay.classList.remove('show');
+          passInput.classList.remove('error');
+          passInput.value = '';
+          passInput.focus();
+          btn.disabled = false;
+          btn.textContent = 'CONNEXION';
+        }
+      }, 1000);
+    }
+  };
+
+  document.addEventListener('keydown', e => { if (e.key === 'Enter') window.doLogin(); });
+</script>
+</body>
+</html>

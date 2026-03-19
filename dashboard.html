@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <link rel="icon" type="image/png" href="https://r2.fivemanage.com/XEcvh0aBGRYhLzNNcRsQI/lspdnouveau.png">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LSPD — Tableau de Bord</title>
+  <link rel="stylesheet" href="style.css">
+  <style>
+    .dash-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+    @media(max-width:900px) { .dash-grid { grid-template-columns:1fr; } }
+
+    .alert-item {
+      display: flex; align-items: center; gap: 12px;
+      padding: 12px 14px; border-radius: 8px; margin-bottom: 8px;
+      transition: all .2s;
+    }
+    .alert-item:last-child { margin-bottom: 0; }
+    .alert-wanted { background:rgba(214,48,49,.08); border:1px solid rgba(214,48,49,.25); }
+    .alert-warn   { background:rgba(232,160,32,.08); border:1px solid rgba(232,160,32,.25); }
+    .alert-info   { background:rgba(59,143,232,.08); border:1px solid rgba(59,143,232,.25); }
+    .ai-icon { font-size:18px; flex-shrink:0; }
+    .ai-text { flex:1; font-size:13px; line-height:1.4; }
+    .ai-badge {
+      font-family:'JetBrains Mono',monospace;
+      font-size:8px; color:var(--muted);
+      white-space:nowrap;
+    }
+
+    .recent-item {
+      display:flex; align-items:center; gap:12px;
+      padding:11px 14px; border-radius:9px; margin-bottom:6px;
+      border:1px solid var(--border);
+      transition:all .2s;
+      animation:fadeIn .3s ease both;
+    }
+    .recent-item:last-child { margin-bottom:0; }
+    .recent-item:hover { border-color:var(--accent-b); transform:translateX(2px); }
+
+    .ri-icon {
+      width:36px; height:36px; border-radius:8px;
+      display:flex; align-items:center; justify-content:center;
+      font-size:16px; flex-shrink:0;
+      background:rgba(255,255,255,.04);
+    }
+    .ri-info { flex:1; min-width:0; }
+    .ri-title { font-size:12px; font-weight:600; margin-bottom:3px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+    .ri-sub   { font-family:'JetBrains Mono',monospace; font-size:10px; color:var(--muted); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+    .ri-time  { font-family:'JetBrains Mono',monospace; font-size:9px; color:var(--muted); text-align:right; white-space:nowrap; }
+
+    /* Stat petit label (sous la valeur) */
+    .stat-sub { font-family:'JetBrains Mono',monospace; font-size:9px; color:var(--muted); margin-top:5px; letter-spacing:1px; }
+
+    /* Refresh btn */
+    .refresh-btn {
+      display:flex; align-items:center; gap:6px;
+      padding:6px 12px;
+      background:transparent;
+      border:1px solid var(--border2);
+      border-radius:8px;
+      color:var(--text2);
+      font-size:11px; font-weight:600;
+      letter-spacing:1px;
+      transition:all .2s; cursor:pointer;
+      font-family:'Inter',sans-serif;
+    }
+    .refresh-btn:hover { border-color:var(--accent-b); color:var(--accent-l); }
+    .refresh-btn.spinning .ri { animation:spin .6s linear infinite; }
+    @keyframes spin { to{transform:rotate(360deg)} }
+
+    @keyframes fadeIn { from{opacity:0;transform:translateY(-3px)} to{opacity:1;transform:none} }
+  </style>
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="LSPD">
+  <meta name="theme-color" content="#1a5fb4">
+  <link rel="apple-touch-icon" href="https://r2.fivemanage.com/XEcvh0aBGRYhLzNNcRsQI/lspdnouveau.png">
+</head>
+<body>
+<div class="app-shell">
+<div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
+
+<div class="topbar">
+  <div class="tb-left">
+    <button class="tb-menu-btn" onclick="toggleSidebar()">☰</button>
+    <img class="tb-logo" src="https://r2.fivemanage.com/XEcvh0aBGRYhLzNNcRsQI/lspdnouveau.png" alt="LSPD">
+    <div class="tb-sep"></div>
+    <div class="tb-title">L.S.P.D</div>
+    <div class="tb-sep"></div>
+    <div class="tb-page">TABLEAU DE BORD</div>
+  </div>
+  <div class="tb-right">
+    <span class="live-dot"></span>
+    <div class="tb-time" id="tbClock">--:--:--</div>
+    <span class="tb-grade" id="tbGrade">—</span>
+    <span class="tb-name" id="tbName">Officier</span>
+    <button class="btn-out" onclick="logout()">Déconnexion</button>
+  </div>
+</div>
+
+<div class="shell">
+  <div class="sidebar" id="sidebar"></div>
+  <div class="main">
+
+    <div class="page-head">
+      <div class="page-head-left">
+        <h2>TABLEAU DE BORD</h2>
+        <p>// VUE D'ENSEMBLE EN TEMPS RÉEL — LOS SANTOS POLICE DEPARTMENT</p>
+      </div>
+      <div style="display:flex;align-items:center;gap:10px">
+        <div style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--muted)" id="lastUpdate">—</div>
+        <button class="refresh-btn" id="refreshBtn" onclick="manualRefresh()">
+          <span class="ri">🔄</span><span>Actualiser</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- STATS ROW 1 -->
+    <div class="stats-grid">
+      <div class="stat-box blue">
+        <div class="stat-lbl">CASIERS TOTAL</div>
+        <div class="stat-val" id="sCasiers">—</div>
+        <div class="stat-sub">BASE CRIMINELLE</div>
+      </div>
+      <div class="stat-box red">
+        <div class="stat-lbl">RECHERCHÉS</div>
+        <div class="stat-val" id="sWanted">—</div>
+        <div class="stat-sub">WANTED ACTIFS</div>
+      </div>
+      <div class="stat-box orange">
+        <div class="stat-lbl">AMENDES IMPAYÉES</div>
+        <div class="stat-val" id="sAmendes">—</div>
+        <div class="stat-sub">EN ATTENTE</div>
+      </div>
+      <div class="stat-box gold">
+        <div class="stat-lbl">RAPPORTS OUVERTS</div>
+        <div class="stat-val" id="sRapports">—</div>
+        <div class="stat-sub">EN COURS</div>
+      </div>
+    </div>
+
+    <!-- STATS ROW 2 -->
+    <div class="stats-grid">
+      <div class="stat-box green">
+        <div class="stat-lbl">OFFICIERS ACTIFS</div>
+        <div class="stat-val" id="sOfficiers">—</div>
+        <div class="stat-sub">EN SERVICE</div>
+      </div>
+      <div class="stat-box blue">
+        <div class="stat-lbl">VÉHICULES DISPO</div>
+        <div class="stat-val" id="sVehicules">—</div>
+        <div class="stat-sub">FLOTTE</div>
+      </div>
+      <div class="stat-box gold">
+        <div class="stat-lbl">ARMES EN STOCK</div>
+        <div class="stat-val" id="sArmes">—</div>
+        <div class="stat-sub">ARMURERIE</div>
+      </div>
+      <div class="stat-box red">
+        <div class="stat-lbl">ARRESTATIONS CE MOIS</div>
+        <div class="stat-val" id="sArrestations">—</div>
+        <div class="stat-sub">PÉRIODE ACTUELLE</div>
+      </div>
+    </div>
+
+    <!-- ALERTES + ACTIVITÉ -->
+    <div class="dash-grid">
+      <div class="card">
+        <div class="card-head">
+          <div class="card-title">🚨 ALERTES ACTIVES</div>
+          <span style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--muted)" id="alertCount">0 alerte(s)</span>
+        </div>
+        <div class="card-body" id="dashAlerts" style="min-height:120px">
+          <div class="empty-state"><span class="ei">🔔</span><p>AUCUNE ALERTE ACTIVE</p></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-head"><div class="card-title">📜 ACTIVITÉ RÉCENTE</div></div>
+        <div class="card-body" id="dashActivity" style="max-height:380px;overflow-y:auto">
+          <div class="empty-state"><span class="ei">📜</span><p>AUCUNE ACTIVITÉ</p></div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+</div>
+<div class="toast" id="toast"></div>
+
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+  import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+  import { getFirestore, collection, getDocs, query, where, orderBy, limit } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+  import { initPage, startClock, showToast } from './utils.js';
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyA4GxYd32GNs5EDjjm2UI1a0d25YxigMVU",
+    authDomain: "lspd-intranet-2aed9.firebaseapp.com",
+    projectId: "lspd-intranet-2aed9",
+    storageBucket: "lspd-intranet-2aed9.firebasestorage.app",
+    messagingSenderId: "780922925382",
+    appId: "1:780922925382:web:a32d5e89bcff75bd8b3547"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const auth = getAuth(app);
+  const db = getFirestore(app);
+
+  startClock('tbClock');
+
+  initPage(auth, db, onAuthStateChanged, 'dashboard').then(async () => {
+    await loadDashboard();
+    setInterval(loadDashboard, 300000);
+  });
+
+  async function loadDashboard() {
+    try {
+      const [casSnap, amendesSnap, rapportsSnap, officSnap] = await Promise.all([
+        getDocs(query(collection(db, 'casiers'), limit(500))),
+        getDocs(query(collection(db, 'amendes'), where('statut', '==', 'Impayée'), limit(100))),
+        getDocs(query(collection(db, 'rapports'), where('statut', '==', 'Ouvert'), limit(100))),
+        getDocs(query(collection(db, 'officiers'), where('statut', '==', 'Actif'), limit(100))),
+      ]);
+
+      const wanted = casSnap.docs.filter(d => d.data().wanted).length;
+
+      document.getElementById('sCasiers').textContent = casSnap.size;
+      document.getElementById('sWanted').textContent = wanted;
+      document.getElementById('sAmendes').textContent = amendesSnap.size;
+      document.getElementById('sRapports').textContent = rapportsSnap.size;
+      document.getElementById('sOfficiers').textContent = officSnap.size;
+
+      // Véhicules & armes
+      try {
+        const [vehSnap, armSnap] = await Promise.all([
+          getDocs(query(collection(db, 'vehicules'), where('statut', '==', 'Disponible'), limit(100))),
+          getDocs(query(collection(db, 'armurerie'), limit(100))),
+        ]);
+        document.getElementById('sVehicules').textContent = vehSnap.size;
+        document.getElementById('sArmes').textContent = armSnap.size;
+      } catch(e) {
+        document.getElementById('sVehicules').textContent = '—';
+        document.getElementById('sArmes').textContent = '—';
+      }
+
+      // Arrestations du mois
+      if (document.getElementById('sArrestations').textContent === '—') {
+        try {
+          const moisDebut = new Date(new Date().getFullYear(), new Date().getMonth(), 1).toISOString();
+          const arrSnap = await getDocs(query(collection(db, 'arrestations'), where('createdAt', '>=', moisDebut), limit(200)));
+          document.getElementById('sArrestations').textContent = arrSnap.size;
+        } catch(e) { document.getElementById('sArrestations').textContent = '—'; }
+      }
+
+      // Alertes
+      const alertsEl = document.getElementById('dashAlerts');
+      const wantedDocs = casSnap.docs.filter(d => d.data().wanted).map(d => d.data());
+      const alertCount = wantedDocs.length + amendesSnap.size;
+      document.getElementById('alertCount').textContent = alertCount + ' alerte(s)';
+
+      if (!wantedDocs.length && !amendesSnap.size) {
+        alertsEl.innerHTML = '<div class="empty-state"><span class="ei">🔔</span><p>AUCUNE ALERTE ACTIVE</p></div>';
+      } else {
+        let html = '';
+        wantedDocs.slice(0, 4).forEach(c => {
+          html += `<div class="alert-item alert-wanted">
+            <span class="ai-icon">⚠️</span>
+            <div class="ai-text"><strong>${c.nom||''} ${c.prenom||''}</strong> — activement recherché</div>
+            <span class="ai-badge badge b-wanted">WANTED</span>
+          </div>`;
+        });
+        if (amendesSnap.size) {
+          html += `<div class="alert-item alert-warn">
+            <span class="ai-icon">💰</span>
+            <div class="ai-text"><strong>${amendesSnap.size} amende(s)</strong> en attente de paiement</div>
+          </div>`;
+        }
+        alertsEl.innerHTML = html;
+      }
+
+      // Activité récente
+      const actEl = document.getElementById('dashActivity');
+      try {
+        const logsSnap = await getDocs(query(collection(db, 'logs'), orderBy('timestamp', 'desc'), limit(8)));
+        if (logsSnap.empty) {
+          actEl.innerHTML = '<div class="empty-state"><span class="ei">📜</span><p>AUCUNE ACTIVITÉ</p></div>';
+        } else {
+          const iconMap = {
+            'Casier créé':'📁','Casier modifié':'✏️','Casier supprimé':'🗑️',
+            'Rapport créé':'📋','Rapport modifié':'📝','Rapport supprimé':'🗑️',
+            'Arrestation':'🚔','Arrestation créée':'🚔','Arrestation modifiée':'🚔',
+            'Amende créée':'💰','Amende modifiée':'💰',
+            'Officier ajouté':'👮','Officier modifié':'👮','Officier supprimé':'👮',
+            'Véhicule ajouté':'🚓','Véhicule modifié':'🚓',
+            'Arme ajoutée':'🔫','Arme modifiée':'🔫',
+            'Saisie enregistrée':'📦','Saisie modifiée':'📦','Saisie détruite et supprimée':'💥','Saisie restituée et supprimée':'✅',
+            'Compte créé':'🆕','Grade modifié':'🏅','Compte suspendu':'⛔','Compte réactivé':'✅',
+          };
+          let html = '';
+          logsSnap.forEach(d => {
+            const l = d.data();
+            const icon = iconMap[l.action] || '📜';
+            const time = l.timestamp ? new Date(l.timestamp).toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'}) : '';
+            const date = l.timestamp ? new Date(l.timestamp).toLocaleDateString('fr-FR',{day:'2-digit',month:'2-digit'}) : '';
+            html += `<div class="recent-item">
+              <div class="ri-icon">${icon}</div>
+              <div class="ri-info">
+                <div class="ri-title">${l.action||'Action inconnue'}</div>
+                <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+                  <span style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--accent-b)">👮 ${l.user||'Inconnu'}</span>
+                  ${l.details ? `<span class="ri-sub">↳ ${l.details}</span>` : ''}
+                </div>
+              </div>
+              <div class="ri-time">${date}<br>${time}</div>
+            </div>`;
+          });
+          actEl.innerHTML = html;
+        }
+      } catch(e) { console.warn('Logs error:', e); }
+
+      document.getElementById('lastUpdate').textContent = 'MAJ ' + new Date().toLocaleTimeString('fr-FR');
+    } catch(e) { console.error('Dashboard error:', e); }
+  }
+
+  window.manualRefresh = async function() {
+    const btn = document.getElementById('refreshBtn');
+    btn.classList.add('spinning');
+    document.getElementById('sArrestations').textContent = '—'; // Force reload
+    await loadDashboard();
+    btn.classList.remove('spinning');
+    showToast('Tableau de bord actualisé', 'success');
+  };
+</script>
+</body>
+</html>

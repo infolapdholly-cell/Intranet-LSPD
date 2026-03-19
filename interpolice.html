@@ -1,0 +1,445 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>INTERPOLICE — San Andreas</title>
+  <link rel="icon" type="image/png" href="https://r2.fivemanage.com/XEcvh0aBGRYhLzNNcRsQI/lspdnouveau.png">
+  <link rel="stylesheet" href="style.css">
+  <style>
+    .dept-badge {
+      display:inline-flex; align-items:center; gap:6px; padding:3px 10px;
+      border-radius:20px; font-family:'Share Tech Mono',monospace; font-size:10px;
+      letter-spacing:1px; font-weight:700;
+    }
+    .dept-lspd { background:rgba(20,88,160,.2); color:#2589d0; border:1px solid #1458a0; }
+    .dept-bcso { background:rgba(122,82,48,.2); color:#c49a6c; border:1px solid #7a5230; }
+    .dept-both { background:rgba(201,170,77,.2); color:#c9a84d; border:1px solid #c9a84d; }
+
+    .inter-tabs { display:flex; gap:4px; margin-bottom:22px; border-bottom:1px solid var(--border); padding-bottom:0; }
+    .inter-tab {
+      padding:10px 20px; background:transparent; border:none; border-bottom:3px solid transparent;
+      color:var(--muted); font-family:'Rajdhani',sans-serif; font-size:13px; font-weight:700;
+      letter-spacing:1px; cursor:pointer; transition:all .2s; margin-bottom:-1px;
+    }
+    .inter-tab.active { color:var(--accent-b); border-bottom-color:var(--accent-b); }
+    .inter-tab:hover:not(.active) { color:var(--text); }
+
+    .msg-item { background:var(--surface); border:1px solid var(--border); border-radius:8px; padding:14px 16px; margin-bottom:10px; }
+    .msg-item.lspd { border-left:3px solid #1458a0; }
+    .msg-item.bcso { border-left:3px solid #7a5230; }
+    .msg-header { display:flex; align-items:center; gap:10px; margin-bottom:8px; }
+    .msg-author { font-weight:700; font-size:13px; }
+    .msg-time { font-family:'Share Tech Mono',monospace; font-size:10px; color:var(--muted); margin-left:auto; }
+    .msg-body { font-size:13px; line-height:1.6; }
+
+    .op-card { background:var(--surface); border:1px solid var(--border); border-radius:10px; padding:16px; margin-bottom:12px; }
+    .op-card.active-op { border-color:rgba(201,170,77,.5); box-shadow:0 0 12px rgba(201,170,77,.1); }
+    .op-card::before { content:''; display:block; height:2px; margin:-16px -16px 14px; background:var(--border); border-radius:10px 10px 0 0; }
+    .op-card.active-op::before { background:var(--gold); }
+  </style>
+</head>
+<body>
+<div class="app-shell">
+  <div class="topbar">
+    <div class="tb-left">
+      <img class="tb-logo" src="https://r2.fivemanage.com/XEcvh0aBGRYhLzNNcRsQI/lspdnouveau.png" alt="LSPD" onerror="this.style.display='none'">
+      <div class="tb-sep" style="width:1px;height:26px;background:var(--border)"></div>
+      <div class="tb-title" style="color:var(--gold)">INTERPOLICE</div>
+      <div class="tb-sep" style="width:1px;height:26px;background:var(--border)"></div>
+      <div class="tb-page">SAN ANDREAS POLICE NETWORK</div>
+    </div>
+    <div class="tb-right">
+      <div class="tb-time" id="tbClock">--:--:--</div>
+      <span class="tb-grade" id="tbGrade">—</span>
+      <span class="tb-name" id="tbName">Officier</span>
+      <button class="btn-out" onclick="logout()">Déconnexion</button>
+    </div>
+  </div>
+  <div class="shell">
+    <div class="sidebar" id="sidebar"></div>
+    <div class="main">
+
+      <!-- HEADER -->
+      <div class="page-head">
+        <div class="page-head-left">
+          <h2>🌐 RÉSEAU INTERPOLICE</h2>
+          <p>// COMMUNICATION INTER-DÉPARTEMENTS — SAN ANDREAS</p>
+        </div>
+        <div style="display:flex;gap:8px;align-items:center">
+          <span class="dept-badge dept-lspd">● LSPD</span>
+          <span style="color:var(--muted);font-size:12px">×</span>
+          <span class="dept-badge dept-bcso">● BCSO</span>
+        </div>
+      </div>
+
+      <!-- STATS -->
+      <div class="stats-grid">
+        <div class="stat-box blue"><div class="stat-lbl">CASIERS LSPD</div><div class="stat-val" id="sCasiersLspd">—</div></div>
+        <div class="stat-box gold"><div class="stat-lbl">CASIERS BCSO</div><div class="stat-val" id="sCasiersBcso">—</div></div>
+        <div class="stat-box red"><div class="stat-lbl">RECHERCHÉS TOTAL</div><div class="stat-val" id="sWanted">—</div></div>
+        <div class="stat-box green"><div class="stat-lbl">OPS CONJOINTES</div><div class="stat-val" id="sOps">—</div></div>
+      </div>
+
+      <!-- TABS -->
+      <div class="inter-tabs">
+        <button class="inter-tab active" onclick="showTab('casiers',this)">📁 Casiers partagés</button>
+        <button class="inter-tab" onclick="showTab('wanted',this)">⚠️ Avis de recherche</button>
+        <button class="inter-tab" onclick="showTab('messages',this)">💬 Messagerie</button>
+        <button class="inter-tab" onclick="showTab('ops',this)">🎯 Opérations conjointes</button>
+      </div>
+
+      <!-- CASIERS PARTAGÉS -->
+      <div id="tabCasiers">
+        <div class="search-bar">
+          <input type="text" id="searchCasiers" placeholder="Rechercher un suspect..." oninput="filterCasiers()">
+          <select id="filterDept" onchange="filterCasiers()">
+            <option value="">Tous les départements</option>
+            <option value="LSPD">LSPD uniquement</option>
+            <option value="BCSO">BCSO uniquement</option>
+          </select>
+        </div>
+        <div class="card"><div class="card-body" style="padding:0"><div class="table-wrap">
+          <table>
+            <thead><tr><th>DEPT</th><th>NOM</th><th>STATUT</th><th>EMPREINTE</th><th>INFRACTIONS</th><th>WANTED</th><th>ACTIONS</th></tr></thead>
+            <tbody id="tableCasiers"></tbody>
+          </table>
+        </div></div></div>
+      </div>
+
+      <!-- AVIS DE RECHERCHE -->
+      <div id="tabWanted" style="display:none">
+        <div style="display:flex;justify-content:flex-end;margin-bottom:14px">
+          <button class="btn btn-primary" onclick="openModal('modalWanted')">+ Avis de recherche</button>
+        </div>
+        <div id="wantedList"></div>
+      </div>
+
+      <!-- MESSAGERIE -->
+      <div id="tabMessages" style="display:none">
+        <div class="card" style="margin-bottom:16px">
+          <div class="card-body">
+            <div class="form-grid g2" style="margin-bottom:10px">
+              <div class="fg" style="grid-column:1/-1">
+                <textarea id="msgTexte" style="min-height:80px" placeholder="Votre message pour l'autre département..."></textarea>
+              </div>
+            </div>
+            <div style="display:flex;justify-content:flex-end">
+              <button class="btn btn-primary" onclick="sendMessage()">📨 Envoyer</button>
+            </div>
+          </div>
+        </div>
+        <div id="messagesList"></div>
+      </div>
+
+      <!-- OPÉRATIONS CONJOINTES -->
+      <div id="tabOps" style="display:none">
+        <div style="display:flex;justify-content:flex-end;margin-bottom:14px">
+          <button class="btn btn-primary" onclick="openModal('modalOp')">+ Nouvelle opération</button>
+        </div>
+        <div id="opsList"></div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- MODAL AVIS RECHERCHE -->
+<div class="modal-bg" id="modalWanted">
+  <div class="modal" style="max-width:520px">
+    <div class="modal-head">
+      <div class="modal-title">AVIS DE RECHERCHE</div>
+      <button class="modal-close" onclick="closeModal('modalWanted')">×</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-grid g2" style="margin-bottom:12px">
+        <div class="fg"><label>Nom du suspect</label><input id="wNom" placeholder="Prénom NOM"></div>
+        <div class="fg"><label>Dangerosité</label>
+          <select id="wDanger"><option>Faible</option><option>Modérée</option><option>Élevée</option><option>Extrême</option></select>
+        </div>
+      </div>
+      <div class="fg" style="margin-bottom:12px"><label>Motif de recherche</label><textarea id="wMotif" style="min-height:70px"></textarea></div>
+      <div class="fg"><label>Dernière position connue</label><input id="wPosition" placeholder="Ex: Sandy Shores, Route 68..."></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('modalWanted')">Annuler</button>
+      <button class="btn btn-primary" onclick="saveWanted()">Publier l'avis</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL OPÉRATION -->
+<div class="modal-bg" id="modalOp">
+  <div class="modal" style="max-width:560px">
+    <div class="modal-head">
+      <div class="modal-title">NOUVELLE OPÉRATION CONJOINTE</div>
+      <button class="modal-close" onclick="closeModal('modalOp')">×</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-grid g2" style="margin-bottom:12px">
+        <div class="fg"><label>Nom de l'opération</label><input id="opNom" placeholder="Ex: Opération Tempête"></div>
+        <div class="fg"><label>Date</label><input type="date" id="opDate"></div>
+        <div class="fg"><label>Responsable LSPD</label><input id="opLspd" placeholder="Officier LSPD"></div>
+        <div class="fg"><label>Responsable BCSO</label><input id="opBcso" placeholder="Officier BCSO"></div>
+      </div>
+      <div class="fg"><label>Objectif</label><textarea id="opObjectif" style="min-height:80px" placeholder="Détails de l'opération..."></textarea></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('modalOp')">Annuler</button>
+      <button class="btn btn-primary" onclick="saveOp()">Créer l'opération</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+  import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+  import { getFirestore, collection, addDoc, getDocs, onSnapshot, query, orderBy, limit } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+  import { initPage, startClock, showToast, openModal, closeModal, setupModalClose, statusBadge, addLog } from './utils.js';
+  import { printCasier } from './pdf-templates.js';
+
+  // ---- CONFIG LSPD (base principale) ----
+  const lspdConfig = {
+    apiKey: "AIzaSyA4GxYd32GNs5EDjjm2UI1a0d25YxigMVU",
+    authDomain: "lspd-intranet-2aed9.firebaseapp.com",
+    projectId: "lspd-intranet-2aed9",
+    storageBucket: "lspd-intranet-2aed9.firebasestorage.app",
+    messagingSenderId: "780922925382",
+    appId: "1:780922925382:web:a32d5e89bcff75bd8b3547"
+  };
+
+  // ---- CONFIG BCSO (lecture des casiers) ----
+  const bcsoConfig = {
+    apiKey: "AIzaSyC_kfIx8Q5d6zha5NUFNpsbR5D02d5q1DA",
+    authDomain: "bcso-intranet-3d5ab.firebaseapp.com",
+    projectId: "bcso-intranet-3d5ab",
+    storageBucket: "bcso-intranet-3d5ab.firebasestorage.app",
+    messagingSenderId: "788391241057",
+    appId: "1:788391241057:web:66e876f97ee32825f01120"
+  };
+
+  // App LSPD = app par défaut (sans nom) pour que l'auth fonctionne
+  const lspdApp = initializeApp(lspdConfig);
+  const bcsoApp = initializeApp(bcsoConfig, 'bcso');
+  const auth = getAuth(lspdApp);
+  const dbLspd = getFirestore(lspdApp);
+  const dbBcso = getFirestore(bcsoApp);
+  // Base interpolice = collection dans LSPD Firebase
+  const dbInter = dbLspd;
+
+  let allCasiers = [], userName = '', userDept = 'LSPD';
+
+  startClock('tbClock');
+  setupModalClose();
+  window.closeModal = closeModal;
+  window.openModal = openModal;
+
+  initPage(auth, dbLspd, onAuthStateChanged, 'interpolice').then(async ({ grade, name, perms }) => {
+    userName = name;
+    document.getElementById('opDate').value = new Date().toISOString().split('T')[0];
+    await loadAll();
+    listenMessages();
+  });
+
+  async function loadAll() {
+    try {
+      // Casiers LSPD
+      const lspdSnap = await getDocs(collection(dbLspd, 'casiers'));
+      const lspdCasiers = lspdSnap.docs.map(d => ({...d.data(), dept:'LSPD', id:d.id}));
+
+      // Casiers BCSO
+      let bcsoCasiers = [];
+      try {
+        const bcsoSnap = await getDocs(collection(dbBcso, 'casiers'));
+        bcsoCasiers = bcsoSnap.docs.map(d => ({...d.data(), dept:'BCSO', id:d.id}));
+      } catch(e) { console.warn('BCSO casiers failed:', e); }
+
+      allCasiers = [...lspdCasiers, ...bcsoCasiers];
+
+      document.getElementById('sCasiersLspd').textContent = lspdCasiers.length;
+      document.getElementById('sCasiersBcso').textContent = bcsoCasiers.length;
+      document.getElementById('sWanted').textContent = allCasiers.filter(c => c.wanted).length;
+
+      renderCasiers(allCasiers);
+
+      // Opérations
+      const opsSnap = await getDocs(query(collection(dbInter, 'interpolice_ops'), orderBy('createdAt','desc')));
+      document.getElementById('sOps').textContent = opsSnap.size;
+      renderOps(opsSnap.docs.map(d => ({id:d.id,...d.data()})));
+
+      // Wanted
+      const wantedSnap = await getDocs(query(collection(dbInter, 'interpolice_wanted'), orderBy('createdAt','desc')));
+      renderWanted(wantedSnap.docs.map(d => ({id:d.id,...d.data()})));
+
+    } catch(e) { console.error(e); }
+  }
+
+  function listenMessages() {
+    onSnapshot(query(collection(dbInter, 'interpolice_messages'), orderBy('timestamp','desc'), limit(50)), snap => {
+      renderMessages(snap.docs.map(d => ({id:d.id,...d.data()})));
+    });
+  }
+
+  // ---- CASIERS ----
+  function renderCasiers(list) {
+    const tb = document.getElementById('tableCasiers');
+    if (!list.length) { tb.innerHTML = '<tr><td colspan="6"><div class="empty-state"><div class="ei">📁</div><p>AUCUN CASIER</p></div></td></tr>'; return; }
+    tb.innerHTML = list.map(c => `
+      <tr>
+        <td><span class="dept-badge dept-${c.dept.toLowerCase()}">${c.dept}</span></td>
+        <td><strong>${c.nom||'—'} ${c.prenom||''}</strong></td>
+        <td>${statusBadge(c.statut)}</td>
+        <td style="font-family:'Share Tech Mono',monospace;font-size:11px">${c.empreinte||'—'}</td>
+        <td style="font-size:12px">${(c.infractions||[]).length} infraction(s)</td>
+        <td>${c.wanted?'<span class="badge b-wanted">⚠ WANTED</span>':'—'}</td>
+      </tr>`).join('');
+  }
+
+  window.filterCasiers = function() {
+    const q = document.getElementById('searchCasiers').value.toLowerCase();
+    const dept = document.getElementById('filterDept').value;
+    renderCasiers(allCasiers.filter(c =>
+      (c.nom+' '+(c.prenom||'')+' '+(c.empreinte||'')).toLowerCase().includes(q) &&
+      (!dept || c.dept === dept)
+    ));
+  };
+
+  // ---- WANTED ----
+  function renderWanted(list) {
+    const el = document.getElementById('wantedList');
+    if (!list.length) { el.innerHTML = '<div class="empty-state"><div class="ei">⚠️</div><p>AUCUN AVIS DE RECHERCHE</p></div>'; return; }
+    const dangerColors = {'Faible':'var(--success)','Modérée':'var(--warning)','Élevée':'var(--danger-l)','Extrême':'#ff0000'};
+    el.innerHTML = list.map(w => `
+      <div class="op-card active-op">
+        <div style="display:flex;align-items:center;gap:12px;margin-bottom:10px">
+          <div style="font-family:'Orbitron',monospace;font-size:14px;font-weight:700">${w.nom||'—'}</div>
+          <span class="dept-badge dept-${(w.dept||'lspd').toLowerCase()}">${w.dept||'LSPD'}</span>
+          <span style="font-family:'Share Tech Mono',monospace;font-size:11px;color:${dangerColors[w.danger]||'var(--muted)'}">⚡ ${w.danger||'—'}</span>
+          <span style="margin-left:auto;font-family:'Share Tech Mono',monospace;font-size:10px;color:var(--muted)">${w.createdAt?new Date(w.createdAt).toLocaleDateString('fr-FR'):''}</span>
+        </div>
+        <div style="font-size:13px;margin-bottom:6px">${w.motif||'—'}</div>
+        ${w.position?`<div style="font-family:'Share Tech Mono',monospace;font-size:11px;color:var(--muted)">📍 ${w.position}</div>`:''}
+        <div style="font-family:'Share Tech Mono',monospace;font-size:10px;color:var(--muted);margin-top:6px">Publié par ${w.auteur||'—'}</div>
+      </div>`).join('');
+  }
+
+  window.saveWanted = async function() {
+    const nom = document.getElementById('wNom').value.trim();
+    if (!nom) { showToast('Nom obligatoire','error'); return; }
+    await addDoc(collection(dbInter,'interpolice_wanted'), {
+      nom, danger: document.getElementById('wDanger').value,
+      motif: document.getElementById('wMotif').value,
+      position: document.getElementById('wPosition').value,
+      auteur: userName, dept: userDept,
+      createdAt: new Date().toISOString()
+    });
+    closeModal('modalWanted');
+    showToast('Avis publié ✓','success');
+    await loadAll();
+  };
+
+  // ---- MESSAGES ----
+  function renderMessages(list) {
+    const el = document.getElementById('messagesList');
+    if (!list.length) { el.innerHTML = '<div class="empty-state"><div class="ei">💬</div><p>AUCUN MESSAGE</p></div>'; return; }
+    el.innerHTML = list.map(m => `
+      <div class="msg-item ${(m.dept||'lspd').toLowerCase()}">
+        <div class="msg-header">
+          <span class="dept-badge dept-${(m.dept||'lspd').toLowerCase()}">${m.dept||'LSPD'}</span>
+          <span class="msg-author">${m.auteur||'—'}</span>
+          <span class="msg-time">${m.timestamp?new Date(m.timestamp).toLocaleString('fr-FR',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'}):''}</span>
+        </div>
+        <div class="msg-body">${m.texte||''}</div>
+      </div>`).join('');
+  }
+
+  window.sendMessage = async function() {
+    const texte = document.getElementById('msgTexte').value.trim();
+    if (!texte) { showToast('Message vide','error'); return; }
+    await addDoc(collection(dbInter,'interpolice_messages'), {
+      texte, auteur: userName, dept: userDept,
+      timestamp: new Date().toISOString()
+    });
+    document.getElementById('msgTexte').value = '';
+    showToast('Message envoyé ✓','success');
+  };
+
+  // ---- OPÉRATIONS ----
+  function renderOps(list) {
+    const el = document.getElementById('opsList');
+    if (!list.length) { el.innerHTML = '<div class="empty-state"><div class="ei">🎯</div><p>AUCUNE OPÉRATION</p></div>'; return; }
+    el.innerHTML = list.map(o => `
+      <div class="op-card active-op">
+        <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:10px">
+          <div>
+            <div style="font-family:'Orbitron',monospace;font-size:14px;font-weight:700;margin-bottom:4px">🎯 ${o.nom||'—'}</div>
+            <div style="font-family:'Share Tech Mono',monospace;font-size:10px;color:var(--muted)">${o.date||'—'}</div>
+          </div>
+          <span class="dept-badge dept-both">CONJOINT</span>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px">
+          <div><div style="font-family:'Share Tech Mono',monospace;font-size:9px;color:var(--muted);letter-spacing:2px;margin-bottom:2px">LSPD</div><div style="font-size:13px">${o.responsableLspd||'—'}</div></div>
+          <div><div style="font-family:'Share Tech Mono',monospace;font-size:9px;color:var(--muted);letter-spacing:2px;margin-bottom:2px">BCSO</div><div style="font-size:13px">${o.responsableBcso||'—'}</div></div>
+        </div>
+        <div style="font-size:13px;line-height:1.6">${o.objectif||'—'}</div>
+      </div>`).join('');
+  }
+
+  window.saveOp = async function() {
+    const nom = document.getElementById('opNom').value.trim();
+    if (!nom) { showToast('Nom obligatoire','error'); return; }
+    await addDoc(collection(dbInter,'interpolice_ops'), {
+      nom, date: document.getElementById('opDate').value,
+      responsableLspd: document.getElementById('opLspd').value,
+      responsableBcso: document.getElementById('opBcso').value,
+      objectif: document.getElementById('opObjectif').value,
+      auteur: userName, createdAt: new Date().toISOString()
+    });
+    closeModal('modalOp');
+    showToast('Opération créée ✓','success');
+    await loadAll();
+  };
+
+  window.printCasierInter = function(id, dept) {
+    const c = allCasiers.find(x => x.id === id && x.dept === dept);
+    if (!c) return;
+    const logo = dept === 'BCSO'
+      ? 'https://r2.fivemanage.com/XEcvh0aBGRYhLzNNcRsQI/logo/cussondubureaudushrifdeBlaine.png'
+      : 'https://r2.fivemanage.com/XEcvh0aBGRYhLzNNcRsQI/lspdnouveau.png';
+    printCasier(c, dept, logo, 'INTERPOLICE');
+  };
+
+  window.viewCasierInter = function(id, dept) {
+    const c = allCasiers.find(x => x.id === id && x.dept === dept);
+    if (!c) return;
+    const infractions = (c.infractions||[]);
+    document.getElementById('detailTitle') && (document.getElementById('detailTitle').textContent = `${c.nom||''} ${c.prenom||''}`);
+    showToast(`${c.nom} — ${infractions.length} infraction(s)`, 'info');
+  };
+
+  window.showTab = function(tab, btn) {
+    ['Casiers','Wanted','Messages','Ops'].forEach(t => {
+      document.getElementById('tab'+t).style.display = 'none';
+    });
+    document.getElementById('tab'+tab.charAt(0).toUpperCase()+tab.slice(1)).style.display = '';
+    document.querySelectorAll('.inter-tab').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+  };
+
+  window.logout = async function() {
+    try {
+      const user = auth.currentUser;
+      if (user) {
+        const { deleteDoc, doc } = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js");
+        await deleteDoc(doc(dbLspd, 'online', user.uid));
+      }
+    } catch(e) {}
+    await signOut(auth);
+    sessionStorage.clear();
+    window.location.href = 'index.html';
+  };
+</script>
+</body>
+</html>
