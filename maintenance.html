@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <link rel="icon" type="image/png" href="https://r2.fivemanage.com/XEcvh0aBGRYhLzNNcRsQI/lspdnouveau.png">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LSPD — Maintenance</title>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg:#07090e; --panel:#0e1420; --panel2:#121a2c;
+      --line:#1c2a42; --line2:#243350;
+      --blue:#2563eb; --blue-b:#3b82f6; --blue-l:#93bbfd;
+      --amber:#b45309; --amber-l:#fbbf24; --amber-dim:rgba(180,83,9,.1);
+      --red:#b91c1c; --red-l:#f87171; --red-dim:rgba(185,28,28,.1);
+      --text:#c8d8f0; --text2:#6b82a0; --text3:#3d5070;
+      --mono:'IBM Plex Mono',monospace; --sans:'IBM Plex Sans',sans-serif;
+    }
+    *,*::before,*::after { box-sizing:border-box; margin:0; padding:0; }
+    html,body { height:100%; }
+    body {
+      font-family:var(--sans); background:var(--bg); color:var(--text);
+      display:flex; align-items:center; justify-content:center;
+      min-height:100vh; overflow:hidden; position:relative;
+    }
+
+    /* FOND */
+    .bg-grid {
+      position:fixed; inset:0; z-index:0;
+      background-image:
+        linear-gradient(rgba(180,83,9,.03) 1px,transparent 1px),
+        linear-gradient(90deg,rgba(180,83,9,.03) 1px,transparent 1px);
+      background-size:40px 40px;
+    }
+    .bg-vignette {
+      position:fixed; inset:0; z-index:1;
+      background:radial-gradient(ellipse 80% 80% at 50% 50%, transparent 40%, rgba(7,9,14,.85) 100%);
+      pointer-events:none;
+    }
+    /* Pulse amber en fond */
+    .bg-pulse {
+      position:fixed; top:50%; left:50%; transform:translate(-50%,-50%);
+      width:600px; height:600px; border-radius:50%;
+      background:radial-gradient(circle, rgba(180,83,9,.06) 0%, transparent 70%);
+      animation:bgPulse 4s ease-in-out infinite;
+      z-index:2; pointer-events:none;
+    }
+    @keyframes bgPulse { 0%,100%{transform:translate(-50%,-50%) scale(1);opacity:.6} 50%{transform:translate(-50%,-50%) scale(1.15);opacity:1} }
+
+    /* CONTAINER */
+    .wrap { position:relative; z-index:10; width:100%; max-width:520px; padding:24px; animation:riseUp .5s ease both; text-align:center; }
+    @keyframes riseUp { from{opacity:0;transform:translateY(16px)} to{opacity:1;transform:none} }
+
+    /* ICÔNE */
+    .icon-ring {
+      width:88px; height:88px; margin:0 auto 24px;
+      border-radius:50%;
+      background:rgba(180,83,9,.08);
+      border:1px solid rgba(180,83,9,.3);
+      display:flex; align-items:center; justify-content:center;
+      animation:iconPulse 3s ease infinite;
+      position:relative;
+    }
+    .icon-ring::before {
+      content:'';
+      position:absolute; inset:-8px;
+      border-radius:50%;
+      border:1px solid rgba(180,83,9,.12);
+      animation:iconPulse 3s ease infinite .5s;
+    }
+    @keyframes iconPulse { 0%,100%{box-shadow:0 0 0 0 rgba(180,83,9,.0)} 50%{box-shadow:0 0 30px 4px rgba(180,83,9,.12)} }
+    .icon-inner { font-size:36px; }
+
+    /* BADGE STATUT */
+    .status-badge {
+      display:inline-flex; align-items:center; gap:7px;
+      font-family:var(--mono); font-size:9px; font-weight:600;
+      color:var(--amber-l); letter-spacing:2px; text-transform:uppercase;
+      padding:4px 12px; border:1px solid rgba(180,83,9,.35);
+      border-radius:2px; background:var(--amber-dim); margin-bottom:22px;
+    }
+    .status-dot { width:5px; height:5px; border-radius:50%; background:var(--amber-l); animation:dotBlink 1.2s ease infinite; }
+    @keyframes dotBlink { 0%,100%{opacity:1} 50%{opacity:.2} }
+
+    /* TITRE */
+    .main-title {
+      font-family:var(--mono); font-size:24px; font-weight:600;
+      letter-spacing:4px; color:var(--text); text-transform:uppercase;
+      margin-bottom:8px; line-height:1.2;
+    }
+    .main-sub {
+      font-family:var(--mono); font-size:10px; color:var(--text3);
+      letter-spacing:3px; text-transform:uppercase; margin-bottom:28px;
+    }
+
+    /* CARTE INFO */
+    .info-card {
+      background:var(--panel); border:1px solid var(--line2); border-radius:6px;
+      overflow:hidden; margin-bottom:20px; text-align:left;
+    }
+    .info-card::before {
+      content:''; display:block; height:2px;
+      background:linear-gradient(90deg,transparent,var(--amber),transparent);
+    }
+    .info-row {
+      display:flex; align-items:flex-start; gap:14px;
+      padding:12px 16px; border-bottom:1px solid var(--line);
+    }
+    .info-row:last-child { border-bottom:none; }
+    .info-ico { font-size:14px; flex-shrink:0; margin-top:1px; opacity:.7; }
+    .info-content {}
+    .info-lbl { font-family:var(--mono); font-size:8px; font-weight:600; color:var(--text3); letter-spacing:2px; text-transform:uppercase; margin-bottom:3px; }
+    .info-val  { font-family:var(--mono); font-size:12px; color:var(--text); line-height:1.5; }
+    .info-val.hidden-val { color:var(--text3); font-style:italic; }
+
+    /* PROGRESS BAR ANIMÉE */
+    .progress-wrap { margin-bottom:20px; }
+    .progress-bar-bg { height:2px; background:var(--line); border-radius:1px; overflow:hidden; }
+    .progress-bar-fill { height:100%; background:var(--amber); border-radius:1px; animation:progressAnim 3s ease-in-out infinite; }
+    @keyframes progressAnim { 0%{width:0%;margin-left:0} 50%{width:60%;margin-left:20%} 100%{width:0%;margin-left:100%} }
+
+    /* FOOTER */
+    .footer-meta {
+      font-family:var(--mono); font-size:9px; color:var(--text3);
+      letter-spacing:2px; line-height:1.8;
+    }
+    .footer-id {
+      display:inline-block; margin-top:8px;
+      font-family:var(--mono); font-size:8px; color:var(--text3);
+      border:1px solid var(--line); padding:2px 8px; border-radius:2px;
+    }
+
+    /* SÉPARATEUR */
+    .sep { height:1px; background:var(--line); margin:18px 0; opacity:.4; }
+
+    @media(max-width:540px) {
+      .wrap { padding:16px; }
+      .main-title { font-size:18px; letter-spacing:3px; }
+      .icon-ring { width:70px; height:70px; }
+      .icon-inner { font-size:28px; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="bg-grid"></div>
+<div class="bg-vignette"></div>
+<div class="bg-pulse"></div>
+
+<div class="wrap">
+
+  <!-- BADGE STATUT -->
+  <div style="margin-bottom:22px">
+    <div class="status-badge">
+      <div class="status-dot"></div>
+      <span>Système hors ligne</span>
+    </div>
+  </div>
+
+  <!-- ICÔNE -->
+  <div class="icon-ring">
+    <div class="icon-inner">🔧</div>
+  </div>
+
+  <!-- TITRE -->
+  <div class="main-title">Maintenance en cours</div>
+  <div class="main-sub">Los Santos Police Department — Intranet</div>
+
+  <!-- PROGRESS ANIMÉE -->
+  <div class="progress-wrap">
+    <div class="progress-bar-bg"><div class="progress-bar-fill"></div></div>
+  </div>
+
+  <!-- INFOS -->
+  <div class="info-card">
+    <div class="info-row">
+      <div class="info-ico">◎</div>
+      <div class="info-content">
+        <div class="info-lbl">Motif</div>
+        <div class="info-val" id="infoReason">Maintenance programmée</div>
+      </div>
+    </div>
+    <div class="info-row">
+      <div class="info-ico">▣</div>
+      <div class="info-content">
+        <div class="info-lbl">Message</div>
+        <div class="info-val" id="infoMsg">Le système est temporairement indisponible. Veuillez réessayer dans quelques instants.</div>
+      </div>
+    </div>
+    <div class="info-row">
+      <div class="info-ico">◇</div>
+      <div class="info-content">
+        <div class="info-lbl">Retour en ligne estimé</div>
+        <div class="info-val" id="infoEta">Non communiqué</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="sep"></div>
+
+  <div class="footer-meta">
+    LSPD Intranet — Système de maintenance automatique<br>
+    Veuillez contacter un administrateur si le problème persiste
+  </div>
+  <div class="footer-id" id="footerTs">—</div>
+
+</div>
+
+<script>
+  // Lire les paramètres URL
+  const p = new URLSearchParams(window.location.search);
+  const msg    = p.get('msg');
+  const eta    = p.get('eta');
+  const reason = p.get('reason');
+
+  if (reason && reason.trim()) document.getElementById('infoReason').textContent = reason;
+  if (msg    && msg.trim())    document.getElementById('infoMsg').textContent    = msg;
+  if (eta    && eta.trim()) {
+    document.getElementById('infoEta').textContent = eta;
+  }
+
+  // Horodatage
+  document.getElementById('footerTs').textContent =
+    'Vérifié le ' + new Date().toLocaleString('fr-FR',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'});
+
+  // Vérifier périodiquement si le site est revenu en ligne
+  async function checkIfBack() {
+    try {
+      const { initializeApp, getApps } = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js");
+      const { getFirestore, doc, getDoc } = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js");
+
+      const FC = {
+        apiKey:"AIzaSyA4GxYd32GNs5EDjjm2UI1a0d25YxigMVU",
+        authDomain:"lspd-intranet-2aed9.firebaseapp.com",
+        projectId:"lspd-intranet-2aed9",
+        storageBucket:"lspd-intranet-2aed9.firebasestorage.app",
+        messagingSenderId:"780922925382",
+        appId:"1:780922925382:web:a32d5e89bcff75bd8b3547"
+      };
+
+      const app = getApps().length ? getApps()[0] : initializeApp(FC);
+      const db  = getFirestore(app);
+      const snap = await getDoc(doc(db,'config','maintenance'));
+
+      if (!snap.exists() || snap.data().enabled !== true) {
+        // Site revenu en ligne → retour à l'accueil
+        window.location.replace('index.html');
+      }
+    } catch(e) {}
+  }
+
+  // Vérifier toutes les 30 secondes
+  setInterval(checkIfBack, 30000);
+</script>
+</body>
+</html>
