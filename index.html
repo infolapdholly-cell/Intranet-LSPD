@@ -42,17 +42,31 @@
     .wrap { position:relative; z-index:10; width:100%; max-width:380px; padding:20px; animation:riseUp .5s ease both; }
     @keyframes riseUp { from{opacity:0;transform:translateY(16px)} to{opacity:1;transform:none} }
 
-    /* LOGO */
-    .logo-area { text-align:center; margin-bottom:26px; }
-    .logo-shield {
-      width:110px; height:124px; margin:0 auto 18px;
-      background:rgba(37,99,235,.1); border:1px solid rgba(37,99,235,.25);
-      clip-path:polygon(50% 0%,100% 18%,100% 68%,50% 100%,0% 68%,0% 18%);
-      display:flex; align-items:center; justify-content:center; position:relative;
-      animation:shieldPulse 4s ease infinite;
+    /* LOGO DE FOND */
+    .bg-logo {
+      position:fixed; top:50%; left:50%;
+      transform:translate(-50%,-50%);
+      width:520px; height:520px;
+      object-fit:contain;
+      opacity:.055;
+      filter:blur(1px) grayscale(30%);
+      z-index:1;
+      pointer-events:none;
+      animation:bgLogoPulse 7s ease-in-out infinite;
     }
-    @keyframes shieldPulse { 0%,100%{background:rgba(37,99,235,.1)} 50%{background:rgba(37,99,235,.18)} }
-    .logo-shield img { width:72px; height:72px; object-fit:contain; }
+    @keyframes bgLogoPulse { 0%,100%{opacity:.045;transform:translate(-50%,-50%) scale(1)} 50%{opacity:.07;transform:translate(-50%,-50%) scale(1.03)} }
+
+    /* LOGO */
+    .logo-area { text-align:center; margin-bottom:22px; }
+    .logo-img {
+      width:100px; height:100px;
+      object-fit:contain;
+      display:block;
+      margin:0 auto 16px;
+      filter:drop-shadow(0 0 20px rgba(59,130,246,.45));
+      animation:logoGlow 4s ease-in-out infinite;
+    }
+    @keyframes logoGlow { 0%,100%{filter:drop-shadow(0 0 14px rgba(59,130,246,.35))} 50%{filter:drop-shadow(0 0 28px rgba(59,130,246,.65))} }
     .logo-title { font-family:var(--mono); font-size:16px; font-weight:600; letter-spacing:6px; color:var(--text); text-transform:uppercase; margin-bottom:5px; }
     .logo-sub { font-family:var(--mono); font-size:8px; color:var(--blue-l); letter-spacing:4px; text-transform:uppercase; opacity:.8; }
 
@@ -138,6 +152,7 @@
 <div class="bg-grid"></div>
 <div class="bg-vignette"></div>
 <div class="bg-scan"></div>
+<img class="bg-logo" src="https://r2.fivemanage.com/XEcvh0aBGRYhLzNNcRsQI/lspdnouveau.png" alt="" onerror="this.style.display='none'">
 
 <!-- OVERLAY REFUS -->
 <div id="denyOverlay">
@@ -150,9 +165,7 @@
 
 <div class="wrap">
   <div class="logo-area">
-    <div class="logo-shield">
-      <img src="https://r2.fivemanage.com/XEcvh0aBGRYhLzNNcRsQI/lspdnouveau.png" alt="LSPD" onerror="this.style.display='none'">
-    </div>
+    <img class="logo-img" src="https://r2.fivemanage.com/XEcvh0aBGRYhLzNNcRsQI/lspdnouveau.png" alt="LSPD" onerror="this.style.display='none'">
     <div class="logo-title">L · S · P · D</div>
     <div class="logo-sub">Intranet — Accès sécurisé</div>
   </div>
