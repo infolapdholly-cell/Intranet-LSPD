@@ -113,6 +113,8 @@
   import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
   import { getFirestore, collection, getDocs, query, where, orderBy, limit } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
   import { initPage, startClock, showToast, statusBadge } from './utils.js';
+  import { checkMaintenance, watchMaintenance } from './maintenance.js';
+
 
   const FC = {
     apiKey:"AIzaSyA4GxYd32GNs5EDjjm2UI1a0d25YxigMVU",
@@ -126,6 +128,9 @@
   const auth = getAuth(app);
   const db   = getFirestore(app);
 
+  // Vérification maintenance (fail-open)
+  checkMaintenance(db);
+  watchMaintenance(db);
   startClock('tbClock');
   initPage(auth, db, onAuthStateChanged, 'dashboard').then(async () => {
     await loadDashboard();

@@ -136,6 +136,8 @@
   import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
   import { getFirestore, collection, addDoc, getDocs, doc, updateDoc, deleteDoc, query, orderBy } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
   import { initPage, startClock, showToast, openModal, closeModal, setupModalClose, statusBadge, addLog, generateRef, getPerms, captureModal } from './utils.js';
+  import { checkMaintenance, watchMaintenance } from './maintenance.js';
+
   import { printArrestation } from './pdf-templates.js';
 
   const firebaseConfig = {
@@ -179,9 +181,12 @@
   const auth = getAuth(app);
   const db = getFirestore(app);
 
+  // Vérification maintenance (fail-open)
+  checkMaintenance(db);
+  watchMaintenance(db);
+
   let allArrestations = [];
   let userGrade = 'recruit';
-
   startClock('tbClock');
   setupModalClose();
   window.closeModal = closeModal;

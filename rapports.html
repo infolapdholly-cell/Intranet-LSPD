@@ -183,14 +183,13 @@
   const auth = getAuth(app);
   const db = getFirestore(app);
 
+  // Vérification maintenance (fail-open)
+  checkMaintenance(db);
+  watchMaintenance(db);
+
   let allRapports = [];
   let editingId = null;
   let userGrade = 'recruit';
-
-  // Vérification maintenance avant tout
-  await checkMaintenance();
-  watchMaintenance();
-
   startClock('tbClock');
   setupModalClose();
   window.closeModal = closeModal;

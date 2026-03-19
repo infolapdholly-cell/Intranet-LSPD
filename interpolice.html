@@ -231,13 +231,12 @@
   const dbBcso = getFirestore(bcsoApp);
   // Base interpolice = collection dans LSPD Firebase
   const dbInter = dbLspd;
+  // Vérification maintenance (fail-open)
+  checkMaintenance(dbLspd);
+  watchMaintenance(dbLspd);
+
 
   let allCasiers = [], userName = '', userDept = 'LSPD';
-
-  // Vérification maintenance avant tout
-  await checkMaintenance();
-  watchMaintenance();
-
   startClock('tbClock');
   setupModalClose();
   window.closeModal = closeModal;

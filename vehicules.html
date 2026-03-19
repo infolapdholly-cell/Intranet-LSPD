@@ -166,16 +166,15 @@
   const auth = getAuth(app);
   const db = getFirestore(app);
 
+  // Vérification maintenance (fail-open)
+  checkMaintenance(db);
+  watchMaintenance(db);
+
   let allVehicules = [], editingId = null, userPerms = {};
 
   const TYPE_ICONS = {'Patrouille':'🚓','SWAT':'🚐','Banalisé':'🚗','Moto':'🏍','Hélicoptère':'🚁','Bateau':'🚤','Fourgon':'🚐'};
   const STATUT_CLASS = {'Disponible':'dispo','En service':'service','Maintenance':'maint','Hors service':'hors'};
   const STATUTS = ['Disponible','En service','Maintenance','Hors service'];
-
-  // Vérification maintenance avant tout
-  await checkMaintenance();
-  watchMaintenance();
-
   startClock('tbClock');
   setupModalClose();
   window.closeModal = closeModal;

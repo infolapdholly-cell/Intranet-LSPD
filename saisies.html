@@ -232,6 +232,10 @@
   const auth = getAuth(app);
   const db = getFirestore(app);
 
+  // Vérification maintenance (fail-open)
+  checkMaintenance(db);
+  watchMaintenance(db);
+
   let allSaisies = [], editingId = null, userPerms = {};
 
   const TYPE_ICONS = {
@@ -244,11 +248,6 @@
     'Véhicule':'rgba(37,137,208,.2)', 'Argent':'rgba(201,170,77,.2)',
     'Document':'rgba(30,158,86,.2)', 'Électronique':'rgba(37,137,208,.15)', 'Autre':'rgba(68,94,122,.2)'
   };
-
-  // Vérification maintenance avant tout
-  await checkMaintenance();
-  watchMaintenance();
-
   startClock('tbClock');
   setupModalClose();
   window.closeModal = closeModal;

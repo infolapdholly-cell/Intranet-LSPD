@@ -212,16 +212,15 @@
   const auth = getAuth(app);
   const db = getFirestore(app);
 
+  // Vérification maintenance (fail-open)
+  checkMaintenance(db);
+  watchMaintenance(db);
+
   let allOfficiers = [];
   let onlineUsers = [];
   let editingId = null;
   let userGrade = 'cadet';
   let userPerms = {};
-
-  // Vérification maintenance avant tout
-  await checkMaintenance();
-  watchMaintenance();
-
   startClock('tbClock');
   setupModalClose();
   window.closeModal = closeModal;

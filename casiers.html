@@ -332,6 +332,10 @@
   const auth = getAuth(app);
   const db = getFirestore(app);
 
+  // Vérification maintenance (fail-open)
+  checkMaintenance(db);
+  watchMaintenance(db);
+
   let allCasiers = [];
   let plaques = [];
   let infractions = [];
@@ -341,11 +345,6 @@
   let userPerms = {};
 
   const CATEGORIES = ['Vol / Cambriolage','Agression / Violence','Trafic de drogue','Infraction routière','Meurtre / Homicide','Port illégal d\'arme','Fraude / Escroquerie','Évasion / Résistance','Trouble à l\'ordre public','Autre'];
-
-  // Vérification maintenance avant tout
-  await checkMaintenance();
-  watchMaintenance();
-
   startClock('tbClock');
   setupModalClose();
   window.closeModal = closeModal;

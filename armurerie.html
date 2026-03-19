@@ -175,6 +175,10 @@
   const auth = getAuth(app);
   const db = getFirestore(app);
 
+  // Vérification maintenance (fail-open)
+  checkMaintenance(db);
+  watchMaintenance(db);
+
   let allArmes = [], editingId = null, userPerms = {};
 
   const TYPE_ICONS = {
@@ -185,11 +189,6 @@
     'En stock':'stock','Assignée':'assignee',
     'Maintenance':'maint','Perdue':'perdue','Saisie':'perdue'
   };
-
-  // Vérification maintenance avant tout
-  await checkMaintenance();
-  watchMaintenance();
-
   startClock('tbClock');
   setupModalClose();
   window.closeModal = closeModal;
