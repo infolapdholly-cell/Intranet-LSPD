@@ -46,15 +46,16 @@
     .bg-logo {
       position:fixed; top:50%; left:50%;
       transform:translate(-50%,-50%);
-      width:520px; height:520px;
+      width:95vw; height:95vw;
+      max-width:950px; max-height:950px;
       object-fit:contain;
-      opacity:.055;
-      filter:blur(1px) grayscale(30%);
+      opacity:.07;
+      filter:blur(2px) grayscale(20%);
       z-index:1;
       pointer-events:none;
       animation:bgLogoPulse 7s ease-in-out infinite;
     }
-    @keyframes bgLogoPulse { 0%,100%{opacity:.045;transform:translate(-50%,-50%) scale(1)} 50%{opacity:.07;transform:translate(-50%,-50%) scale(1.03)} }
+    @keyframes bgLogoPulse { 0%,100%{opacity:.055;transform:translate(-50%,-50%) scale(1)} 50%{opacity:.09;transform:translate(-50%,-50%) scale(1.02)} }
 
     /* LOGO */
     .logo-area { text-align:center; margin-bottom:22px; }
