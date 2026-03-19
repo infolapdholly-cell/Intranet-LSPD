@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <link rel="icon" type="image/png" href="https://r2.fivemanage.com/XEcvh0aBGRYhLzNNcRsQI/lspdnouveau.png">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LSPD — Administration</title>
+  <link rel="stylesheet" href="style.css">
+  <style>
+    .user-card { background:var(--surface); border:1px solid var(--border); border-radius:10px; padding:16px; display:flex; align-items:center; gap:16px; transition:all .2s; animation:fadeIn .3s ease; }
+    .user-card:hover { border-color:var(--accent); }
+    .user-card.suspended { opacity:.5; border-color:var(--danger); }
+    .user-avatar { width:46px; height:46px; border-radius:50%; background:var(--surface2); border:2px solid var(--border); display:flex; align-items:center; justify-content:center; font-size:20px; flex-shrink:0; }
+    .user-info { flex:1; min-width:0; }
+    .user-name { font-family:'Orbitron',monospace; font-size:13px; font-weight:700; margin-bottom:3px; }
+    .user-email { font-family:'Share Tech Mono',monospace; font-size:10px; color:var(--muted); margin-bottom:4px; }
+    .user-actions { display:flex; gap:6px; flex-wrap:wrap; }
+    .grade-select { background:var(--surface2); border:1px solid var(--border); border-radius:4px; color:var(--text); font-family:'Share Tech Mono',monospace; font-size:11px; padding:4px 8px; cursor:pointer; }
+    @keyframes fadeIn { from{opacity:0;transform:translateY(-4px)} to{opacity:1;transform:none} }
+  </style>
+  
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="LSPD">
+  <meta name="theme-color" content="#1458a0">
+  <link rel="apple-touch-icon" href="https://r2.fivemanage.com/XEcvh0aBGRYhLzNNcRsQI/lspdnouveau.png">
+</head>
+<body>
+<div class="app-shell">
+<div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
+  <div class="topbar">
+    <div class="tb-left">
+      <button class="tb-menu-btn" onclick="toggleSidebar()">☰</button>
+      <img class="tb-logo" src="https://r2.fivemanage.com/XEcvh0aBGRYhLzNNcRsQI/lspdnouveau.png" alt="LSPD" onerror="this.style.display='none'">
+      <div class="tb-sep" style="width:1px;height:26px;background:var(--border)"></div>
+      <div class="tb-title">L.S.P.D</div>
+      <div class="tb-sep" style="width:1px;height:26px;background:var(--border)"></div>
+      <div class="tb-page">ADMINISTRATION</div>
+    </div>
+    <div class="tb-right">
+      <div class="tb-time" id="tbClock">--:--:--</div>
+      <span class="tb-grade" id="tbGrade">—</span>
+      <span class="tb-name" id="tbName">Officier</span>
+      <button class="btn-out" onclick="logout()">Déconnexion</button>
+    </div>
+  </div>
+  <div class="shell">
+    <div class="sidebar" id="sidebar"></div>
+    <div class="main">
+
+      <div class="page-head">
+        <div class="page-head-left">
+          <h2>ADMINISTRATION</h2>
+          <p>// GESTION DES COMPTES — LSPD INTRANET</p>
+        </div>
+        <button class="btn btn-primary" id="btnNew">+ Créer un compte</button>
+      </div>
+
+      <div class="stats-grid">
+        <div class="stat-box blue"><div class="stat-lbl">TOTAL COMPTES</div><div class="stat-val" id="sTotal">—</div></div>
+        <div class="stat-box green"><div class="stat-lbl">ACTIFS</div><div class="stat-val" id="sActifs">—</div></div>
+        <div class="stat-box red"><div class="stat-lbl">SUSPENDUS</div><div class="stat-val" id="sSuspendus">—</div></div>
+        <div class="stat-box gold"><div class="stat-lbl">EN LIGNE</div><div class="stat-val" id="sOnline">—</div></div>
+      </div>
+
+      <div class="search-bar">
+        <input type="text" id="searchInput" placeholder="Rechercher par nom, email, grade..." oninput="filterUsers()">
+        <select id="filterGrade" onchange="filterUsers()">
+          <option value="">Tous les grades</option>
+          <option>Chef de Police</option><option>Chef Assistant</option>
+          <option>Chef Adjoint</option><option>Commandant</option>
+          <option>Capitaine</option><option>Lieutenant</option>
+          <option>Sergent</option><option>Officier</option><option>Cadet</option>
+        </select>
+      </div>
+
+      <div id="usersList" style="display:flex;flex-direction:column;gap:10px"></div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL CRÉER COMPTE -->
+<div class="modal-bg" id="modalCreate">
+  <div class="modal" style="max-width:500px">
+    <div class="modal-head">
+      <div class="modal-title">CRÉER UN COMPTE OFFICIER</div>
+      <button class="modal-close" onclick="closeModal('modalCreate')">×</button>
+    </div>
+    <div class="modal-body">
+      <div class="fg" style="margin-bottom:12px"><label>Nom complet</label><input id="cNom" placeholder="Prénom NOM"></div>
+      <div class="fg" style="margin-bottom:12px"><label>Email</label><input type="email" id="cEmail" placeholder="officier@lspd.gouv"></div>
+      <div class="fg" style="margin-bottom:12px"><label>Grade</label>
+        <select id="cGrade">
+          <option>Invité</option><option>Cadet</option><option>Officier</option><option>Sergent</option>
+          <option>Lieutenant</option><option>Capitaine</option><option>Commandant</option>
+          <option>Chef Adjoint</option><option>Chef Assistant</option><option>Chef de Police</option>
+        </select>
+      </div>
+      <div style="background:rgba(37,137,208,.08);border:1px solid var(--border);border-radius:6px;padding:10px 14px;font-family:'Share Tech Mono',monospace;font-size:11px;color:var(--muted)">
+        🔑 Le mot de passe par défaut sera <strong style="color:var(--text)">123456</strong><br>
+        L'officier devra le changer à sa première connexion.
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('modalCreate')">Annuler</button>
+      <button class="btn btn-primary" onclick="createAccount()">Créer le compte</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL CHANGER GRADE -->
+<div class="modal-bg" id="modalGrade">
+  <div class="modal" style="max-width:420px">
+    <div class="modal-head">
+      <div class="modal-title">CHANGER LE GRADE</div>
+      <button class="modal-close" onclick="closeModal('modalGrade')">×</button>
+    </div>
+    <div class="modal-body">
+      <div style="margin-bottom:14px;font-size:14px">Officier : <strong id="gradeUserName">—</strong></div>
+      <div class="fg"><label>Nouveau grade</label>
+        <select id="newGrade" style="width:100%">
+          <option>Invité</option><option>Cadet</option><option>Officier</option><option>Sergent</option>
+          <option>Lieutenant</option><option>Capitaine</option><option>Commandant</option>
+          <option>Chef Adjoint</option><option>Chef Assistant</option><option>Chef de Police</option>
+        </select>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('modalGrade')">Annuler</button>
+      <button class="btn btn-primary" onclick="saveGrade()">Confirmer</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+  import { getAuth, onAuthStateChanged, signOut, createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+  import { getFirestore, collection, getDocs, doc, updateDoc, setDoc, deleteDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+  import { initPage, startClock, showToast, openModal, closeModal, setupModalClose, addLog, getPerms } from './utils.js';
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyA4GxYd32GNs5EDjjm2UI1a0d25YxigMVU",
+    authDomain: "lspd-intranet-2aed9.firebaseapp.com",
+    projectId: "lspd-intranet-2aed9",
+    storageBucket: "lspd-intranet-2aed9.firebasestorage.app",
+    messagingSenderId: "780922925382",
+    appId: "1:780922925382:web:a32d5e89bcff75bd8b3547"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const auth = getAuth(app);
+  const db = getFirestore(app);
+
+  let allUsers = [], onlineUsers = [], selectedUid = null, myUid = null;
+
+  const GRADE_COLORS = {
+    'chef de police':'var(--gold)','chef assistant':'var(--gold)',
+    'chef adjoint':'var(--gold)','commandant':'var(--gold)',
+    'capitaine':'var(--accent-b)','lieutenant':'var(--accent-b)',
+    'sergent':'var(--accent-b)','officier':'var(--accent-b)','cadet':'var(--muted)'
+  };
+
+  startClock('tbClock');
+  setupModalClose();
+  window.closeModal = closeModal;
+
+  initPage(auth, db, onAuthStateChanged, 'admin').then(async ({ user, grade, name, perms }) => {
+    myUid = user.uid;
+
+    // Accès réservé aux admins
+    if (!perms.canAdmin) {
+      document.querySelector('.main').innerHTML = `
+        <div class="empty-state" style="padding:100px 20px">
+          <div class="ei">🔒</div><p>ACCÈS RÉSERVÉ AUX ADMINISTRATEURS</p>
+          <a href="dashboard.html" style="display:inline-block;margin-top:20px;padding:10px 24px;background:var(--accent);color:#fff;border-radius:6px;font-family:'Rajdhani',sans-serif;font-size:13px;font-weight:700;text-decoration:none">← RETOUR</a>
+        </div>`;
+      return;
+    }
+
+    document.getElementById('btnNew').addEventListener('click', () => openModal('modalCreate'));
+
+    // Écoute en temps réel des utilisateurs en ligne (filtre 10 min)
+    onSnapshot(collection(db, 'online'), snap => {
+      const now = new Date();
+      onlineUsers = snap.docs
+        .filter(d => {
+          const data = d.data();
+          if (!data.lastSeen) return false;
+          return (now - new Date(data.lastSeen)) < 10 * 60 * 1000;
+        })
+        .map(d => d.id);
+      document.getElementById('sOnline').textContent = onlineUsers.length;
+      renderUsers(allUsers);
+    });
+
+    await loadUsers();
+  });
+
+  async function loadUsers() {
+    try {
+      const snap = await getDocs(collection(db, 'users'));
+      allUsers = snap.docs.map(d => ({ uid: d.id, ...d.data() }));
+      document.getElementById('sTotal').textContent = allUsers.length;
+      document.getElementById('sActifs').textContent = allUsers.filter(u => !u.suspended).length;
+      document.getElementById('sSuspendus').textContent = allUsers.filter(u => u.suspended).length;
+      renderUsers(allUsers);
+    } catch(e) { console.error(e); }
+  }
+
+  function renderUsers(list) {
+    const container = document.getElementById('usersList');
+    if (!list.length) { container.innerHTML = '<div class="empty-state"><div class="ei">👤</div><p>AUCUN COMPTE</p></div>'; return; }
+
+    container.innerHTML = list.map(u => {
+      const isOnline = onlineUsers.includes(u.uid);
+      const grade = (u.grade || 'cadet').toLowerCase();
+      const perms = getPerms(grade);
+      const isMe = u.uid === myUid;
+
+      return `
+        <div class="user-card ${u.suspended ? 'suspended' : ''}">
+          <div class="user-avatar">${u.photoUrl ? `<img src="${u.photoUrl}" style="width:100%;height:100%;border-radius:50%;object-fit:cover">` : '👮'}</div>
+          <div class="user-info">
+            <div class="user-name">
+              ${u.displayName || '—'}
+              ${isMe ? '<span style="font-family:\'Share Tech Mono\',monospace;font-size:9px;color:var(--muted);margin-left:6px">(vous)</span>' : ''}
+            </div>
+            <div class="user-email">${u.email || '—'}</div>
+            <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+              <span style="font-family:'Share Tech Mono',monospace;font-size:11px;font-weight:700;color:${GRADE_COLORS[grade]||'var(--muted)'}">${perms.label || u.grade || '—'}</span>
+              <span style="display:flex;align-items:center;gap:4px;font-family:'Share Tech Mono',monospace;font-size:10px;color:${isOnline?'var(--success)':'var(--muted)'}">
+                <span style="width:6px;height:6px;border-radius:50%;background:${isOnline?'var(--success)':'var(--muted)'};display:inline-block${isOnline?';animation:pulse 1.5s infinite':''}"></span>
+                ${isOnline ? 'En ligne' : 'Hors ligne'}
+              </span>
+              ${u.suspended ? '<span style="font-family:\'Share Tech Mono\',monospace;font-size:10px;color:var(--danger)">⛔ SUSPENDU</span>' : ''}
+              ${u.forcePasswordChange ? '<span style="font-family:\'Share Tech Mono\',monospace;font-size:10px;color:var(--warning)">🔑 MDP À CHANGER</span>' : ''}
+            </div>
+          </div>
+          <div class="user-actions">
+            <button class="btn btn-ghost btn-sm" onclick="openGradeModal('${u.uid}','${u.displayName||''}','${u.grade||''}')">🏅 Grade</button>
+            ${!isMe ? `<button class="btn btn-ghost btn-sm" onclick="resetPassword('${u.uid}','${u.displayName||''}')" title="Forcer changement MDP">🔑 Reset</button>` : ''}
+            ${!isMe ? `<button class="btn ${u.suspended?'btn-primary':'btn-danger'} btn-sm" onclick="toggleSuspend('${u.uid}','${u.displayName||''}',${!!u.suspended})">${u.suspended ? '✅ Réactiver' : '⛔ Suspendre'}</button>` : ''}
+          </div>
+        </div>`;
+    }).join('');
+  }
+
+  window.filterUsers = function() {
+    const q = document.getElementById('searchInput').value.toLowerCase();
+    const g = document.getElementById('filterGrade').value.toLowerCase();
+    renderUsers(allUsers.filter(u =>
+      ((u.displayName||'')+' '+(u.email||'')+' '+(u.grade||'')).toLowerCase().includes(q) &&
+      (!g || (u.grade||'').toLowerCase() === g)
+    ));
+  };
+
+  // ---- CRÉER COMPTE ----
+  window.createAccount = async function() {
+    const nom = document.getElementById('cNom').value.trim();
+    const email = document.getElementById('cEmail').value.trim();
+    const grade = document.getElementById('cGrade').value;
+    if (!nom || !email) { showToast('Nom et email obligatoires', 'error'); return; }
+
+    try {
+      // Créer le compte Firebase Auth avec mot de passe par défaut
+      const cred = await createUserWithEmailAndPassword(auth, email, '123456');
+
+      // Créer le document Firestore
+      await setDoc(doc(db, 'users', cred.user.uid), {
+        displayName: nom,
+        email: email,
+        grade: grade.toLowerCase(),
+        forcePasswordChange: true,
+        suspended: false,
+        createdAt: new Date().toISOString()
+      });
+
+      await addLog(db, 'Compte créé', `${nom} — ${grade}`);
+      showToast(`Compte créé pour ${nom} ✓`, 'success');
+      closeModal('modalCreate');
+      await loadUsers();
+    } catch(e) {
+      let msg = 'Erreur lors de la création.';
+      if (e.code === 'auth/email-already-in-use') msg = 'Cet email est déjà utilisé.';
+      showToast(msg, 'error');
+    }
+  };
+
+  // ---- CHANGER GRADE ----
+  window.openGradeModal = function(uid, nom, grade) {
+    selectedUid = uid;
+    document.getElementById('gradeUserName').textContent = nom;
+    // Trouver le grade avec la bonne casse
+    const gradeSelect = document.getElementById('newGrade');
+    const options = Array.from(gradeSelect.options);
+    const match = options.find(o => o.value.toLowerCase() === (grade||'').toLowerCase());
+    if (match) gradeSelect.value = match.value;
+    openModal('modalGrade');
+  };
+
+  window.saveGrade = async function() {
+    if (!selectedUid) return;
+    const newGrade = document.getElementById('newGrade').value.toLowerCase();
+    const u = allUsers.find(x => x.uid === selectedUid);
+    try {
+      await updateDoc(doc(db, 'users', selectedUid), { grade: newGrade });
+      await addLog(db, 'Grade modifié', `${u?.displayName||''} → ${newGrade}`);
+      showToast('Grade mis à jour ✓', 'success');
+      closeModal('modalGrade');
+      await loadUsers();
+    } catch(e) { showToast('Erreur: '+e.message, 'error'); }
+  };
+
+  // ---- RESET MOT DE PASSE ----
+  window.resetPassword = async function(uid, nom) {
+    if (!confirm(`Forcer ${nom} à changer son mot de passe à sa prochaine connexion ?`)) return;
+    try {
+      await updateDoc(doc(db, 'users', uid), {
+        forcePasswordChange: true
+      });
+      await addLog(db, 'Reset MDP forcé', nom);
+      showToast(`${nom} devra changer son MDP ✓`, 'success');
+      await loadUsers();
+    } catch(e) { showToast('Erreur: '+e.message, 'error'); }
+  };
+
+  // ---- SUSPENDRE / RÉACTIVER ----
+  window.toggleSuspend = async function(uid, nom, isSuspended) {
+    const action = isSuspended ? 'réactiver' : 'suspendre';
+    if (!confirm(`Voulez-vous ${action} le compte de ${nom} ?`)) return;
+    try {
+      await updateDoc(doc(db, 'users', uid), { suspended: !isSuspended });
+      await addLog(db, isSuspended ? 'Compte réactivé' : 'Compte suspendu', nom);
+      showToast(`Compte ${isSuspended ? 'réactivé' : 'suspendu'} ✓`, 'success');
+      await loadUsers();
+    } catch(e) { showToast('Erreur: '+e.message, 'error'); }
+  };
+
+  window.logout = async function() {
+    try {
+      const user = auth.currentUser;
+      if (user) await deleteDoc(doc(db, 'online', user.uid));
+    } catch(e) {}
+    await signOut(auth);
+    sessionStorage.clear();
+    window.location.href = 'index.html';
+  };
+</script>
+
+</body>
+</html>

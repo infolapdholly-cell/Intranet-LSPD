@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <link rel="icon" type="image/png" href="https://r2.fivemanage.com/XEcvh0aBGRYhLzNNcRsQI/lspdnouveau.png">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LSPD — Arrestations</title>
+  <link rel="stylesheet" href="style.css">
+  
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="LSPD">
+  <meta name="theme-color" content="#1458a0">
+  <link rel="apple-touch-icon" href="https://r2.fivemanage.com/XEcvh0aBGRYhLzNNcRsQI/lspdnouveau.png">
+</head>
+<body>
+<div class="app-shell">
+<div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
+  <div class="topbar">
+    <div class="tb-left">
+      <button class="tb-menu-btn" onclick="toggleSidebar()">☰</button>
+      <img class="tb-logo" src="https://r2.fivemanage.com/XEcvh0aBGRYhLzNNcRsQI/lspdnouveau.png" alt="LSPD">
+      <div class="tb-sep" style="width:1px;height:26px;background:var(--border)"></div>
+      <div class="tb-title">L.S.P.D</div>
+      <div class="tb-sep" style="width:1px;height:26px;background:var(--border)"></div>
+      <div class="tb-page">ARRESTATIONS</div>
+    </div>
+    <div class="tb-right">
+      <div class="tb-time" id="tbClock">--:--:--</div>
+      <span class="tb-grade g-recruit" id="tbGrade">RECRUIT</span>
+      <span class="tb-name" id="tbName">Officier</span>
+      <button class="btn-out" onclick="logout()">Déconnexion</button>
+    </div>
+  </div>
+  <div class="shell">
+    <div class="sidebar" id="sidebar"></div>
+    <div class="main">
+      <div class="page-head">
+        <div class="page-head-left">
+          <h2>ARRESTATIONS</h2>
+          <p>// FICHES D'ARRESTATION — MGV — LIBÉRATIONS</p>
+        </div>
+        <button class="btn btn-primary" id="btnNew">+ Nouvelle arrestation</button>
+      </div>
+
+      <div class="stats-grid" style="grid-template-columns:repeat(3,1fr)">
+        <div class="stat-box blue"><div class="stat-lbl">TOTAL ARRESTATIONS</div><div class="stat-val" id="sTotal">—</div></div>
+        <div class="stat-box red"><div class="stat-lbl">EN GARDE À VUE</div><div class="stat-val" id="sMGV">—</div></div>
+        <div class="stat-box green"><div class="stat-lbl">LIBÉRÉS</div><div class="stat-val" id="sLiberes">—</div></div>
+      </div>
+
+      <div class="search-bar">
+        <input type="text" id="searchInput" placeholder="Rechercher par nom, motif, officier..." oninput="filterArrestations()">
+        <select id="filterStatut" onchange="filterArrestations()">
+          <option value="">Tous</option>
+          <option value="En garde à vue">En garde à vue</option>
+          <option value="Libéré">Libéré</option>
+          <option value="Transféré">Transféré</option>
+        </select>
+      </div>
+
+      <div class="card">
+        <div class="card-body" style="padding:0">
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr><th>RÉFÉRENCE</th><th>SUSPECT</th><th>MOTIF</th><th>OFFICIER</th><th>DATE</th><th>STATUT</th><th>ACTIONS</th></tr>
+              </thead>
+              <tbody id="arrestationsTable">
+                <tr><td colspan="7" style="text-align:center;padding:30px;color:var(--muted);font-family:'Share Tech Mono',monospace;font-size:11px">CHARGEMENT...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL ARRESTATION -->
+<div class="modal-bg" id="modalArrestation">
+  <div class="modal" style="max-width:680px">
+    <div class="modal-head">
+      <div class="modal-title">FICHE D'ARRESTATION</div>
+      <button class="modal-close" onclick="closeModal('modalArrestation')">×</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-grid g2" style="margin-bottom:12px">
+        <div class="fg"><label>Nom du suspect</label><input id="arNom" placeholder="Nom Prénom"></div>
+        <div class="fg"><label>Date de naissance</label><input type="date" id="arDob"></div>
+        <div class="fg"><label>Motif d'arrestation</label>
+          <select id="arMotif">
+            <option>Agression</option><option>Vol / Cambriolage</option><option>Trafic de drogue</option>
+            <option>Port illégal d'arme</option><option>Meurtre / Tentative</option>
+            <option>Évasion</option><option>Résistance à agent</option><option>Conduite en état d'ivresse</option>
+            <option>Autre</option>
+          </select>
+        </div>
+        <div class="fg"><label>Lieu d'arrestation</label><input id="arLieu" placeholder="ex: Grove Street"></div>
+        <div class="fg"><label>Officier arrêtant</label><input id="arOfficier"></div>
+        <div class="fg"><label>Date & heure</label><input type="datetime-local" id="arDate"></div>
+        <div class="fg"><label>Statut</label>
+          <select id="arStatut">
+            <option>En garde à vue</option><option>Libéré</option><option>Transféré</option>
+          </select>
+        </div>
+        <div class="fg"><label>Durée MGV (heures)</label><input type="number" id="arDuree" placeholder="ex: 24" min="1"></div>
+      </div>
+      <div class="fg" style="margin-bottom:12px"><label>Objets saisis</label><input id="arObjets" placeholder="ex: 1 pistolet, 50g de drogue..."></div>
+      <div class="fg"><label>Compte-rendu de l'arrestation</label><textarea id="arDesc" style="min-height:100px" placeholder="Déroulement de l'arrestation..."></textarea></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('modalArrestation')">Annuler</button>
+      <button class="btn btn-primary" onclick="saveArrestation()">Enregistrer</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+  import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+  import { getFirestore, collection, addDoc, getDocs, doc, updateDoc, deleteDoc, query, orderBy } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+  import { initPage, startClock, showToast, openModal, closeModal, setupModalClose, statusBadge, addLog, generateRef, getPerms, captureModal } from './utils.js';
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyA4GxYd32GNs5EDjjm2UI1a0d25YxigMVU",
+    authDomain: "lspd-intranet-2aed9.firebaseapp.com",
+    projectId: "lspd-intranet-2aed9",
+    storageBucket: "lspd-intranet-2aed9.firebasestorage.app",
+    messagingSenderId: "780922925382",
+    appId: "1:780922925382:web:a32d5e89bcff75bd8b3547"
+  };
+
+  const DISCORD_GAV = 'https://discordapp.com/api/webhooks/1483586726206374028/ZP0_6vej_0vKMYAPOnzSMtkKO1R9oku-T4pjaTmFvcy216Ls7jKfslqtsrLGl70Wj7fo';
+
+  async function sendDiscordGAV(a) {
+    try {
+      await fetch(DISCORD_GAV, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          embeds: [{
+            title: '📂 | GARDE À VUE',
+            color: 0xC9AA4D,
+            fields: [
+              { name: '👤 Nom du détenu',         value: `**${a.nom||'—'}**`,    inline: true },
+              { name: '📄 Motif de la GAV',        value: a.motif||'—',           inline: false },
+              { name: '🕒 Heure d\'entrée',        value: a.date ? new Date(a.date).toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'}) : '—', inline: true },
+              { name: '⏳ Heure de sortie prévue', value: a.duree ? `+${a.duree}` : '—', inline: true },
+              { name: '🔓 Heure de sortie réelle', value: '—',                   inline: true },
+              { name: '👮 Agent en charge',        value: a.officier||'—',        inline: true },
+              { name: '📌 Statut',                 value: '🟡 En cours',          inline: true },
+            ],
+            footer: { text: 'LSPD Intranet \u2014 Garde \u00e0 Vue \u2022 Holly V' },
+            timestamp: new Date().toISOString()
+          }]
+        })
+      });
+    } catch(e) { console.warn('Discord GAV failed:', e); }
+  }
+
+  const app = initializeApp(firebaseConfig);
+  const auth = getAuth(app);
+  const db = getFirestore(app);
+
+  let allArrestations = [];
+  let userGrade = 'recruit';
+
+  startClock('tbClock');
+  setupModalClose();
+  window.closeModal = closeModal;
+  window.captureModal = captureModal;
+  
+
+  initPage(auth, db, onAuthStateChanged, 'arrestations').then(async ({ grade, name, perms }) => {
+    userGrade = grade;
+    if (!perms.canWrite) document.getElementById('btnNew').style.display = 'none';
+    else document.getElementById('btnNew').addEventListener('click', () => {
+      document.getElementById('arOfficier').value = name;
+      document.getElementById('arDate').value = new Date().toISOString().slice(0,16);
+      openModal('modalArrestation');
+    });
+    await loadArrestations();
+  });
+
+  async function loadArrestations() {
+    try {
+      const snap = await getDocs(query(collection(db, 'arrestations'), orderBy('createdAt', 'desc')));
+      allArrestations = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+      document.getElementById('sTotal').textContent = allArrestations.length;
+      document.getElementById('sMGV').textContent = allArrestations.filter(a => a.statut === 'En garde à vue').length;
+      document.getElementById('sLiberes').textContent = allArrestations.filter(a => a.statut === 'Libéré').length;
+      renderArrestations(allArrestations);
+    } catch(e) { console.error(e); }
+  }
+
+  function renderArrestations(list) {
+    const tb = document.getElementById('arrestationsTable');
+    if (!list.length) { tb.innerHTML = '<tr><td colspan="7"><div class="empty-state"><div class="ei">🚔</div><p>AUCUNE ARRESTATION</p></div></td></tr>'; return; }
+    tb.innerHTML = list.map(a => `
+      <tr>
+        <td style="font-family:'Share Tech Mono',monospace;font-size:11px;color:var(--muted)">${a.reference||'—'}</td>
+        <td><strong>${a.nom||'—'}</strong></td>
+        <td style="font-size:12px">${a.motif||'—'}</td>
+        <td style="font-size:12px">${a.officier||'—'}</td>
+        <td style="font-family:'Share Tech Mono',monospace;font-size:11px">${a.date?new Date(a.date).toLocaleString('fr-FR',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'}):'—'}</td>
+        <td>${statusBadge(a.statut)}</td>
+        <td style="display:flex;gap:4px;flex-wrap:wrap">
+          <button class="btn btn-ghost btn-sm" onclick="printFiche('${a.id}')" title="Fiche arrestation">🖨️</button>
+          <button class="btn btn-ghost btn-sm" onclick="printMGV('${a.id}')" title="Mise en garde à vue">📋 MGV</button>
+          <button class="btn btn-ghost btn-sm" onclick="printLiberation('${a.id}')" title="Bon de libération">🔓 Libération</button>
+          ${userGrade!=='recruit'?`<button class="btn btn-danger btn-sm" onclick="deleteArrestation('${a.id}')">🗑️</button>`:''}
+        </td>
+      </tr>`).join('');
+  }
+
+  window.filterArrestations = function() {
+    const q = document.getElementById('searchInput').value.toLowerCase();
+    const s = document.getElementById('filterStatut').value;
+    renderArrestations(allArrestations.filter(a =>
+      (a.nom+' '+a.motif+' '+a.officier).toLowerCase().includes(q) && (!s || a.statut === s)
+    ));
+  };
+
+  window.saveArrestation = async function() {
+    const payload = {
+      reference: generateRef('ARR'),
+      nom: document.getElementById('arNom').value.trim(),
+      dob: document.getElementById('arDob').value,
+      motif: document.getElementById('arMotif').value,
+      lieu: document.getElementById('arLieu').value,
+      officier: document.getElementById('arOfficier').value,
+      date: document.getElementById('arDate').value,
+      statut: document.getElementById('arStatut').value,
+      duree: document.getElementById('arDuree').value,
+      objets: document.getElementById('arObjets').value,
+      description: document.getElementById('arDesc').value,
+      createdAt: new Date().toISOString()
+    };
+    if (!payload.nom) { showToast('Le nom est obligatoire', 'error'); return; }
+    await addDoc(collection(db, 'arrestations'), payload);
+    await addLog(db, 'Arrestation', `${payload.nom} arrêté pour ${payload.motif}`);
+    // Envoyer notification Discord si GAV
+    if (payload.statut === 'En garde à vue') {
+      await sendDiscordGAV(payload);
+    }
+    closeModal('modalArrestation');
+    await loadArrestations();
+    showToast('Arrestation enregistrée' + (payload.statut === 'En garde à vue' ? ' — Discord notifié 🔒' : ''), 'success');
+  };
+
+  window.deleteArrestation = async function(id) {
+    if (!confirm('Supprimer cette arrestation ?')) return;
+    await deleteDoc(doc(db, 'arrestations', id));
+    await loadArrestations();
+    showToast('Supprimé', 'success');
+  };
+
+  // ---- IMPRESSIONS ----
+
+  function openDoc(title, html) {
+    const w = window.open('', '_blank');
+    w.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>${title}</title>
+    <style>
+      body{font-family:Arial,sans-serif;padding:32px;max-width:720px;margin:0 auto;background:#fff;color:#000}
+      .hdr{display:flex;justify-content:space-between;align-items:center;border-bottom:3px solid #003087;padding-bottom:14px;margin-bottom:20px}
+      h1{font-size:18px;color:#003087;margin:0} .sub{font-size:10px;color:#666;margin-top:3px}
+      .ref{font-family:monospace;font-size:12px;font-weight:700;color:#003087;background:#e8f0fe;padding:4px 10px;border-radius:4px}
+      h2{font-size:11px;font-weight:700;text-transform:uppercase;color:#003087;border-bottom:1px solid #003087;padding-bottom:3px;margin:16px 0 8px;letter-spacing:2px}
+      .row{display:flex;margin-bottom:6px} .lbl{font-weight:700;min-width:180px;font-size:12px} .val{font-size:12px}
+      .sigs{display:grid;grid-template-columns:1fr 1fr;gap:40px;margin-top:36px}
+      .sig{border-top:1px solid #000;padding-top:6px;font-size:11px;color:#666;text-align:center} .sp{height:50px}
+      .ftr{margin-top:24px;font-size:10px;color:#888;text-align:center;border-top:1px solid #ddd;padding-top:10px}
+      .warn{background:#fff8e1;border:1px solid #f9a825;padding:10px;border-radius:4px;font-size:11px;margin:10px 0}
+    </style></head><body>${html}</body></html>`);
+    w.document.close();
+  }
+
+  window.printFiche = function(id) {
+    const a = allArrestations.find(x => x.id === id);
+    if (!a) return;
+    const dateStr = a.date ? new Date(a.date).toLocaleString('fr-FR') : '—';
+    openDoc('Fiche Arrestation — ' + (a.nom||''), `
+      <div class="hdr">
+        <div><h1>🚔 FICHE D'ARRESTATION</h1><div class="sub">LOS SANTOS POLICE DEPARTMENT</div></div>
+        <div class="ref">${a.reference||'—'}</div>
+      </div>
+      <h2>Identité du suspect</h2>
+      <div class="row"><span class="lbl">Nom complet :</span><span class="val">${a.nom||'—'}</span></div>
+      <div class="row"><span class="lbl">Date de naissance :</span><span class="val">${a.dob||'—'}</span></div>
+      <h2>Détails</h2>
+      <div class="row"><span class="lbl">Motif :</span><span class="val">${a.motif||'—'}</span></div>
+      <div class="row"><span class="lbl">Lieu :</span><span class="val">${a.lieu||'—'}</span></div>
+      <div class="row"><span class="lbl">Date & heure :</span><span class="val">${dateStr}</span></div>
+      <div class="row"><span class="lbl">Officier :</span><span class="val">${a.officier||'—'}</span></div>
+      <div class="row"><span class="lbl">Statut :</span><span class="val">${a.statut||'—'}</span></div>
+      <div class="row"><span class="lbl">Objets saisis :</span><span class="val">${a.objets||'—'}</span></div>
+      <h2>Compte-rendu</h2>
+      <p style="font-size:12px;line-height:1.6">${(a.description||'—').replace(/\n/g,'<br>')}</p>
+      <div class="sigs">
+        <div class="sig"><div class="sp"></div>Officier arrêtant</div>
+        <div class="sig"><div class="sp"></div>Superviseur</div>
+      </div>
+      <div class="ftr">LSPD — Document officiel — ${new Date().toLocaleDateString('fr-FR')}</div>
+    `);
+  };
+
+  window.printMGV = function(id) {
+    const a = allArrestations.find(x => x.id === id);
+    if (!a) return;
+    const entree = a.date ? new Date(a.date).toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'}) : '—';
+    const sortie = (a.date && a.duree) ? new Date(new Date(a.date).getTime()+parseInt(a.duree)*3600000).toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'}) : '—';
+    openDoc('Mise en GAV — ' + (a.nom||''), `
+      <div class="hdr">
+        <div><h1>📋 MISE EN GARDE À VUE</h1><div class="sub">LOS SANTOS POLICE DEPARTMENT</div></div>
+        <div class="ref">${a.reference||'—'}</div>
+      </div>
+      <div class="warn">⚠ Ce document atteste la mise en garde à vue du suspect ci-dessous.</div>
+      <h2>Détenu</h2>
+      <div class="row"><span class="lbl">Nom :</span><span class="val"><strong>${a.nom||'—'}</strong></span></div>
+      <div class="row"><span class="lbl">Date de naissance :</span><span class="val">${a.dob||'—'}</span></div>
+      <h2>GAV</h2>
+      <div class="row"><span class="lbl">Motif :</span><span class="val">${a.motif||'—'}</span></div>
+      <div class="row"><span class="lbl">Heure d'entrée :</span><span class="val">${entree}</span></div>
+      <div class="row"><span class="lbl">Durée prévue :</span><span class="val">${a.duree ? a.duree+'h' : '—'}</span></div>
+      <div class="row"><span class="lbl">Sortie prévue :</span><span class="val">${sortie}</span></div>
+      <div class="row"><span class="lbl">Agent en charge :</span><span class="val">${a.officier||'—'}</span></div>
+      <div class="row"><span class="lbl">Objets confisqués :</span><span class="val">${a.objets||'—'}</span></div>
+      <div class="sigs">
+        <div class="sig"><div class="sp"></div>Officier</div>
+        <div class="sig"><div class="sp"></div>Heure de sortie réelle</div>
+      </div>
+      <div class="ftr">LSPD — Document officiel — ${new Date().toLocaleDateString('fr-FR')}</div>
+    `);
+  };
+
+  window.printLiberation = function(id) {
+    const a = allArrestations.find(x => x.id === id);
+    if (!a) return;
+    openDoc('Libération — ' + (a.nom||''), `
+      <div class="hdr">
+        <div><h1>🔓 BON DE LIBÉRATION</h1><div class="sub">LOS SANTOS POLICE DEPARTMENT</div></div>
+        <div class="ref">${a.reference||'—'}</div>
+      </div>
+      <h2>Libéré</h2>
+      <div class="row"><span class="lbl">Nom :</span><span class="val"><strong>${a.nom||'—'}</strong></span></div>
+      <div class="row"><span class="lbl">Date de naissance :</span><span class="val">${a.dob||'—'}</span></div>
+      <h2>Détails</h2>
+      <div class="row"><span class="lbl">Motif initial :</span><span class="val">${a.motif||'—'}</span></div>
+      <div class="row"><span class="lbl">Durée GAV :</span><span class="val">${a.duree ? a.duree+'h' : '—'}</span></div>
+      <div class="row"><span class="lbl">Officier :</span><span class="val">${a.officier||'—'}</span></div>
+      <div class="row"><span class="lbl">Date de libération :</span><span class="val">${new Date().toLocaleString('fr-FR')}</span></div>
+      <div class="row"><span class="lbl">Objets restitués :</span><span class="val">${a.objets||'Néant'}</span></div>
+      <div class="sigs">
+        <div class="sig"><div class="sp"></div>Officier</div>
+        <div class="sig"><div class="sp"></div>Signature du libéré</div>
+      </div>
+      <div class="ftr">LSPD — Document officiel — ${new Date().toLocaleDateString('fr-FR')}</div>
+    `);
+  };
+
+  window.logout = async function() {
+    try {
+      const { doc: fsDoc, deleteDoc: fsDeleteDoc } = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js");
+      const user = auth.currentUser;
+      if (user) await fsDeleteDoc(fsDoc(db, 'online', user.uid));
+    } catch(e) {}
+    await signOut(auth);
+    sessionStorage.clear();
+    window.location.href = 'index.html';
+  };
+
+  window.toggleSidebar = function() {
+    document.getElementById('sidebar').classList.toggle('open');
+    document.getElementById('sidebarOverlay').classList.toggle('show');
+  };
+</script>
+</body>
+</html>

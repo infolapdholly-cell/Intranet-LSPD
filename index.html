@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <link rel="icon" type="image/png" href="https://r2.fivemanage.com/XEcvh0aBGRYhLzNNcRsQI/lspdnouveau.png">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LSPD Intranet — Connexion</title>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@400;500;600;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+  <style>
+    :root { --bg:#05080f; --surface:#0c1220; --surface2:#101a2e; --border:#1b3a5e; --accent:#1458a0; --accent-b:#2589d0; --accent-glow:rgba(37,137,208,.22); --text:#dce8f4; --muted:#445e7a; --danger:#c0392b; --danger-l:#e74c3c; }
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+    body { font-family:'Rajdhani',sans-serif; background:var(--bg); color:var(--text); display:flex; align-items:center; justify-content:center; min-height:100vh; overflow:hidden; position:relative; }
+    body::before { content:''; position:fixed; inset:0; background-image:linear-gradient(rgba(20,88,160,.06) 1px,transparent 1px),linear-gradient(90deg,rgba(20,88,160,.06) 1px,transparent 1px); background-size:44px 44px; animation:gridScroll 25s linear infinite; }
+    body::after { content:''; position:fixed; inset:0; background:radial-gradient(ellipse 70% 60% at 50% 50%,rgba(20,88,160,.1) 0%,transparent 70%); pointer-events:none; }
+    @keyframes gridScroll{to{transform:translateY(44px);}}
+    @keyframes flashRed {
+      0%,100% { opacity:0; }
+      50% { opacity:1; }
+    }
+    @keyframes shakeCard {
+      0%,100%{transform:translateX(0)}
+      20%{transform:translateX(-12px)}
+      40%{transform:translateX(12px)}
+      60%{transform:translateX(-8px)}
+      80%{transform:translateX(8px)}
+    }
+    @keyframes warningPulse {
+      0%,100%{transform:translate(-50%,-50%) scale(1);}
+      50%{transform:translate(-50%,-50%) scale(1.05);}
+    }
+    .input-error { border-color: var(--danger) !important; box-shadow: 0 0 0 3px rgba(192,57,43,.4) !important; }
+    #redOverlay {
+      display:none; position:fixed; inset:0; z-index:9999;
+      background:rgba(180,0,0,.92); backdrop-filter:blur(4px);
+      align-items:center; justify-content:center; flex-direction:column;
+      animation: flashRed .25s ease 5;
+    }
+    #redOverlay.show { display:flex; }
+    .warning-box {
+      text-align:center;
+      animation: warningPulse .5s ease infinite;
+      position:absolute;
+      top:50%; left:50%;
+      transform:translate(-50%,-50%);
+      width:100%;
+      padding:20px;
+    }
+    .warning-icon { font-size:80px; margin-bottom:16px; filter:drop-shadow(0 0 20px #fff); }
+    .warning-title { font-family:'Orbitron',monospace; font-size:32px; font-weight:900; color:#fff; letter-spacing:8px; margin-bottom:10px; text-shadow:0 0 30px rgba(255,100,100,.8); }
+    .warning-sub { font-family:'Share Tech Mono',monospace; font-size:14px; color:rgba(255,255,255,.8); letter-spacing:3px; margin-bottom:6px; }
+    .warning-count { font-family:'Share Tech Mono',monospace; font-size:12px; color:rgba(255,255,255,.5); letter-spacing:2px; margin-top:16px; }
+    @keyframes riseUp{from{opacity:0;transform:translateY(24px)}to{opacity:1;transform:none}}
+    @keyframes badgePulse{0%,100%{filter:drop-shadow(0 0 18px rgba(37,137,208,.8))}50%{filter:drop-shadow(0 0 36px rgba(37,137,208,1))}}
+    @keyframes bgPulse{0%,100%{opacity:.07}50%{opacity:.13}}
+    .bg-logo { position:fixed; top:50%; left:50%; transform:translate(-50%,-50%); width:70vw; max-width:700px; height:70vw; max-height:700px; object-fit:contain; opacity:.07; filter:blur(2px); z-index:1; pointer-events:none; animation:bgPulse 6s ease-in-out infinite; }
+    .bg-overlay { position:fixed; inset:0; z-index:2; background:radial-gradient(ellipse 50% 60% at 50% 50%,rgba(5,8,15,.2) 0%,rgba(5,8,15,.7) 100%); pointer-events:none; }
+    .login-box { position:relative; z-index:10; width:100%; max-width:400px; padding:20px; animation:riseUp .7s ease both; }
+    .login-logo { text-align:center; margin-bottom:20px; }
+    .login-logo img.small-logo { width:70px; height:70px; object-fit:contain; filter:drop-shadow(0 0 12px rgba(37,137,208,.9)); animation:badgePulse 3s ease-in-out infinite; display:block; margin:0 auto; }
+    .login-logo h1 { font-family:'Orbitron',monospace; font-size:20px; letter-spacing:7px; margin-top:12px; }
+    .login-logo p { font-family:'Share Tech Mono',monospace; font-size:10px; color:var(--accent-b); letter-spacing:4px; margin-top:4px; }
+    .deco { display:flex; align-items:center; gap:10px; margin:14px 0; }
+    .deco::before,.deco::after { content:''; flex:1; height:1px; background:linear-gradient(90deg,transparent,var(--border),transparent); }
+    .deco span { font-family:'Share Tech Mono',monospace; font-size:9px; color:var(--muted); letter-spacing:3px; }
+    .login-card { background:rgba(12,18,32,.85); backdrop-filter:blur(16px); border:1px solid var(--border); border-radius:14px; padding:28px; box-shadow:0 0 60px rgba(20,88,160,.25); position:relative; overflow:hidden; }
+    .login-card::before { content:''; position:absolute; top:0;left:0;right:0; height:2px; background:linear-gradient(90deg,transparent,var(--accent-b),transparent); }
+    .lc-label { font-size:11px; font-weight:700; letter-spacing:2px; text-transform:uppercase; color:var(--muted); display:block; margin-bottom:5px; margin-top:14px; }
+    .lc-label:first-of-type{margin-top:0;}
+    .lc-input { width:100%; padding:10px 13px; background:rgba(16,26,46,.8); border:1px solid var(--border); border-radius:5px; color:var(--text); font-family:'Share Tech Mono',monospace; font-size:14px; outline:none; transition:border-color .2s,box-shadow .2s; }
+    .lc-input:focus{border-color:var(--accent-b);box-shadow:0 0 0 3px var(--accent-glow);}
+    .lc-err { background:rgba(192,57,43,.12); border:1px solid var(--danger); border-radius:4px; padding:9px 12px; font-family:'Share Tech Mono',monospace; font-size:11px; color:var(--danger-l); margin-top:12px; display:none; }
+    .lc-err.show{display:block;}
+    .btn-login { width:100%; margin-top:18px; padding:13px; background:var(--accent); border:none; border-radius:6px; color:#fff; font-family:'Orbitron',monospace; font-size:12px; font-weight:700; letter-spacing:4px; transition:all .2s; cursor:pointer; }
+    .btn-login:hover{background:var(--accent-b);box-shadow:0 0 20px var(--accent-glow);}
+    .footer-note{text-align:center;font-family:'Share Tech Mono',monospace;font-size:10px;color:var(--muted);margin-top:18px;letter-spacing:2px;}
+  </style>
+  
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="LSPD">
+  <meta name="theme-color" content="#1458a0">
+  <link rel="apple-touch-icon" href="https://r2.fivemanage.com/XEcvh0aBGRYhLzNNcRsQI/lspdnouveau.png">
+</head>
+<body>
+<div id="redOverlay">
+  <div class="warning-box">
+    <div class="warning-icon">⚠️</div>
+    <div class="warning-title">ACCÈS REFUSÉ</div>
+    <div class="warning-sub">IDENTIFIANTS INCORRECTS</div>
+    <div class="warning-sub">MOT DE PASSE INVALIDE</div>
+    <div class="warning-count" id="warningCount"></div>
+  </div>
+</div>
+  <img class="bg-logo" src="https://r2.fivemanage.com/XEcvh0aBGRYhLzNNcRsQI/lspdnouveau.png" alt="" onerror="this.style.display='none'">
+  <div class="bg-overlay"></div>
+  <div class="login-box">
+    <div class="login-logo">
+      <img class="small-logo" src="https://r2.fivemanage.com/XEcvh0aBGRYhLzNNcRsQI/lspdnouveau.png" alt="LSPD" onerror="this.style.display='none'">
+      <h1>L · S · P · D</h1>
+      <p>INTRANET — ACCÈS SÉCURISÉ</p>
+    </div>
+    <div class="deco"><span>AUTHENTIFICATION REQUISE</span></div>
+    <div class="login-card">
+      <label class="lc-label">Identifiant</label>
+      <input class="lc-input" type="email" id="liEmail" placeholder="officier@lspd.gov" autocomplete="username">
+      <label class="lc-label">Mot de passe</label>
+      <input class="lc-input" type="password" id="liPass" placeholder="••••••••" autocomplete="current-password">
+      <div class="lc-err" id="liErr">Identifiants incorrects.</div>
+      <button class="btn-login" id="liBtn" onclick="doLogin()">CONNEXION</button>
+    </div>
+    <div class="footer-note">LSPD — SYSTÈME INTRANET v3.0 — HÉBERGÉ PAR HOLLY V</div>
+  </div>
+
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+  import { getAuth, signInWithEmailAndPassword, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+  import { getFirestore, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyA4GxYd32GNs5EDjjm2UI1a0d25YxigMVU",
+    authDomain: "lspd-intranet-2aed9.firebaseapp.com",
+    projectId: "lspd-intranet-2aed9",
+    storageBucket: "lspd-intranet-2aed9.firebasestorage.app",
+    messagingSenderId: "780922925382",
+    appId: "1:780922925382:web:a32d5e89bcff75bd8b3547"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const auth = getAuth(app);
+  const db = getFirestore(app);
+
+  // Si déjà connecté → recharger le grade depuis Firebase et rediriger
+  onAuthStateChanged(auth, async user => {
+    if (user) {
+      await refreshGrade(user);
+      window.location.href = 'dashboard.html';
+    }
+  });
+
+  // Recharge toujours le grade depuis Firebase (pas depuis sessionStorage)
+  async function refreshGrade(user) {
+    try {
+      const snap = await getDoc(doc(db, 'users', user.uid));
+      if (snap.exists()) {
+        const data = snap.data();
+        const grade = (data.grade || 'recruit').toLowerCase();
+        const name = data.displayName || user.email;
+        localStorage.setItem('lspd_grade', grade);
+        localStorage.setItem('lspd_name', name);
+        localStorage.setItem('lspd_uid', user.uid);
+        sessionStorage.setItem('lspd_grade', grade);
+        sessionStorage.setItem('lspd_name', name);
+        sessionStorage.setItem('lspd_uid', user.uid);
+
+        // Écrire dans online ICI — après avoir récupéré le vrai nom
+        await setDoc(doc(db, 'online', user.uid), {
+          uid: user.uid,
+          displayName: name,
+          grade: grade,
+          connectedAt: new Date().toISOString(),
+          lastSeen: new Date().toISOString()
+        });
+      }
+    } catch(e) { console.warn('Grade refresh failed:', e); }
+  }
+
+  window.doLogin = async function() {
+    const email = document.getElementById('liEmail').value.trim();
+    const pass = document.getElementById('liPass').value;
+    const btn = document.getElementById('liBtn');
+    const err = document.getElementById('liErr');
+    err.classList.remove('show');
+    btn.disabled = true; btn.textContent = 'VÉRIFICATION...';
+    try {
+      const cred = await signInWithEmailAndPassword(auth, email, pass);
+      await refreshGrade(cred.user);
+
+      // Mettre à jour lastSeen toutes les 5 minutes tant que connecté
+      const uid = cred.user.uid;
+      setInterval(async () => {
+        try {
+          await setDoc(doc(db, 'online', uid), { lastSeen: new Date().toISOString() }, { merge: true });
+        } catch(e) {}
+      }, 5 * 60 * 1000);
+
+      // Vérifier si c'est la première connexion
+      const isFirstLogin = document.getElementById('liPass').value === '123456';
+      if (isFirstLogin) {
+        window.location.href = 'change-password.html';
+      } else {
+        window.location.href = 'dashboard.html';
+      }
+    } catch(e) {
+      let msg = 'Identifiants incorrects. Accès refusé.';
+      if (e.code === 'auth/too-many-requests') msg = 'Trop de tentatives. Réessayez plus tard.';
+      err.textContent = msg;
+      err.classList.add('show');
+
+      // Écran rouge vif avec WARNING
+      const passInput = document.getElementById('liPass');
+      passInput.classList.add('input-error');
+      btn.disabled = true;
+      btn.textContent = 'ACCÈS REFUSÉ';
+
+      const overlay = document.getElementById('redOverlay');
+      const countEl = document.getElementById('warningCount');
+      overlay.classList.add('show');
+
+      // Compte à rebours
+      let secs = 5;
+      countEl.textContent = `Réessayez dans ${secs} secondes...`;
+      const timer = setInterval(() => {
+        secs--;
+        if (secs > 0) {
+          countEl.textContent = `Réessayez dans ${secs} seconde${secs>1?'s':''}...`;
+        } else {
+          clearInterval(timer);
+          overlay.classList.remove('show');
+          passInput.classList.remove('input-error');
+          passInput.value = '';
+          passInput.focus();
+          btn.disabled = false;
+          btn.textContent = 'CONNEXION';
+        }
+      }, 1000);
+    }
+  };
+  document.addEventListener('keydown', e => { if (e.key === 'Enter') window.doLogin(); });
+</script>
+
+</body>
+</html>

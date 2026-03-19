@@ -1,0 +1,694 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <link rel="icon" type="image/png" href="https://r2.fivemanage.com/XEcvh0aBGRYhLzNNcRsQI/lspdnouveau.png">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LSPD — Casiers Judiciaires</title>
+  <link rel="stylesheet" href="style.css">
+  <style>
+    /* TOGGLE VIEW */
+    .view-toggle { display:flex; gap:4px; }
+    .vbtn { padding:7px 12px; background:transparent; border:1px solid var(--border); border-radius:4px; color:var(--muted); font-size:14px; transition:all .2s; }
+    .vbtn.active { background:var(--accent); border-color:var(--accent); color:#fff; }
+
+    /* CARD GRID */
+    .card-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(240px,1fr)); gap:16px; }
+    .suspect-card {
+      background:var(--surface); border:1px solid var(--border); border-radius:10px;
+      overflow:hidden; transition:all .2s; cursor:pointer; animation:fadeIn .3s ease both;
+    }
+    .suspect-card:hover { border-color:var(--accent); box-shadow:0 0 18px var(--accent-glow); transform:translateY(-3px); }
+    .suspect-card.wanted { border-color:rgba(192,57,43,.5); }
+    .sc-photo { width:100%; height:160px; object-fit:cover; background:var(--surface2); display:flex; align-items:center; justify-content:center; font-size:48px; color:var(--muted); }
+    .sc-photo img { width:100%; height:100%; object-fit:cover; }
+    .sc-body { padding:14px; }
+    .sc-name { font-family:'Orbitron',monospace; font-size:13px; font-weight:700; letter-spacing:1px; margin-bottom:8px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+    .sc-badges { display:flex; gap:5px; flex-wrap:wrap; margin-bottom:8px; }
+    .sc-meta { font-family:'Share Tech Mono',monospace; font-size:10px; color:var(--muted); margin-bottom:3px; }
+    .sc-actions { display:flex; gap:5px; margin-top:10px; border-top:1px solid var(--border); padding-top:10px; }
+    .sc-actions button { flex:1; padding:6px; font-size:11px; }
+
+    /* DETAIL MODAL */
+    .detail-grid { display:grid; grid-template-columns:140px 1fr; gap:20px; margin-bottom:20px; }
+    .detail-photo { width:140px; height:168px; border-radius:6px; border:2px solid var(--border); object-fit:cover; background:var(--surface2); display:flex; align-items:center; justify-content:center; font-size:44px; color:var(--muted); overflow:hidden; }
+    .detail-photo img { width:100%; height:100%; object-fit:cover; }
+    .detail-info { display:flex; flex-direction:column; gap:8px; }
+    .di-row { display:flex; flex-direction:column; gap:2px; }
+    .di-lbl { font-size:9px; font-weight:700; letter-spacing:2px; text-transform:uppercase; color:var(--muted); }
+    .di-val { font-family:'Share Tech Mono',monospace; font-size:13px; color:var(--text); }
+
+    /* INFRACTIONS */
+    .inf-list { display:flex; flex-direction:column; gap:8px; margin-bottom:10px; }
+    .inf-row { background:var(--surface2); border:1px solid var(--border); border-radius:5px; padding:10px 12px; display:grid; grid-template-columns:160px 120px 1fr auto; gap:8px; align-items:center; }
+    .inf-row select, .inf-row input { padding:6px 9px; background:var(--surface); border:1px solid var(--border); border-radius:4px; color:var(--text); font-family:'Share Tech Mono',monospace; font-size:11px; outline:none; }
+    .inf-row select:focus, .inf-row input:focus { border-color:var(--accent-b); }
+    .inf-view { background:var(--surface2); border:1px solid var(--border); border-radius:5px; padding:10px 14px; display:flex; gap:14px; align-items:center; }
+    .inf-cat { font-family:'Share Tech Mono',monospace; font-size:10px; color:var(--warning); min-width:150px; }
+    .inf-date { font-family:'Share Tech Mono',monospace; font-size:10px; color:var(--muted); min-width:90px; }
+    .inf-desc { font-size:12px; color:var(--text); }
+
+    /* PLAQUES */
+    .plaque-list { display:flex; flex-wrap:wrap; gap:7px; margin-bottom:10px; }
+    .plaque-tag { background:var(--surface2); border:1px solid var(--border); border-radius:4px; padding:4px 10px; font-family:'Share Tech Mono',monospace; font-size:12px; display:flex; align-items:center; gap:6px; }
+    .plaque-rm { background:none; border:none; color:var(--danger-l); cursor:pointer; font-size:14px; padding:0; line-height:1; }
+    .plaque-add { display:flex; gap:8px; }
+    .plaque-add input { flex:1; padding:7px 10px; background:var(--surface2); border:1px solid var(--border); border-radius:4px; color:var(--text); font-family:'Share Tech Mono',monospace; font-size:12px; outline:none; }
+    .plaque-add input:focus { border-color:var(--accent-b); }
+
+    /* WANTED BANNER */
+    .wanted-banner { background:rgba(192,57,43,.12); border:1px solid rgba(192,57,43,.4); border-radius:6px; padding:10px 14px; display:flex; align-items:center; gap:10px; margin-bottom:16px; font-size:13px; font-weight:600; color:var(--danger-l); animation:blink 2s ease infinite; }
+    @keyframes blink { 0%,100%{opacity:1} 50%{opacity:.7} }
+
+    /* TABS in modal */
+    .modal-tabs { display:flex; gap:3px; margin-bottom:16px; border-bottom:1px solid var(--border); }
+    .mtab { padding:8px 14px; background:transparent; border:none; color:var(--muted); font-family:'Rajdhani',sans-serif; font-size:13px; font-weight:600; letter-spacing:1px; cursor:pointer; border-bottom:2px solid transparent; transition:all .2s; margin-bottom:-1px; }
+    .mtab.active { color:var(--accent-b); border-bottom-color:var(--accent-b); }
+    .mtab-content { display:none; }
+    .mtab-content.active { display:block; }
+
+    @keyframes fadeIn { from{opacity:0;transform:translateY(-4px)} to{opacity:1;transform:none} }
+  </style>
+  
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="LSPD">
+  <meta name="theme-color" content="#1458a0">
+  <link rel="apple-touch-icon" href="https://r2.fivemanage.com/XEcvh0aBGRYhLzNNcRsQI/lspdnouveau.png">
+</head>
+<body>
+<div class="app-shell">
+<div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
+  <!-- TOPBAR -->
+  <div class="topbar">
+    <div class="tb-left">
+      <button class="tb-menu-btn" onclick="toggleSidebar()">☰</button>
+      <img class="tb-logo" src="https://r2.fivemanage.com/XEcvh0aBGRYhLzNNcRsQI/lspdnouveau.png" alt="LSPD">
+      <div class="tb-sep" style="width:1px;height:26px;background:var(--border)"></div>
+      <div class="tb-title">L.S.P.D</div>
+      <div class="tb-sep" style="width:1px;height:26px;background:var(--border)"></div>
+      <div class="tb-page">CASIERS JUDICIAIRES</div>
+    </div>
+    <div class="tb-right">
+      <div class="tb-time" id="tbClock">--:--:--</div>
+      <span class="tb-grade g-recruit" id="tbGrade">RECRUIT</span>
+      <span class="tb-name" id="tbName">Officier</span>
+      <button class="btn-out" onclick="logout()">Déconnexion</button>
+    </div>
+  </div>
+
+  <div class="shell">
+    <div class="sidebar" id="sidebar"></div>
+    <div class="main">
+      <!-- HEADER -->
+      <div class="page-head">
+        <div class="page-head-left">
+          <h2>CASIERS JUDICIAIRES</h2>
+          <p>// BASE DE DONNÉES CRIMINELLE — LOS SANTOS</p>
+        </div>
+        <div style="display:flex;gap:8px;align-items:center">
+          <div class="view-toggle">
+            <button class="vbtn active" id="btnList" onclick="setView('list')" title="Vue liste">☰</button>
+            <button class="vbtn" id="btnGrid" onclick="setView('grid')" title="Vue cartes">⊞</button>
+          </div>
+          <button class="btn btn-ghost btn-sm" onclick="window.captureModal('detailBody')">📸 Capturer</button>
+          <button class="btn btn-primary" id="btnNew">+ Nouveau casier</button>
+        </div>
+      </div>
+
+      <!-- STATS -->
+      <div class="stats-grid">
+        <div class="stat-box blue"><div class="stat-lbl">TOTAL CASIERS</div><div class="stat-val" id="sTotal">—</div></div>
+        <div class="stat-box red"><div class="stat-lbl">RECHERCHÉS</div><div class="stat-val" id="sWanted">—</div></div>
+        <div class="stat-box gold"><div class="stat-lbl">INFRACTIONS</div><div class="stat-val" id="sInfractions">—</div></div>
+        <div class="stat-box green"><div class="stat-lbl">EN VIE</div><div class="stat-val" id="sAlive">—</div></div>
+      </div>
+
+      <!-- SEARCH -->
+      <div class="search-bar">
+        <input type="text" id="searchInput" placeholder="Rechercher par nom, empreinte, plaque..." oninput="filterCasiers()">
+        <select id="filterStatut" onchange="filterCasiers()">
+          <option value="">Tous les statuts</option>
+          <option value="En vie">En vie</option>
+          <option value="Mort">Mort</option>
+          <option value="LSPD">LSPD</option>
+        </select>
+        <select id="filterWanted" onchange="filterCasiers()">
+          <option value="">Tous</option>
+          <option value="wanted">Recherchés uniquement</option>
+        </select>
+      </div>
+
+      <!-- LIST VIEW -->
+      <div id="viewList">
+        <div class="card">
+          <div class="card-body" style="padding:0">
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr><th>PHOTO</th><th>NOM COMPLET</th><th>STATUT</th><th>EMPREINTE</th><th>PLAQUES</th><th>INFRACTIONS</th><th>WANTED</th><th>ACTIONS</th></tr>
+                </thead>
+                <tbody id="casiersTable">
+                  <tr><td colspan="8" style="text-align:center;padding:30px;color:var(--muted);font-family:'Share Tech Mono',monospace;font-size:11px">CHARGEMENT...</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- GRID VIEW -->
+      <div id="viewGrid" style="display:none">
+        <div class="card-grid" id="casiersGrid"></div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- ===== MODAL FORMULAIRE ===== -->
+<div class="modal-bg" id="modalForm">
+  <div class="modal" style="max-width:700px">
+    <div class="modal-head">
+      <div class="modal-title" id="modalFormTitle">NOUVEAU CASIER</div>
+      <button class="modal-close" onclick="closeModalForm()">×</button>
+    </div>
+    <div class="modal-body">
+      <div class="modal-tabs">
+        <button class="mtab active" onclick="switchTab('identite',this)">👤 Identité</button>
+        <button class="mtab" onclick="switchTab('infractions',this)">⚡ Infractions</button>
+        <button class="mtab" onclick="switchTab('vehicules',this)">🚗 Véhicules</button>
+        <button class="mtab" onclick="switchTab('armes',this)">🔫 Armes</button>
+      </div>
+
+      <!-- TAB IDENTITÉ -->
+      <div class="mtab-content active" id="tab-identite">
+        <div class="form-grid g2" style="margin-bottom:12px">
+          <div class="fg"><label>Nom</label><input id="fNom" placeholder="NOM"></div>
+          <div class="fg"><label>Prénom</label><input id="fPrenom" placeholder="Prénom"></div>
+          <div class="fg"><label>Date de naissance</label><input type="date" id="fDob"></div>
+          <div class="fg"><label>Nationalité</label><input id="fNat" placeholder="Nationalité"></div>
+          <div class="fg"><label>Statut</label>
+            <select id="fStatut"><option>En vie</option><option>Mort</option><option>LSPD</option></select>
+          </div>
+          <div class="fg"><label>Téléphone</label><input id="fTel" placeholder="+1 000 000 0000"></div>
+          <div class="fg"><label>Adresse</label><input id="fAddr" placeholder="Adresse complète"></div>
+          <div class="fg"><label>Emploi</label><input id="fEmploi" placeholder="Profession"></div>
+          <div class="fg"><label>Empreinte digitale</label><input id="fEmp" placeholder="ex: ob534E37kaW7393"></div>
+          <div class="fg"><label>Photo URL</label><input id="fPhoto" placeholder="https://..."></div>
+        </div>
+        <div style="display:flex;align-items:center;gap:10px;padding:10px 14px;background:rgba(192,57,43,.08);border:1px solid rgba(192,57,43,.3);border-radius:5px">
+          <input type="checkbox" id="fWanted" style="width:16px;height:16px;accent-color:var(--danger-l)">
+          <label for="fWanted" style="font-size:13px;font-weight:700;color:var(--danger-l);cursor:pointer">⚠ Marquer comme RECHERCHÉ (Wanted)</label>
+        </div>
+        <div class="fg" style="margin-top:12px"><label>Notes</label><textarea id="fNotes" placeholder="Notes supplémentaires..."></textarea></div>
+      </div>
+
+      <!-- TAB INFRACTIONS -->
+      <div class="mtab-content" id="tab-infractions">
+        <div class="inf-list" id="infractionFormList"></div>
+        <button class="btn btn-ghost" style="width:100%;margin-top:4px" onclick="addInfraction()">+ Ajouter une infraction</button>
+      </div>
+
+      <!-- TAB VEHICULES -->
+      <div class="mtab-content" id="tab-vehicules">
+        <div style="font-family:'Share Tech Mono',monospace;font-size:11px;color:var(--muted);margin-bottom:12px;letter-spacing:2px">PLAQUES D'IMMATRICULATION ENREGISTRÉES</div>
+        <div class="plaque-list" id="plaqueFormList"></div>
+        <div class="plaque-add">
+          <input type="text" id="plaqueInput" placeholder="ex: ABC-123" onkeydown="if(event.key==='Enter')addPlaque()">
+          <button class="btn btn-ghost btn-sm" onclick="addPlaque()">+ Ajouter</button>
+        </div>
+        <div style="font-family:'Share Tech Mono',monospace;font-size:11px;color:var(--muted);margin:16px 0 10px;letter-spacing:2px">PERMIS</div>
+        <div style="display:flex;gap:20px;flex-wrap:wrap;background:var(--surface2);border:1px solid var(--border);border-radius:5px;padding:12px 16px">
+          <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:13px;font-weight:600"><input type="checkbox" id="fPPA" style="accent-color:var(--accent-b)"> 🔫 Port d'arme</label>
+          <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:13px;font-weight:600"><input type="checkbox" id="fVoiture" style="accent-color:var(--accent-b)"> 🚗 Voiture</label>
+          <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:13px;font-weight:600"><input type="checkbox" id="fCamion" style="accent-color:var(--accent-b)"> 🚛 Camion</label>
+          <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:13px;font-weight:600"><input type="checkbox" id="fMoto" style="accent-color:var(--accent-b)"> 🏍 Moto</label>
+        </div>
+      </div>
+
+      <!-- TAB ARMES -->
+      <div class="mtab-content" id="tab-armes">
+        <div class="fg"><label>Armes enregistrées</label><textarea id="fArmes" style="min-height:120px" placeholder="Ex: Pistolet 9mm — Permis #1234&#10;Fusil à pompe — Saisi le 01/01/2024&#10;Taser — En service"></textarea></div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModalForm()">Annuler</button>
+      <button class="btn btn-primary" onclick="saveCasier()">Enregistrer</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== MODAL DETAIL ===== -->
+<div class="modal-bg" id="modalDetail">
+  <div class="modal" style="max-width:700px">
+    <div class="modal-head">
+      <div class="modal-title" id="detailTitle">FICHE SUSPECT</div>
+      <button class="modal-close" onclick="closeModal('modalDetail')">×</button>
+    </div>
+    <div class="modal-body" id="detailBody"></div>
+    <div class="modal-footer" id="detailFooter"></div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+  import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+  import { getFirestore, collection, addDoc, getDocs, doc, updateDoc, deleteDoc, query, orderBy, where } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+  import { initPage, startClock, showToast, openModal, closeModal, setupModalClose, statusBadge, addLog, generateRef, getPerms, captureModal } from './utils.js';
+  import { printCasier } from './pdf-templates.js?v=3';
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyA4GxYd32GNs5EDjjm2UI1a0d25YxigMVU",
+    authDomain: "lspd-intranet-2aed9.firebaseapp.com",
+    projectId: "lspd-intranet-2aed9",
+    storageBucket: "lspd-intranet-2aed9.firebasestorage.app",
+    messagingSenderId: "780922925382",
+    appId: "1:780922925382:web:a32d5e89bcff75bd8b3547"
+  };
+
+  const DISCORD_WEBHOOK = 'https://discord.com/api/webhooks/1483412457283256321/7joj4kDk2gpoBiDNbNWQwd3jBRLs1JvdhNCF0ThJzE40g6EFyCnc0bLkrPjC-xt_E9cM';
+  const DISCORD_PPA_WEBHOOK = 'https://discordapp.com/api/webhooks/1483573099831234693/mMW-C9dbOTtIKSGbTdWF6OhmXBc1DFVwWvry5eGjfWccVVPKPar6Ozv742H_-_57KEeJ';
+
+  async function sendDiscordPPA(casier, officier) {
+    try {
+      await fetch(DISCORD_PPA_WEBHOOK, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          embeds: [{
+            title: '🔫 PERMIS DE PORT D\'ARME (PPA)',
+            color: 0x1458A0,
+            thumbnail: casier.photoUrl ? { url: casier.photoUrl } : undefined,
+            fields: [
+              { name: '👤 Nom', value: `**${casier.nom||'—'} ${casier.prenom||''}**`, inline: true },
+              { name: '🎂 Date de naissance', value: casier.dateNaissance||'—', inline: true },
+              { name: '📋 Statut', value: casier.statut||'—', inline: true },
+              { name: '🔍 Empreinte', value: casier.empreinte||'—', inline: true },
+              { name: '👮 Enregistré par', value: officier||'—', inline: true },
+            ],
+            footer: { text: 'LSPD Intranet \u2014 Port d\'Arme \u2022 Holly V' },
+            timestamp: new Date().toISOString()
+          }]
+        })
+      });
+    } catch(e) { console.warn('Discord PPA webhook failed:', e); }
+  }
+
+  async function sendDiscordLog(casier, officier) {
+    try {
+      const statut = casier.wanted ? '⚠️ RECHERCHÉ' : casier.statut || '—';
+      const infractions = (casier.infractions || []).length;
+      await fetch(DISCORD_WEBHOOK, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          embeds: [{
+            title: '📁 NOUVEAU CASIER JUDICIAIRE',
+            color: casier.wanted ? 0xC0392B : 0x1560A8,
+            fields: [
+              { name: '👤 Suspect', value: `**${casier.nom||''} ${casier.prenom||''}**`, inline: true },
+              { name: '📋 Statut', value: statut, inline: true },
+              { name: '⚡ Infractions', value: `${infractions} infraction(s)`, inline: true },
+              { name: '🎂 Date de naissance', value: casier.dateNaissance || '—', inline: true },
+              { name: '🔍 Empreinte', value: casier.empreinte || '—', inline: true },
+              { name: '👮 Officier', value: officier || '—', inline: true },
+            ],
+            footer: { text: 'LSPD Intranet — Système de Gestion des Casiers' },
+            timestamp: new Date().toISOString()
+          }]
+        })
+      });
+    } catch(e) { console.warn('Discord webhook failed:', e); }
+  }
+
+  const app = initializeApp(firebaseConfig);
+  const auth = getAuth(app);
+  const db = getFirestore(app);
+
+  let allCasiers = [];
+  let plaques = [];
+  let infractions = [];
+  let editingId = null;
+  let currentView = 'list';
+  let userGrade = 'recruit';
+  let userPerms = {};
+
+  const CATEGORIES = ['Vol / Cambriolage','Agression / Violence','Trafic de drogue','Infraction routière','Meurtre / Homicide','Port illégal d\'arme','Fraude / Escroquerie','Évasion / Résistance','Trouble à l\'ordre public','Autre'];
+
+  startClock('tbClock');
+  setupModalClose();
+  window.closeModal = closeModal;
+  window.captureModal = captureModal;
+
+  initPage(auth, db, onAuthStateChanged, 'casiers').then(async ({ grade, name, perms }) => {
+    userGrade = grade;
+    userPerms = perms;
+    if (!perms.canWrite) document.getElementById('btnNew').style.display = 'none';
+    else document.getElementById('btnNew').addEventListener('click', () => newCasier());
+    await loadCasiers();
+  });
+
+  async function loadCasiers() {
+    try {
+      const snap = await getDocs(query(collection(db, 'casiers'), orderBy('nom')));
+      allCasiers = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+      updateStats();
+      render(allCasiers);
+    } catch(e) { console.error(e); }
+  }
+
+  function updateStats() {
+    document.getElementById('sTotal').textContent = allCasiers.length;
+    document.getElementById('sWanted').textContent = allCasiers.filter(c => c.wanted).length;
+    document.getElementById('sAlive').textContent = allCasiers.filter(c => c.statut === 'En vie').length;
+    document.getElementById('sInfractions').textContent = allCasiers.reduce((acc, c) => acc + (c.infractions||[]).length, 0);
+  }
+
+  function render(list) {
+    renderList(list);
+    renderGrid(list);
+  }
+
+  function renderList(list) {
+    const tb = document.getElementById('casiersTable');
+    if (!list.length) {
+      tb.innerHTML = '<tr><td colspan="8"><div class="empty-state"><div class="ei">📁</div><p>AUCUN CASIER TROUVÉ</p></div></td></tr>';
+      return;
+    }
+    tb.innerHTML = list.map(c => `
+      <tr style="${c.wanted?'background:rgba(192,57,43,.04)':''}">
+        <td>
+          ${c.photoUrl
+            ? `<img src="${c.photoUrl}" style="width:36px;height:44px;object-fit:cover;border-radius:3px;border:1px solid var(--border)" onerror="this.outerHTML='<span style=font-size:22px>👤</span>'">`
+            : '<span style="font-size:22px">👤</span>'}
+        </td>
+        <td><strong>${c.nom||''} ${c.prenom||''}</strong></td>
+        <td>${statusBadge(c.statut)}</td>
+        <td style="font-family:'Share Tech Mono',monospace;font-size:11px;color:var(--muted)">${c.empreinte||'—'}</td>
+        <td style="font-family:'Share Tech Mono',monospace;font-size:11px">${(c.plaques||[]).join(', ')||'—'}</td>
+        <td style="font-family:'Share Tech Mono',monospace;text-align:center">${(c.infractions||[]).length}</td>
+        <td>${c.wanted?'<span class="badge b-wanted">⚠ WANTED</span>':'—'}</td>
+        <td>
+          <button class="btn btn-ghost btn-sm" onclick="viewCasier('${c.id}')" title="Voir fiche">👁️</button>
+          ${userPerms.canWrite?`
+            <button class="btn btn-ghost btn-sm" onclick="editCasier('${c.id}')" title="Modifier">✏️</button>
+            <button class="btn btn-ghost btn-sm" onclick="printCasier('${c.id}')" title="Imprimer">🖨️</button>
+            <button class="btn btn-danger btn-sm" onclick="deleteCasier('${c.id}')" title="Supprimer">🗑️</button>
+          `:'<button class="btn btn-ghost btn-sm" onclick="printCasier(\''+c.id+'\')" title="Imprimer">🖨️</button>'}
+        </td>
+      </tr>`).join('');
+  }
+
+  function renderGrid(list) {
+    const grid = document.getElementById('casiersGrid');
+    if (!list.length) {
+      grid.innerHTML = '<div class="empty-state" style="grid-column:1/-1"><div class="ei">📁</div><p>AUCUN CASIER TROUVÉ</p></div>';
+      return;
+    }
+    grid.innerHTML = list.map(c => `
+      <div class="suspect-card ${c.wanted?'wanted':''}" onclick="viewCasier('${c.id}')">
+        <div class="sc-photo">
+          ${c.photoUrl?`<img src="${c.photoUrl}" onerror="this.parentNode.innerHTML='👤'">`: '👤'}
+        </div>
+        <div class="sc-body">
+          <div class="sc-name">${c.nom||''} ${c.prenom||''}</div>
+          <div class="sc-badges">
+            ${statusBadge(c.statut)}
+            ${c.wanted?'<span class="badge b-wanted">⚠ WANTED</span>':''}
+          </div>
+          ${c.empreinte?`<div class="sc-meta">🖐 ${c.empreinte}</div>`:''}
+          <div class="sc-meta">⚡ ${(c.infractions||[]).length} infraction(s)</div>
+          ${(c.plaques||[]).length?`<div class="sc-meta">🚗 ${(c.plaques||[]).join(', ')}</div>`:''}
+          <div class="sc-actions" onclick="event.stopPropagation()">
+            <button class="btn btn-ghost btn-sm" onclick="viewCasier('${c.id}')">👁️ Voir</button>
+            ${userPerms.canWrite?`
+              <button class="btn btn-ghost btn-sm" onclick="editCasier('${c.id}')">✏️</button>
+              <button class="btn btn-ghost btn-sm" onclick="printCasier('${c.id}')">🖨️</button>
+            `:''}
+          </div>
+        </div>
+      </div>`).join('');
+  }
+
+  // ---- FILTERS ----
+  window.filterCasiers = function() {
+    const q = document.getElementById('searchInput').value.toLowerCase();
+    const s = document.getElementById('filterStatut').value;
+    const w = document.getElementById('filterWanted').value;
+    render(allCasiers.filter(c => {
+      const text = (c.nom+' '+c.prenom+' '+(c.empreinte||'')+' '+(c.plaques||[]).join(' ')).toLowerCase();
+      return text.includes(q) && (!s||c.statut===s) && (!w||c.wanted);
+    }));
+  };
+
+  // ---- VIEW TOGGLE ----
+  window.setView = function(v) {
+    currentView = v;
+    document.getElementById('viewList').style.display = v==='list'?'block':'none';
+    document.getElementById('viewGrid').style.display = v==='grid'?'block':'none';
+    document.getElementById('btnList').classList.toggle('active', v==='list');
+    document.getElementById('btnGrid').classList.toggle('active', v==='grid');
+  };
+
+  // ---- TABS ----
+  window.switchTab = function(tab, btn) {
+    document.querySelectorAll('.mtab').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.mtab-content').forEach(c => c.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById('tab-'+tab).classList.add('active');
+  };
+
+  // ---- NEW / EDIT ----
+  function newCasier() {
+    editingId = null;
+    plaques = []; infractions = [];
+    document.getElementById('modalFormTitle').textContent = 'NOUVEAU CASIER';
+    document.querySelectorAll('#modalForm input:not([type="checkbox"]), #modalForm select, #modalForm textarea').forEach(el => el.value = el.tagName==='SELECT'?el.options[0]?.value:'');
+    document.querySelectorAll('#modalForm input[type="checkbox"]').forEach(c => c.checked = false);
+    renderPlaqueForm(); renderInfractionForm();
+    // Reset tabs
+    document.querySelectorAll('.mtab').forEach((b,i) => b.classList.toggle('active',i===0));
+    document.querySelectorAll('.mtab-content').forEach((c,i) => c.classList.toggle('active',i===0));
+    openModal('modalForm');
+  }
+
+  window.editCasier = function(id) {
+    const c = allCasiers.find(x => x.id === id);
+    if (!c) return;
+    editingId = id;
+    plaques = [...(c.plaques||[])];
+    infractions = [...(c.infractions||[])];
+    document.getElementById('modalFormTitle').textContent = 'MODIFIER CASIER';
+    document.getElementById('fNom').value = c.nom||'';
+    document.getElementById('fPrenom').value = c.prenom||'';
+    document.getElementById('fDob').value = c.dateNaissance||'';
+    document.getElementById('fNat').value = c.nationalite||'';
+    document.getElementById('fStatut').value = c.statut||'En vie';
+    document.getElementById('fTel').value = c.telephone||'';
+    document.getElementById('fAddr').value = c.adresse||'';
+    document.getElementById('fEmploi').value = c.emploi||'';
+    document.getElementById('fEmp').value = c.empreinte||'';
+    document.getElementById('fPhoto').value = c.photoUrl||'';
+    document.getElementById('fArmes').value = c.armes||'';
+    document.getElementById('fNotes').value = c.notes||'';
+    document.getElementById('fWanted').checked = !!c.wanted;
+    document.getElementById('fPPA').checked = !!c.ppa;
+    document.getElementById('fVoiture').checked = !!c.voiture;
+    document.getElementById('fCamion').checked = !!c.camion;
+    document.getElementById('fMoto').checked = !!c.moto;
+    document.querySelectorAll('.mtab').forEach((b,i) => b.classList.toggle('active',i===0));
+    document.querySelectorAll('.mtab-content').forEach((c,i) => c.classList.toggle('active',i===0));
+    renderPlaqueForm(); renderInfractionForm();
+    openModal('modalForm');
+  };
+
+  window.saveCasier = async function() {
+    // Collecter infractions depuis le DOM
+    const infRows = document.querySelectorAll('#infractionFormList .inf-row');
+    const savedInfractions = Array.from(infRows).map((_, i) => ({
+      categorie: document.getElementById('ic-'+i)?.value || '',
+      date: document.getElementById('id-'+i)?.value || '',
+      description: document.getElementById('idesc-'+i)?.value || ''
+    }));
+    const payload = {
+      nom: document.getElementById('fNom').value.trim(),
+      prenom: document.getElementById('fPrenom').value.trim(),
+      dateNaissance: document.getElementById('fDob').value,
+      nationalite: document.getElementById('fNat').value,
+      statut: document.getElementById('fStatut').value,
+      telephone: document.getElementById('fTel').value,
+      adresse: document.getElementById('fAddr').value,
+      emploi: document.getElementById('fEmploi').value,
+      empreinte: document.getElementById('fEmp').value,
+      photoUrl: document.getElementById('fPhoto').value,
+      armes: document.getElementById('fArmes').value,
+      notes: document.getElementById('fNotes').value,
+      wanted: document.getElementById('fWanted').checked,
+      ppa: document.getElementById('fPPA').checked,
+      voiture: document.getElementById('fVoiture').checked,
+      camion: document.getElementById('fCamion').checked,
+      moto: document.getElementById('fMoto').checked,
+      plaques,
+      infractions: savedInfractions,
+      updatedAt: new Date().toISOString()
+    };
+    if (!payload.nom) { showToast('Le nom est obligatoire', 'error'); return; }
+    try {
+      const officierName = document.getElementById('tbName')?.textContent || 'Inconnu';
+      if (editingId) {
+        const oldCasier = allCasiers.find(c => c.id === editingId);
+        await updateDoc(doc(db,'casiers',editingId), payload);
+        await addLog(db, 'Casier modifié', `${payload.nom} ${payload.prenom}`);
+        // Envoyer PPA si nouvellement coché
+        if (payload.ppa && !oldCasier?.ppa) {
+          await sendDiscordPPA(payload, officierName);
+        }
+        showToast('Casier mis à jour', 'success');
+      } else {
+        payload.createdAt = new Date().toISOString();
+        await addDoc(collection(db,'casiers'), payload);
+        await addLog(db, 'Casier créé', `Nouveau casier : ${payload.nom} ${payload.prenom}`);
+        await sendDiscordLog(payload, officierName);
+        // Envoyer PPA si coché dès la création
+        if (payload.ppa) {
+          await sendDiscordPPA(payload, officierName);
+        }
+        showToast('Casier créé', 'success');
+      }
+      closeModalForm();
+      await loadCasiers();
+    } catch(e) { showToast('Erreur: '+e.message, 'error'); }
+  };
+
+  window.deleteCasier = async function(id) {
+    if (!confirm('Supprimer définitivement ce casier ?')) return;
+    const c = allCasiers.find(x=>x.id===id);
+    await deleteDoc(doc(db,'casiers',id));
+    await addLog(db,'Casier supprimé',`${c?.nom||''} ${c?.prenom||''}`);
+    await loadCasiers();
+    showToast('Casier supprimé','success');
+  };
+
+  // ---- PLAQUES ----
+  window.addPlaque = function() {
+    const input = document.getElementById('plaqueInput');
+    const val = input.value.trim().toUpperCase();
+    if (!val) return;
+    plaques.push(val); input.value = '';
+    renderPlaqueForm();
+  };
+  window.removePlaque = function(i) { plaques.splice(i,1); renderPlaqueForm(); };
+  function renderPlaqueForm() {
+    document.getElementById('plaqueFormList').innerHTML = plaques.map((p,i) =>
+      `<div class="plaque-tag">${p}<button class="plaque-rm" onclick="removePlaque(${i})">×</button></div>`
+    ).join('');
+  }
+
+  // ---- INFRACTIONS ----
+  window.addInfraction = function() {
+    infractions.push({ categorie:CATEGORIES[0], date:'', description:'' });
+    renderInfractionForm();
+  };
+  window.removeInfraction = function(i) { infractions.splice(i,1); renderInfractionForm(); };
+  function renderInfractionForm() {
+    const list = document.getElementById('infractionFormList');
+    list.innerHTML = infractions.map((inf, i) => `
+      <div class="inf-row">
+        <select id="ic-${i}">${CATEGORIES.map(c=>`<option ${c===inf.categorie?'selected':''}>${c}</option>`).join('')}</select>
+        <input type="date" id="id-${i}" value="${inf.date||''}">
+        <input type="text" id="idesc-${i}" value="${inf.description||''}" placeholder="Description...">
+        <button class="btn btn-danger btn-sm" onclick="removeInfraction(${i})">✕</button>
+      </div>`).join('');
+    if (!infractions.length) list.innerHTML = '<div class="empty-state" style="padding:20px"><div class="ei" style="font-size:24px">⚡</div><p>AUCUNE INFRACTION</p></div>';
+  }
+
+  // ---- VIEW DETAIL ----
+  let currentCasierId = null;
+  window.viewCasier = function(id) {
+    currentCasierId = id;
+    const c = allCasiers.find(x=>x.id===id);
+    if (!c) return;
+    document.getElementById('detailTitle').textContent = `${c.nom||''} ${c.prenom||''}`.trim() || 'FICHE SUSPECT';
+
+    const infHTML = (c.infractions||[]).length
+      ? (c.infractions||[]).map(i=>`<div class="inf-view"><div class="inf-cat">⚡ ${i.categorie||''}</div><div class="inf-date">${i.date||'—'}</div><div class="inf-desc">${i.description||'—'}</div></div>`).join('')
+      : '<div style="color:var(--muted);font-family:\'Share Tech Mono\',monospace;font-size:11px;padding:10px">Aucun antécédent enregistré</div>';
+
+    const plaquesHTML = (c.plaques||[]).length
+      ? (c.plaques||[]).map(p=>`<span class="plaque-tag" style="cursor:default">${p}</span>`).join('')
+      : '<span style="color:var(--muted);font-size:12px">Aucune plaque</span>';
+
+    const permisHTML = [c.ppa&&'🔫 PPA',c.voiture&&'🚗 Voiture',c.camion&&'🚛 Camion',c.moto&&'🏍 Moto'].filter(Boolean).join(' &nbsp;·&nbsp; ') || '—';
+
+    document.getElementById('detailBody').innerHTML = `
+      ${c.wanted?'<div class="wanted-banner">⚠️ CE SUSPECT EST ACTIVEMENT RECHERCHÉ — DANGER POTENTIEL</div>':''}
+      <div class="detail-grid">
+        <div class="detail-photo">
+          ${c.photoUrl?`<img src="${c.photoUrl}" onerror="this.parentNode.innerHTML='👤'">`: '👤'}
+        </div>
+        <div class="detail-info">
+          <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px">
+            ${statusBadge(c.statut)}
+            ${c.wanted?'<span class="badge b-wanted">⚠ WANTED</span>':''}
+          </div>
+          <div class="di-row"><div class="di-lbl">Date de naissance</div><div class="di-val">${c.dateNaissance||'—'}</div></div>
+          <div class="di-row"><div class="di-lbl">Nationalité</div><div class="di-val">${c.nationalite||'—'}</div></div>
+          <div class="di-row"><div class="di-lbl">Téléphone</div><div class="di-val">${c.telephone||'—'}</div></div>
+          <div class="di-row"><div class="di-lbl">Emploi</div><div class="di-val">${c.emploi||'—'}</div></div>
+          <div class="di-row"><div class="di-lbl">Empreinte</div><div class="di-val">${c.empreinte||'—'}</div></div>
+          <div class="di-row"><div class="di-lbl">Permis</div><div class="di-val">${permisHTML}</div></div>
+        </div>
+      </div>
+      <div style="margin-bottom:16px">
+        <div style="font-family:'Share Tech Mono',monospace;font-size:10px;color:var(--muted);letter-spacing:2px;margin-bottom:8px">ADRESSE</div>
+        <div style="font-size:13px">${c.adresse||'—'}</div>
+      </div>
+      <div style="margin-bottom:16px">
+        <div style="font-family:'Share Tech Mono',monospace;font-size:10px;color:var(--muted);letter-spacing:2px;margin-bottom:8px">PLAQUES ENREGISTRÉES</div>
+        <div class="plaque-list">${plaquesHTML}</div>
+      </div>
+      ${c.armes?`<div style="margin-bottom:16px"><div style="font-family:'Share Tech Mono',monospace;font-size:10px;color:var(--muted);letter-spacing:2px;margin-bottom:8px">ARMES ENREGISTRÉES</div><div style="font-size:13px;white-space:pre-line">${c.armes}</div></div>`:''}
+      <div style="margin-bottom:16px">
+        <div style="font-family:'Share Tech Mono',monospace;font-size:10px;color:var(--muted);letter-spacing:2px;margin-bottom:8px">ANTÉCÉDENTS JUDICIAIRES (${(c.infractions||[]).length})</div>
+        <div class="inf-list">${infHTML}</div>
+      </div>
+      ${c.notes?`<div><div style="font-family:'Share Tech Mono',monospace;font-size:10px;color:var(--muted);letter-spacing:2px;margin-bottom:8px">NOTES</div><div style="font-size:13px;color:var(--muted)">${c.notes}</div></div>`:''}
+    `;
+
+    document.getElementById('detailFooter').innerHTML = `
+      <button class="btn btn-ghost" onclick="closeModal('modalDetail')">Fermer</button>
+      <button class="btn btn-ghost" onclick="printCasier('${c.id}')">🖨️ Imprimer</button>
+      ${userPerms.canWrite?`<button class="btn btn-primary" onclick="closeModal('modalDetail');editCasier('${c.id}')">✏️ Modifier</button>`:''}
+    `;
+    openModal('modalDetail');
+  };
+
+  window.closeModalForm = function() {
+    closeModal('modalForm');
+    editingId = null; plaques = []; infractions = [];
+  };
+
+  window.printCasier = function(id) {
+    const c = allCasiers.find(x => x.id === id);
+    if (!c) return;
+    printCasier(c, 'LSPD', 'https://r2.fivemanage.com/XEcvh0aBGRYhLzNNcRsQI/lspdnouveau.png');
+  };
+
+  window.logout = async function() {
+    try {
+      const user = auth.currentUser;
+      if (user) {
+        await deleteDoc(doc(db, 'online', user.uid));
+      }
+    } catch(e) { console.warn('Logout online removal failed:', e); }
+    await signOut(auth);
+    sessionStorage.clear();
+    window.location.href = 'index.html';
+  };
+</script>
+</body>
+</html>
