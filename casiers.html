@@ -622,7 +622,7 @@
 
     const infHTML = (c.infractions||[]).length
       ? (c.infractions||[]).map(i=>`<div class="inf-view"><div class="inf-cat">⚡ ${i.categorie||''}</div><div class="inf-date">${i.date||'—'}</div><div class="inf-desc">${i.description||'—'}</div></div>`).join('')
-      : '<div style="color:var(--text2);font-family:\'IBM Plex Mono\',monospace;font-size:11px;padding:10px">Aucun antécédent enregistré</div>';
+      : "<div style='color:var(--text2);font-family:IBM Plex Mono,monospace;font-size:11px;padding:10px'>Aucun antécédent enregistré</div>";
 
     const plaquesHTML = (c.plaques||[]).length
       ? (c.plaques||[]).map(p=>`<span class="plaque-tag" style="cursor:default">${p}</span>`).join('')
