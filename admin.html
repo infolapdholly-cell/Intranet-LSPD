@@ -8,15 +8,15 @@
   <title>LSPD — Administration</title>
   <link rel="stylesheet" href="style.css">
   <style>
-    .user-card { background:var(--surface); border:1px solid var(--border); border-radius:10px; padding:16px; display:flex; align-items:center; gap:16px; transition:all .2s; animation:fadeIn .3s ease; }
-    .user-card:hover { border-color:var(--accent); }
-    .user-card.suspended { opacity:.5; border-color:var(--danger); }
-    .user-avatar { width:46px; height:46px; border-radius:50%; background:var(--surface2); border:2px solid var(--border); display:flex; align-items:center; justify-content:center; font-size:20px; flex-shrink:0; }
+    .user-card { background:var(--panel); border:1px solid var(--line); border-radius:10px; padding:16px; display:flex; align-items:center; gap:16px; transition:all .2s; animation:fadeIn .3s ease; }
+    .user-card:hover { border-color:var(--blue); }
+    .user-card.suspended { opacity:.5; border-color:var(--red); }
+    .user-avatar { width:46px; height:46px; border-radius:50%; background:var(--panel2); border:2px solid var(--line); display:flex; align-items:center; justify-content:center; font-size:20px; flex-shrink:0; }
     .user-info { flex:1; min-width:0; }
-    .user-name { font-family:'Orbitron',monospace; font-size:13px; font-weight:700; margin-bottom:3px; }
-    .user-email { font-family:'Share Tech Mono',monospace; font-size:10px; color:var(--muted); margin-bottom:4px; }
+    .user-name { font-family:'IBM Plex Mono',monospace; font-size:13px; font-weight:700; margin-bottom:3px; }
+    .user-email { font-family:'IBM Plex Mono',monospace; font-size:10px; color:var(--text2); margin-bottom:4px; }
     .user-actions { display:flex; gap:6px; flex-wrap:wrap; }
-    .grade-select { background:var(--surface2); border:1px solid var(--border); border-radius:4px; color:var(--text); font-family:'Share Tech Mono',monospace; font-size:11px; padding:4px 8px; cursor:pointer; }
+    .grade-select { background:var(--panel2); border:1px solid var(--line); border-radius:4px; color:var(--text); font-family:'IBM Plex Mono',monospace; font-size:11px; padding:4px 8px; cursor:pointer; }
     @keyframes fadeIn { from{opacity:0;transform:translateY(-4px)} to{opacity:1;transform:none} }
   </style>
   
@@ -69,6 +69,63 @@
         <button class="btn btn-primary" id="btnNew">+ Créer un compte</button>
       </div>
 
+      <!-- ════ PANNEAU MAINTENANCE ════ -->
+      <div class="card" id="maintenanceCard" style="margin-bottom:18px;border-color:var(--line2)">
+        <div class="card-head" style="background:var(--panel2)">
+          <div class="card-title" style="color:var(--amber-l)">▲ Contrôle d'accès — Maintenance</div>
+          <div style="display:flex;align-items:center;gap:10px">
+            <span style="font-family:var(--mono);font-size:9px;color:var(--text3)" id="maintenanceStatus">Chargement...</span>
+            <div id="maintenanceToggleWrap"></div>
+          </div>
+        </div>
+        <div class="card-body" style="padding:16px">
+          <!-- ÉTAT ACTUEL -->
+          <div id="maintenanceBanner" style="display:none;margin-bottom:14px;padding:10px 14px;background:rgba(180,83,9,.08);border:1px solid rgba(180,83,9,.3);border-radius:4px;display:none;align-items:center;gap:10px">
+            <span style="font-size:14px">⚠</span>
+            <div style="flex:1;font-family:var(--mono);font-size:11px;color:var(--amber-l)">Le site est actuellement <strong>HORS LIGNE</strong> — les officiers voient la page de maintenance</div>
+            <span id="maintenanceSince" style="font-family:var(--mono);font-size:9px;color:var(--text3)"></span>
+          </div>
+
+          <div class="form-grid g3" style="margin-bottom:14px">
+            <div class="fg">
+              <label>Motif</label>
+              <select id="mtnReason">
+                <option value="Maintenance programmée">Maintenance programmée</option>
+                <option value="Mise à jour du système">Mise à jour du système</option>
+                <option value="Incident technique">Incident technique</option>
+                <option value="Sauvegarde en cours">Sauvegarde en cours</option>
+                <option value="Autre">Autre</option>
+              </select>
+            </div>
+            <div class="fg">
+              <label>Retour en ligne estimé</label>
+              <input type="text" id="mtnEta" placeholder="ex: 14h30 — Dans 30 min">
+            </div>
+            <div class="fg">
+              <label>Message aux officiers</label>
+              <input type="text" id="mtnMsg" placeholder="Message affiché sur la page de maintenance">
+            </div>
+          </div>
+
+          <div style="display:flex;gap:8px;align-items:center">
+            <button class="btn btn-sm" id="btnMtnON"
+              style="background:rgba(185,28,28,.1);border:1px solid rgba(185,28,28,.4);color:var(--red-l);font-family:var(--mono);font-size:9px;letter-spacing:2px"
+              onclick="setMaintenance(true)">
+              ⊘ Mettre hors ligne
+            </button>
+            <button class="btn btn-success btn-sm" id="btnMtnOFF"
+              style="font-family:var(--mono);font-size:9px;letter-spacing:2px"
+              onclick="setMaintenance(false)">
+              ✓ Remettre en ligne
+            </button>
+            <span style="font-family:var(--mono);font-size:9px;color:var(--text3);margin-left:6px" id="mtnLastUpdate"></span>
+          </div>
+        </div>
+      </div>
+      <!-- ════ FIN PANNEAU MAINTENANCE ════ -->
+
+
+
       <div class="stats-grid">
         <div class="stat-box blue"><div class="stat-lbl">TOTAL COMPTES</div><div class="stat-val" id="sTotal">—</div></div>
         <div class="stat-box green"><div class="stat-lbl">ACTIFS</div><div class="stat-val" id="sActifs">—</div></div>
@@ -109,7 +166,7 @@
           <option>Chef Adjoint</option><option>Chef Assistant</option><option>Chef de Police</option>
         </select>
       </div>
-      <div style="background:rgba(37,137,208,.08);border:1px solid var(--border);border-radius:6px;padding:10px 14px;font-family:'Share Tech Mono',monospace;font-size:11px;color:var(--muted)">
+      <div style="background:rgba(37,99,235,.08);border:1px solid var(--line);border-radius:6px;padding:10px 14px;font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--text2)">
         🔑 Le mot de passe par défaut sera <strong style="color:var(--text)">123456</strong><br>
         L'officier devra le changer à sa première connexion.
       </div>
@@ -171,8 +228,8 @@
   const GRADE_COLORS = {
     'chef de police':'var(--gold)','chef assistant':'var(--gold)',
     'chef adjoint':'var(--gold)','commandant':'var(--gold)',
-    'capitaine':'var(--accent-b)','lieutenant':'var(--accent-b)',
-    'sergent':'var(--accent-b)','officier':'var(--accent-b)','cadet':'var(--muted)'
+    'capitaine':'var(--blue-b)','lieutenant':'var(--blue-b)',
+    'sergent':'var(--blue-b)','officier':'var(--blue-b)','cadet':'var(--text2)'
   };
 
   startClock('tbClock');
@@ -187,7 +244,7 @@
       document.querySelector('.main').innerHTML = `
         <div class="empty-state" style="padding:100px 20px">
           <div class="ei">🔒</div><p>ACCÈS RÉSERVÉ AUX ADMINISTRATEURS</p>
-          <a href="dashboard.html" style="display:inline-block;margin-top:20px;padding:10px 24px;background:var(--accent);color:#fff;border-radius:6px;font-family:'Rajdhani',sans-serif;font-size:13px;font-weight:700;text-decoration:none">← RETOUR</a>
+          <a href="dashboard.html" style="display:inline-block;margin-top:20px;padding:10px 24px;background:var(--blue);color:#fff;border-radius:6px;font-family:'IBM Plex Sans',sans-serif;font-size:13px;font-weight:700;text-decoration:none">← RETOUR</a>
         </div>`;
       return;
     }
@@ -208,6 +265,8 @@
       renderUsers(allUsers);
     });
 
+    await loadMaintenanceStatus();
+    watchMaintenance();
     await loadUsers();
   });
 
@@ -238,17 +297,17 @@
           <div class="user-info">
             <div class="user-name">
               ${u.displayName || '—'}
-              ${isMe ? '<span style="font-family:\'Share Tech Mono\',monospace;font-size:9px;color:var(--muted);margin-left:6px">(vous)</span>' : ''}
+              ${isMe ? '<span style="font-family:\'IBM Plex Mono\',monospace;font-size:9px;color:var(--text2);margin-left:6px">(vous)</span>' : ''}
             </div>
             <div class="user-email">${u.email || '—'}</div>
             <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
-              <span style="font-family:'Share Tech Mono',monospace;font-size:11px;font-weight:700;color:${GRADE_COLORS[grade]||'var(--muted)'}">${perms.label || u.grade || '—'}</span>
-              <span style="display:flex;align-items:center;gap:4px;font-family:'Share Tech Mono',monospace;font-size:10px;color:${isOnline?'var(--success)':'var(--muted)'}">
-                <span style="width:6px;height:6px;border-radius:50%;background:${isOnline?'var(--success)':'var(--muted)'};display:inline-block${isOnline?';animation:pulse 1.5s infinite':''}"></span>
+              <span style="font-family:'IBM Plex Mono',monospace;font-size:11px;font-weight:700;color:${GRADE_COLORS[grade]||'var(--text2)'}">${perms.label || u.grade || '—'}</span>
+              <span style="display:flex;align-items:center;gap:4px;font-family:'IBM Plex Mono',monospace;font-size:10px;color:${isOnline?'var(--green)':'var(--text2)'}">
+                <span style="width:6px;height:6px;border-radius:50%;background:${isOnline?'var(--green)':'var(--text2)'};display:inline-block${isOnline?';animation:pulse 1.5s infinite':''}"></span>
                 ${isOnline ? 'En ligne' : 'Hors ligne'}
               </span>
-              ${u.suspended ? '<span style="font-family:\'Share Tech Mono\',monospace;font-size:10px;color:var(--danger)">⛔ SUSPENDU</span>' : ''}
-              ${u.forcePasswordChange ? '<span style="font-family:\'Share Tech Mono\',monospace;font-size:10px;color:var(--warning)">🔑 MDP À CHANGER</span>' : ''}
+              ${u.suspended ? '<span style="font-family:\'IBM Plex Mono\',monospace;font-size:10px;color:var(--red)">⛔ SUSPENDU</span>' : ''}
+              ${u.forcePasswordChange ? '<span style="font-family:\'IBM Plex Mono\',monospace;font-size:10px;color:var(--amber-l)">🔑 MDP À CHANGER</span>' : ''}
             </div>
           </div>
           <div class="user-actions">
@@ -258,6 +317,88 @@
           </div>
         </div>`;
     }).join('');
+  }
+
+
+  // ── MAINTENANCE ──────────────────────────────────────────
+  async function loadMaintenanceStatus() {
+    try {
+      const { doc, getDoc, setDoc } = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js");
+      const snap = await getDoc(doc(db, 'config', 'maintenance'));
+      updateMaintenanceUI(snap.exists() ? snap.data() : { enabled: false });
+    } catch(e) { console.warn('Maintenance load failed:', e); }
+  }
+
+  function updateMaintenanceUI(data) {
+    const isOn    = data.enabled === true;
+    const statusEl = document.getElementById('maintenanceStatus');
+    const banner   = document.getElementById('maintenanceBanner');
+    const since    = document.getElementById('maintenanceSince');
+    const btnOn    = document.getElementById('btnMtnON');
+    const btnOff   = document.getElementById('btnMtnOFF');
+    const lastUpd  = document.getElementById('mtnLastUpdate');
+    const card     = document.getElementById('maintenanceCard');
+
+    if (statusEl) {
+      statusEl.textContent = isOn ? '⚠ HORS LIGNE' : '✓ En ligne';
+      statusEl.style.color  = isOn ? 'var(--amber-l)' : 'var(--green-l)';
+    }
+    if (card) card.style.borderColor = isOn ? 'rgba(180,83,9,.5)' : 'var(--line2)';
+    if (banner) banner.style.display = isOn ? 'flex' : 'none';
+    if (btnOn)  btnOn.style.opacity  = isOn ? '.4' : '1';
+    if (btnOff) btnOff.style.opacity = isOn ? '1'  : '.4';
+
+    if (since && data.enabledAt) {
+      since.textContent = 'Depuis ' + new Date(data.enabledAt).toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'});
+    }
+    if (lastUpd && data.updatedAt) {
+      lastUpd.textContent = 'MAJ ' + new Date(data.updatedAt).toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'});
+    }
+
+    // Pré-remplir les champs si actif
+    if (isOn) {
+      if (data.reason  && document.getElementById('mtnReason')) document.getElementById('mtnReason').value = data.reason;
+      if (data.eta     && document.getElementById('mtnEta'))    document.getElementById('mtnEta').value    = data.eta;
+      if (data.message && document.getElementById('mtnMsg'))    document.getElementById('mtnMsg').value    = data.message;
+    }
+  }
+
+  window.setMaintenance = async function(enable) {
+    try {
+      const { doc, setDoc } = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js");
+      const reason  = document.getElementById('mtnReason')?.value || 'Maintenance programmée';
+      const eta     = document.getElementById('mtnEta')?.value    || '';
+      const message = document.getElementById('mtnMsg')?.value    || '';
+      const now     = new Date().toISOString();
+
+      const payload = {
+        enabled:   enable,
+        reason,
+        eta,
+        message,
+        updatedAt: now,
+        updatedBy: document.getElementById('tbName')?.textContent || 'Admin',
+      };
+      if (enable) payload.enabledAt = now;
+
+      await setDoc(doc(db, 'config', 'maintenance'), payload);
+      await addLog(db, enable ? 'Site mis hors ligne' : 'Site remis en ligne', reason || '');
+
+      updateMaintenanceUI(payload);
+      showToast(enable ? 'Site mis hors ligne — Maintenance activée' : 'Site remis en ligne ✓', enable ? 'info' : 'success');
+    } catch(e) {
+      showToast('Erreur: ' + e.message, 'error');
+    }
+  };
+
+  // Écoute en temps réel du statut maintenance pour l'admin lui-même
+  async function watchMaintenance() {
+    try {
+      const { doc, onSnapshot } = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js");
+      onSnapshot(doc(db, 'config', 'maintenance'), snap => {
+        updateMaintenanceUI(snap.exists() ? snap.data() : { enabled: false });
+      });
+    } catch(e) {}
   }
 
   window.filterUsers = function() {

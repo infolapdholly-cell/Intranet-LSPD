@@ -96,7 +96,7 @@
                 </tr>
               </thead>
               <tbody id="amendesTable">
-                <tr><td colspan="9" style="text-align:center;padding:30px;color:var(--muted);font-family:'Share Tech Mono',monospace;font-size:11px">CHARGEMENT...</td></tr>
+                <tr><td colspan="9" style="text-align:center;padding:30px;color:var(--text2);font-family:'IBM Plex Mono',monospace;font-size:11px">CHARGEMENT...</td></tr>
               </tbody>
             </table>
           </div>
@@ -159,6 +159,8 @@
   import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
   import { getFirestore, collection, addDoc, getDocs, doc, updateDoc, deleteDoc, query, orderBy } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
   import { initPage, startClock, showToast, openModal, closeModal, setupModalClose, statusBadge, addLog, generateRef, getPerms, captureModal } from './utils.js';
+  import { checkMaintenance, watchMaintenance } from './maintenance.js';
+
   import { printAmende } from './pdf-templates.js';
 
   const firebaseConfig = {
@@ -177,6 +179,10 @@
   let allAmendes = [];
   let editingId = null;
   let userGrade = 'recruit';
+
+  // Vérification maintenance avant tout
+  await checkMaintenance();
+  watchMaintenance();
 
   startClock('tbClock');
   setupModalClose();
@@ -228,13 +234,13 @@
     }
     tb.innerHTML = list.map(a => `
       <tr>
-        <td style="font-family:'Share Tech Mono',monospace;font-size:11px;color:var(--muted)">${a.reference || '—'}</td>
+        <td style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--text2)">${a.reference || '—'}</td>
         <td><strong>${a.nom || '—'}</strong></td>
-        <td style="font-family:'Share Tech Mono',monospace;font-size:12px">${a.plaque || '—'}</td>
+        <td style="font-family:'IBM Plex Mono',monospace;font-size:12px">${a.plaque || '—'}</td>
         <td style="font-size:12px">${a.motif || '—'}</td>
-        <td style="font-family:'Share Tech Mono',monospace;color:${a.statut==='Payée'?'var(--success)':'var(--danger-l)'}"><strong>$${parseFloat(a.montant||0).toLocaleString('fr-FR')}</strong></td>
+        <td style="font-family:'IBM Plex Mono',monospace;color:${a.statut==='Payée'?'var(--green)':'var(--red-l)'}"><strong>$${parseFloat(a.montant||0).toLocaleString('fr-FR')}</strong></td>
         <td style="font-size:12px">${a.officier || '—'}</td>
-        <td style="font-family:'Share Tech Mono',monospace;font-size:11px">${a.date || '—'}</td>
+        <td style="font-family:'IBM Plex Mono',monospace;font-size:11px">${a.date || '—'}</td>
         <td>${statusBadge(a.statut)}</td>
         <td style="display:flex;gap:4px;flex-wrap:wrap">
           <button class="btn btn-ghost btn-sm" onclick="printPV('${a.id}')" title="Imprimer PV">🖨️</button>
