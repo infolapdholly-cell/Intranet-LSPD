@@ -431,14 +431,13 @@ body{font-family:'IBM Plex Sans',sans-serif;background:var(--bg);color:var(--tex
       await setDoc(doc(db, 'config', 'maintenance'), payload);
       await addLog(db, enable ? 'Site mis hors ligne' : 'Site remis en ligne', payload.reason || '');
 
-      // Si activation: vider la collection "online" pour forcer la déco des autres
+      // Si activation: forcer la déconnexion de tous les non-chefs via forceLogout
       if (enable) {
         const myUidNow = auth.currentUser?.uid;
         const onlineSnap = await getDocs(collection(db, 'online'));
-        const dels = onlineSnap.docs
-          .filter(d => d.id !== myUidNow)
-          .map(d => deleteDoc(doc(db,'online',d.id)));
-        await Promise.all(dels);
+        const targets = onlineSnap.docs.filter(d => d.id !== myUidNow);
+        const updates = targets.map(d => updateDoc(doc(db,'users',d.id), { forceLogout: true }));
+        await Promise.all(updates);
       }
 
       applyMaintenanceUI(payload);
@@ -450,11 +449,15 @@ body{font-family:'IBM Plex Sans',sans-serif;background:var(--bg);color:var(--tex
     if (!confirm('Déconnecter TOUS les officiers actuellement en ligne (sauf vous) ?')) return;
     try {
       const myUidNow = auth.currentUser?.uid;
-      const snap = await getDocs(collection(db, 'online'));
-      const dels = snap.docs.filter(d => d.id !== myUidNow).map(d => deleteDoc(doc(db,'online',d.id)));
-      await Promise.all(dels);
-      await addLog(db, 'Déconnexion forcée', 'Tous les officiers en ligne');
-      showToast('Tous les officiers ont été déconnectés ✓', 'success');
+      // Écrire forceLogout:true sur chaque user en ligne (sauf soi-même)
+      // utils.js détecte ce flag et appelle signOut() sur leur navigateur
+      const onlineSnap = await getDocs(collection(db, 'online'));
+      const targets = onlineSnap.docs.filter(d => d.id !== myUidNow);
+      if (targets.length === 0) { showToast('Aucun officier en ligne', 'info'); return; }
+      const updates = targets.map(d => updateDoc(doc(db,'users',d.id), { forceLogout: true }));
+      await Promise.all(updates);
+      await addLog(db, 'Déconnexion forcée', `${targets.length} officier(s) déconnecté(s)`);
+      showToast(`${targets.length} officier(s) déconnecté(s) ✓`, 'success');
     } catch(e) { showToast('Erreur: ' + e.message, 'error'); }
   };
 

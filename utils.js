@@ -110,6 +110,24 @@ export async function initPage(auth, db, onAuthStateChanged, pageName) {
         } catch(e) { console.warn('[Maintenance watcher]', e); }
       }
       // ────────────────────────────────────────────────────────
+
+      // ── WATCHER DÉCONNEXION FORCÉE ──────────────────────────
+      // Si un admin écrit forceLogout:true dans le doc user → déconnexion immédiate
+      try {
+        const { doc: docFn3, onSnapshot: onSnap3, updateDoc } = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js");
+        onSnap3(docFn3(db, 'users', user.uid), async snap => {
+          if (snap.exists() && snap.data().forceLogout === true) {
+            try {
+              // Remettre forceLogout à false avant de déco (évite boucle)
+              await updateDoc(docFn3(db, 'users', user.uid), { forceLogout: false });
+              const { signOut } = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js");
+              await signOut(auth);
+            } catch(e) {}
+            window.location.replace('index.html');
+          }
+        });
+      } catch(e) { console.warn('[ForceLogout watcher]', e); }
+      // ────────────────────────────────────────────────────────
       resolve({ user, grade, name, perms });
     });
   });
