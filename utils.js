@@ -79,6 +79,29 @@ export async function initPage(auth, db, onAuthStateChanged, pageName) {
         document.getElementById('sidebarOverlay')?.classList.toggle('show');
       };
 
+
+      // ── WATCHER MAINTENANCE EN TEMPS RÉEL ──────────────────
+      // Déconnecte l'utilisateur si le site passe hors ligne
+      const ADMIN_GRADES = ['chef de police','chef assistant','chef adjoint','commandant','admin','invite'];
+      const currentPageForMtn = window.location.pathname.split('/').pop() || '';
+      const mtnBypass = ['maintenance.html','admin.html','index.html','change-password.html'];
+      
+      if (!mtnBypass.some(p => currentPageForMtn.endsWith(p))) {
+        try {
+          const { doc: docFn2, onSnapshot } = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js");
+          onSnapshot(docFn2(db, 'config', 'maintenance'), snap => {
+            if (snap.exists() && snap.data().enabled === true) {
+              // Vérifier si l'utilisateur actuel est admin → bypass
+              if (!ADMIN_GRADES.includes(grade)) {
+                const d = snap.data();
+                const params = new URLSearchParams({ msg: d.message||'', eta: d.eta||'', reason: d.reason||'' });
+                window.location.replace('maintenance.html?' + params.toString());
+              }
+            }
+          });
+        } catch(e) { console.warn('[Maintenance watcher]', e); }
+      }
+      // ────────────────────────────────────────────────────────
       resolve({ user, grade, name, perms });
     });
   });
