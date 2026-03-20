@@ -88,28 +88,51 @@ export async function initPage(auth, db, onAuthStateChanged, pageName) {
       // ── WATCHER BROADCAST MESSAGE ────────────────────────────
       const bcastBypass = ['admin.html','index.html','maintenance.html'];
       const currentPageBcast = window.location.pathname.split('/').pop() || '';
-      if (!bcastBypass.some(p => currentPageBcast.endsWith(p))) {
+      if (!bcastBypass.some(function(p){ return currentPageBcast.endsWith(p); })) {
         try {
-          const style = document.createElement('style');
-          style.textContent = `.broadcast-banner{position:fixed;top:52px;left:0;right:0;z-index:190;padding:10px 20px;display:none;align-items:center;gap:12px;font-family:'Share Tech Mono',monospace;font-size:11px;letter-spacing:1px;box-shadow:0 2px 12px rgba(0,0,0,.4)}.broadcast-banner.warning{background:rgba(214,137,16,.95);color:#fff;border-bottom:1px solid #d68910}.broadcast-banner.info{background:rgba(20,88,160,.95);color:#fff;border-bottom:1px solid #2589d0}.broadcast-banner.danger{background:rgba(192,57,43,.95);color:#fff;border-bottom:1px solid #c0392b}.bb-title{font-weight:700;margin-right:4px}.bb-close{margin-left:auto;cursor:pointer;opacity:.7;font-size:18px;background:none;border:none;color:inherit;padding:0 4px}`;
-          document.head.appendChild(style);
-          const banner = document.createElement('div');
-          banner.id = 'broadcastBanner';
-          banner.className = 'broadcast-banner';
-          banner.innerHTML = '<span class="bb-title" id="bbTitle"></span><span id="bbBody"></span><button class="bb-close" onclick="this.parentElement.style.display=\'none\'">×</button>';
-          document.body.appendChild(banner);
+          // CSS bannière
+          const bStyle = document.createElement('style');
+          const bCSS = [
+            '.broadcast-banner{position:fixed;top:52px;left:0;right:0;z-index:190;',
+            'padding:10px 20px;display:none;align-items:center;gap:12px;',
+            'font-size:11px;letter-spacing:1px;box-shadow:0 2px 12px rgba(0,0,0,.4)}',
+            '.broadcast-banner.warning{background:rgba(214,137,16,.95);color:#fff;border-bottom:1px solid #d68910}',
+            '.broadcast-banner.info{background:rgba(20,88,160,.95);color:#fff;border-bottom:1px solid #2589d0}',
+            '.broadcast-banner.danger{background:rgba(192,57,43,.95);color:#fff;border-bottom:1px solid #c0392b}',
+            '.bb-title{font-weight:700;margin-right:4px}',
+            '.bb-close{margin-left:auto;cursor:pointer;opacity:.7;font-size:18px;background:none;border:none;color:inherit;padding:0 4px}'
+          ].join('');
+          bStyle.textContent = bCSS;
+          document.head.appendChild(bStyle);
+          // DOM bannière
+          const bBanner = document.createElement('div');
+          bBanner.id = 'broadcastBanner';
+          bBanner.className = 'broadcast-banner';
+          const bTitle = document.createElement('span');
+          bTitle.className = 'bb-title';
+          bTitle.id = 'bbTitle';
+          const bBody = document.createElement('span');
+          bBody.id = 'bbBody';
+          const bClose = document.createElement('button');
+          bClose.className = 'bb-close';
+          bClose.textContent = '×';
+          bClose.onclick = function(){ bBanner.style.display = 'none'; };
+          bBanner.appendChild(bTitle);
+          bBanner.appendChild(bBody);
+          bBanner.appendChild(bClose);
+          document.body.appendChild(bBanner);
+          // Listener Firestore
           const { doc: docBC, onSnapshot: onSnapBC } = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js");
-          onSnapBC(docBC(db, 'config', 'broadcast'), snap => {
-            const b = document.getElementById('broadcastBanner');
-            if (!b) return;
+          onSnapBC(docBC(db, 'config', 'broadcast'), function(snap) {
+            if (!bBanner) return;
             if (snap.exists() && snap.data().active === true) {
               const d = snap.data();
-              b.className = 'broadcast-banner ' + (d.type || 'warning');
-              document.getElementById('bbTitle').textContent = d.title ? d.title + ' —' : '';
-              document.getElementById('bbBody').textContent = d.body || '';
-              b.style.display = 'flex';
+              bBanner.className = 'broadcast-banner ' + (d.type || 'warning');
+              bTitle.textContent = d.title ? d.title + ' —' : '';
+              bBody.textContent = d.body || '';
+              bBanner.style.display = 'flex';
             } else {
-              b.style.display = 'none';
+              bBanner.style.display = 'none';
             }
           });
         } catch(e) { console.warn('[Broadcast watcher]', e); }
