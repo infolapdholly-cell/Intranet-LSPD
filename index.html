@@ -272,9 +272,12 @@
         }
       }
 
+      // Vérifier si première connexion (forcePasswordChange)
+      const forceChange = uSnap.exists() && uSnap.data().forcePasswordChange;
+
       // Tout bon → rafraîchir grade et rediriger
       await refreshGrade(user);
-      window.location.href = 'dashboard.html';
+      window.location.href = forceChange ? 'change-password.html' : 'dashboard.html';
     } catch(e) {
       // En cas d'erreur réseau, laisser passer (fail-open)
       await refreshGrade(user);
