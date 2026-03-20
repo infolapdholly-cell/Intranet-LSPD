@@ -2,6 +2,7 @@
 <html lang="fr">
 <head>
   <meta charset="UTF-8">
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@400;500;600;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
   <style>
 :root {
   --bg: #05080f;
@@ -52,7 +53,7 @@
 }
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
 html,body{height:100%;}
-body{font-family:'IBM Plex Sans',sans-serif;background:var(--bg);color:var(--text);font-size:13px;line-height:1.5;}
+body{font-family:'Rajdhani',sans-serif;background:var(--bg);color:var(--text);font-size:13px;line-height:1.5;}
 </style>
   <link rel="icon" type="image/png" href="https://r2.fivemanage.com/XEcvh0aBGRYhLzNNcRsQI/lspdnouveau.png">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -68,11 +69,11 @@ body{font-family:'IBM Plex Sans',sans-serif;background:var(--bg);color:var(--tex
     .veh-card.hors::before{background:var(--red);}
     .veh-card:hover{border-color:var(--blue);box-shadow:0 0 16px rgba(59,130,246,.15);transform:translateY(-2px);}
     .veh-icon{font-size:48px;text-align:center;padding:18px 0 8px;}
-    .veh-plaque{font-family:'IBM Plex Mono',monospace;font-size:15px;font-weight:700;letter-spacing:3px;text-align:center;margin-bottom:4px;}
-    .veh-modele{font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--text2);text-align:center;margin-bottom:12px;letter-spacing:1px;}
+    .veh-plaque{font-family:'Share Tech Mono',monospace;font-size:15px;font-weight:700;letter-spacing:3px;text-align:center;margin-bottom:4px;}
+    .veh-modele{font-family:'Share Tech Mono',monospace;font-size:11px;color:var(--text2);text-align:center;margin-bottom:12px;letter-spacing:1px;}
     .veh-row{display:flex;justify-content:space-between;margin-bottom:6px;font-size:12px;padding-bottom:6px;border-bottom:1px solid rgba(27,58,94,.3);}
     .veh-row:last-child{border-bottom:none;}
-    .veh-lbl{color:var(--text2);font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:1px;}
+    .veh-lbl{color:var(--text2);font-family:'Share Tech Mono',monospace;font-size:10px;letter-spacing:1px;}
     .veh-body{padding:0 16px 14px;}
     .veh-actions{display:flex;gap:6px;padding:10px 16px;border-top:1px solid var(--line);}
     .veh-actions button{flex:1;}
@@ -115,7 +116,7 @@ body{font-family:'IBM Plex Sans',sans-serif;background:var(--bg);color:var(--tex
       <div class="page-head">
         <div class="page-head-left"><h2>PARC AUTOMOBILE</h2><p>// VÉHICULES DE SERVICE — LOS SANTOS POLICE DEPARTMENT</p></div>
         <div style="display:flex;gap:8px">
-          <button class="btn btn-ghost btn-sm" onclick="window.print()">📋 Imprimer liste</button>
+          
           <button class="btn btn-primary" id="btnNew" style="display:none">+ Ajouter véhicule</button>
         </div>
       </div>
@@ -252,14 +253,14 @@ body{font-family:'IBM Plex Sans',sans-serif;background:var(--bg);color:var(--tex
           <div class="veh-row"><span class="veh-lbl">TYPE</span><span style="font-size:12px">${v.type||'—'}</span></div>
           <div class="veh-row"><span class="veh-lbl">STATUT</span>${statusBadge(v.statut)}</div>
           <div class="veh-row"><span class="veh-lbl">ASSIGNÉ</span><span style="font-size:12px">${v.assigne||'—'}</span></div>
-          ${v.notes?`<div style="font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--text2);margin-top:6px">${v.notes}</div>`:''}
+          ${v.notes?`<div style="font-family:'Share Tech Mono',monospace;font-size:10px;color:var(--text2);margin-top:6px">${v.notes}</div>`:''}
         </div>
         <div class="veh-actions">
           ${userPerms.canWrite && userPerms.canManageVehicles ? `
             <button class="btn btn-ghost btn-sm" onclick="changeStatut('${v.id}')">🔄 Statut</button>
             <button class="btn btn-ghost btn-sm" onclick="editVehicule('${v.id}')">✏️</button>
             <button class="btn btn-danger btn-sm" onclick="deleteVehicule('${v.id}')">🗑️</button>
-          ` : `<div style="flex:1;text-align:center;font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--text2)">LECTURE SEULE</div>`}
+          ` : `<div style="flex:1;text-align:center;font-family:'Share Tech Mono',monospace;font-size:11px;color:var(--text2)">LECTURE SEULE</div>`}
         </div>
       </div>`).join('');
   }
@@ -270,11 +271,11 @@ body{font-family:'IBM Plex Sans',sans-serif;background:var(--bg);color:var(--tex
     tb.innerHTML = list.map(v => `
       <tr>
         <td style="font-size:20px">${TYPE_ICONS[v.type]||'🚗'}</td>
-        <td style="font-family:'IBM Plex Mono',monospace;font-size:13px;font-weight:700;letter-spacing:2px">${v.plaque||'—'}</td>
+        <td style="font-family:'Share Tech Mono',monospace;font-size:13px;font-weight:700;letter-spacing:2px">${v.plaque||'—'}</td>
         <td style="font-size:12px">${v.modele||'—'}${v.annee?' · '+v.annee:''}</td>
         <td style="font-size:12px">${v.assigne||'—'}</td>
         <td>${statusBadge(v.statut)}</td>
-        <td style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--text2)">${v.notes||'—'}</td>
+        <td style="font-family:'Share Tech Mono',monospace;font-size:11px;color:var(--text2)">${v.notes||'—'}</td>
         <td style="display:flex;gap:4px">
           ${userPerms.canWrite && userPerms.canManageVehicles ? `
             <button class="btn btn-ghost btn-sm" onclick="changeStatut('${v.id}')" title="Changer statut">🔄</button>

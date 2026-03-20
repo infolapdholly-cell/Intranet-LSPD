@@ -52,9 +52,9 @@
 }
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
 html,body{height:100%;}
-body{font-family:'IBM Plex Sans',sans-serif;background:var(--bg);color:var(--text);font-size:13px;line-height:1.5;-webkit-font-smoothing:antialiased;}
+body{font-family:'Rajdhani',sans-serif;background:var(--bg);color:var(--text);}
 </style>
-  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@400;500;600;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
   <link rel="icon" type="image/png" href="https://r2.fivemanage.com/XEcvh0aBGRYhLzNNcRsQI/lspdnouveau.png">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>LSPD — Casiers Judiciaires</title>
@@ -76,9 +76,9 @@ body{font-family:'IBM Plex Sans',sans-serif;background:var(--bg);color:var(--tex
     .sc-photo { width:100%; height:160px; object-fit:cover; background:var(--panel2); display:flex; align-items:center; justify-content:center; font-size:48px; color:var(--text2); }
     .sc-photo img { width:100%; height:100%; object-fit:cover; }
     .sc-body { padding:14px; }
-    .sc-name { font-family:'IBM Plex Mono',monospace; font-size:13px; font-weight:700; letter-spacing:1px; margin-bottom:8px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+    .sc-name { font-family:'Share Tech Mono',monospace; font-size:13px; font-weight:700; letter-spacing:1px; margin-bottom:8px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
     .sc-badges { display:flex; gap:5px; flex-wrap:wrap; margin-bottom:8px; }
-    .sc-meta { font-family:'IBM Plex Mono',monospace; font-size:10px; color:var(--text2); margin-bottom:3px; }
+    .sc-meta { font-family:'Share Tech Mono',monospace; font-size:10px; color:var(--text2); margin-bottom:3px; }
     .sc-actions { display:flex; gap:5px; margin-top:10px; border-top:1px solid var(--line); padding-top:10px; }
     .sc-actions button { flex:1; padding:6px; font-size:11px; }
 
@@ -89,24 +89,24 @@ body{font-family:'IBM Plex Sans',sans-serif;background:var(--bg);color:var(--tex
     .detail-info { display:flex; flex-direction:column; gap:8px; }
     .di-row { display:flex; flex-direction:column; gap:2px; }
     .di-lbl { font-size:9px; font-weight:700; letter-spacing:2px; text-transform:uppercase; color:var(--text2); }
-    .di-val { font-family:'IBM Plex Mono',monospace; font-size:13px; color:var(--text); }
+    .di-val { font-family:'Share Tech Mono',monospace; font-size:13px; color:var(--text); }
 
     /* INFRACTIONS */
     .inf-list { display:flex; flex-direction:column; gap:8px; margin-bottom:10px; }
     .inf-row { background:var(--panel2); border:1px solid var(--line); border-radius:5px; padding:10px 12px; display:grid; grid-template-columns:160px 120px 1fr auto; gap:8px; align-items:center; }
-    .inf-row select, .inf-row input { padding:6px 9px; background:var(--panel); border:1px solid var(--line); border-radius:4px; color:var(--text); font-family:'IBM Plex Mono',monospace; font-size:11px; outline:none; }
+    .inf-row select, .inf-row input { padding:6px 9px; background:var(--panel); border:1px solid var(--line); border-radius:4px; color:var(--text); font-family:'Share Tech Mono',monospace; font-size:11px; outline:none; }
     .inf-row select:focus, .inf-row input:focus { border-color:var(--blue-b); }
     .inf-view { background:var(--panel2); border:1px solid var(--line); border-radius:5px; padding:10px 14px; display:flex; gap:14px; align-items:center; }
-    .inf-cat { font-family:'IBM Plex Mono',monospace; font-size:10px; color:var(--amber-l); min-width:150px; }
-    .inf-date { font-family:'IBM Plex Mono',monospace; font-size:10px; color:var(--text2); min-width:90px; }
+    .inf-cat { font-family:'Share Tech Mono',monospace; font-size:10px; color:var(--amber-l); min-width:150px; }
+    .inf-date { font-family:'Share Tech Mono',monospace; font-size:10px; color:var(--text2); min-width:90px; }
     .inf-desc { font-size:12px; color:var(--text); }
 
     /* PLAQUES */
     .plaque-list { display:flex; flex-wrap:wrap; gap:7px; margin-bottom:10px; }
-    .plaque-tag { background:var(--panel2); border:1px solid var(--line); border-radius:4px; padding:4px 10px; font-family:'IBM Plex Mono',monospace; font-size:12px; display:flex; align-items:center; gap:6px; }
+    .plaque-tag { background:var(--panel2); border:1px solid var(--line); border-radius:4px; padding:4px 10px; font-family:'Share Tech Mono',monospace; font-size:12px; display:flex; align-items:center; gap:6px; }
     .plaque-rm { background:none; border:none; color:var(--red-l); cursor:pointer; font-size:14px; padding:0; line-height:1; }
     .plaque-add { display:flex; gap:8px; }
-    .plaque-add input { flex:1; padding:7px 10px; background:var(--panel2); border:1px solid var(--line); border-radius:4px; color:var(--text); font-family:'IBM Plex Mono',monospace; font-size:12px; outline:none; }
+    .plaque-add input { flex:1; padding:7px 10px; background:var(--panel2); border:1px solid var(--line); border-radius:4px; color:var(--text); font-family:'Share Tech Mono',monospace; font-size:12px; outline:none; }
     .plaque-add input:focus { border-color:var(--blue-b); }
 
     /* WANTED BANNER */
@@ -115,7 +115,7 @@ body{font-family:'IBM Plex Sans',sans-serif;background:var(--bg);color:var(--tex
 
     /* TABS in modal */
     .modal-tabs { display:flex; gap:3px; margin-bottom:16px; border-bottom:1px solid var(--line); }
-    .mtab { padding:8px 14px; background:transparent; border:none; color:var(--text2); font-family:'IBM Plex Sans',sans-serif; font-size:13px; font-weight:600; letter-spacing:1px; cursor:pointer; border-bottom:2px solid transparent; transition:all .2s; margin-bottom:-1px; }
+    .mtab { padding:8px 14px; background:transparent; border:none; color:var(--text2); font-family:'Rajdhani',sans-serif; font-size:13px; font-weight:600; letter-spacing:1px; cursor:pointer; border-bottom:2px solid transparent; transition:all .2s; margin-bottom:-1px; }
     .mtab.active { color:var(--blue-b); border-bottom-color:var(--blue-b); }
     .mtab-content { display:none; }
     .mtab-content.active { display:block; }
@@ -203,7 +203,7 @@ body{font-family:'IBM Plex Sans',sans-serif;background:var(--bg);color:var(--tex
                   <tr><th>PHOTO</th><th>NOM COMPLET</th><th>STATUT</th><th>EMPREINTE</th><th>PLAQUES</th><th>INFRACTIONS</th><th>WANTED</th><th>ACTIONS</th></tr>
                 </thead>
                 <tbody id="casiersTable">
-                  <tr><td colspan="8" style="text-align:center;padding:30px;color:var(--text2);font-family:'IBM Plex Mono',monospace;font-size:11px">CHARGEMENT...</td></tr>
+                  <tr><td colspan="8" style="text-align:center;padding:30px;color:var(--text2);font-family:'Share Tech Mono',monospace;font-size:11px">CHARGEMENT...</td></tr>
                 </tbody>
               </table>
             </div>
@@ -266,13 +266,13 @@ body{font-family:'IBM Plex Sans',sans-serif;background:var(--bg);color:var(--tex
 
       <!-- TAB VEHICULES -->
       <div class="mtab-content" id="tab-vehicules">
-        <div style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--text2);margin-bottom:12px;letter-spacing:2px">PLAQUES D'IMMATRICULATION ENREGISTRÉES</div>
+        <div style="font-family:'Share Tech Mono',monospace;font-size:11px;color:var(--text2);margin-bottom:12px;letter-spacing:2px">PLAQUES D'IMMATRICULATION ENREGISTRÉES</div>
         <div class="plaque-list" id="plaqueFormList"></div>
         <div class="plaque-add">
           <input type="text" id="plaqueInput" placeholder="ex: ABC-123" onkeydown="if(event.key==='Enter')addPlaque()">
           <button class="btn btn-ghost btn-sm" onclick="addPlaque()">+ Ajouter</button>
         </div>
-        <div style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--text2);margin:16px 0 10px;letter-spacing:2px">PERMIS</div>
+        <div style="font-family:'Share Tech Mono',monospace;font-size:11px;color:var(--text2);margin:16px 0 10px;letter-spacing:2px">PERMIS</div>
         <div style="display:flex;gap:20px;flex-wrap:wrap;background:var(--panel2);border:1px solid var(--line);border-radius:5px;padding:12px 16px">
           <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:13px;font-weight:600"><input type="checkbox" id="fPPA" style="accent-color:var(--blue-b)"> 🔫 Port d'arme</label>
           <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:13px;font-weight:600"><input type="checkbox" id="fVoiture" style="accent-color:var(--blue-b)"> 🚗 Voiture</label>
@@ -440,9 +440,9 @@ body{font-family:'IBM Plex Sans',sans-serif;background:var(--bg);color:var(--tex
         </td>
         <td><strong>${c.nom||''} ${c.prenom||''}</strong></td>
         <td>${statusBadge(c.statut)}</td>
-        <td style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--text2)">${c.empreinte||'—'}</td>
-        <td style="font-family:'IBM Plex Mono',monospace;font-size:11px">${(c.plaques||[]).join(', ')||'—'}</td>
-        <td style="font-family:'IBM Plex Mono',monospace;text-align:center">${(c.infractions||[]).length}</td>
+        <td style="font-family:'Share Tech Mono',monospace;font-size:11px;color:var(--text2)">${c.empreinte||'—'}</td>
+        <td style="font-family:'Share Tech Mono',monospace;font-size:11px">${(c.plaques||[]).join(', ')||'—'}</td>
+        <td style="font-family:'Share Tech Mono',monospace;text-align:center">${(c.infractions||[]).length}</td>
         <td>${c.wanted?'<span class="badge b-wanted">⚠ WANTED</span>':'—'}</td>
         <td>
           <button class="btn btn-ghost btn-sm" onclick="viewCasier('${c.id}')" title="Voir fiche">👁️</button>
@@ -668,7 +668,7 @@ body{font-family:'IBM Plex Sans',sans-serif;background:var(--bg);color:var(--tex
 
     const infHTML = (c.infractions||[]).length
       ? (c.infractions||[]).map(i=>`<div class="inf-view"><div class="inf-cat">⚡ ${i.categorie||''}</div><div class="inf-date">${i.date||'—'}</div><div class="inf-desc">${i.description||'—'}</div></div>`).join('')
-      : "<div style='color:var(--text2);font-family:IBM Plex Mono,monospace;font-size:11px;padding:10px'>Aucun antécédent enregistré</div>";
+      : "<div style='color:var(--text2);font-family:Share Tech Mono,monospace;font-size:11px;padding:10px'>Aucun antécédent enregistré</div>";
 
     const plaquesHTML = (c.plaques||[]).length
       ? (c.plaques||[]).map(p=>`<span class="plaque-tag" style="cursor:default">${p}</span>`).join('')
@@ -696,19 +696,19 @@ body{font-family:'IBM Plex Sans',sans-serif;background:var(--bg);color:var(--tex
         </div>
       </div>
       <div style="margin-bottom:16px">
-        <div style="font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--text2);letter-spacing:2px;margin-bottom:8px">ADRESSE</div>
+        <div style="font-family:'Share Tech Mono',monospace;font-size:10px;color:var(--text2);letter-spacing:2px;margin-bottom:8px">ADRESSE</div>
         <div style="font-size:13px">${c.adresse||'—'}</div>
       </div>
       <div style="margin-bottom:16px">
-        <div style="font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--text2);letter-spacing:2px;margin-bottom:8px">PLAQUES ENREGISTRÉES</div>
+        <div style="font-family:'Share Tech Mono',monospace;font-size:10px;color:var(--text2);letter-spacing:2px;margin-bottom:8px">PLAQUES ENREGISTRÉES</div>
         <div class="plaque-list">${plaquesHTML}</div>
       </div>
-      ${c.armes?`<div style="margin-bottom:16px"><div style="font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--text2);letter-spacing:2px;margin-bottom:8px">ARMES ENREGISTRÉES</div><div style="font-size:13px;white-space:pre-line">${c.armes}</div></div>`:''}
+      ${c.armes?`<div style="margin-bottom:16px"><div style="font-family:'Share Tech Mono',monospace;font-size:10px;color:var(--text2);letter-spacing:2px;margin-bottom:8px">ARMES ENREGISTRÉES</div><div style="font-size:13px;white-space:pre-line">${c.armes}</div></div>`:''}
       <div style="margin-bottom:16px">
-        <div style="font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--text2);letter-spacing:2px;margin-bottom:8px">ANTÉCÉDENTS JUDICIAIRES (${(c.infractions||[]).length})</div>
+        <div style="font-family:'Share Tech Mono',monospace;font-size:10px;color:var(--text2);letter-spacing:2px;margin-bottom:8px">ANTÉCÉDENTS JUDICIAIRES (${(c.infractions||[]).length})</div>
         <div class="inf-list">${infHTML}</div>
       </div>
-      ${c.notes?`<div><div style="font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--text2);letter-spacing:2px;margin-bottom:8px">NOTES</div><div style="font-size:13px;color:var(--text2)">${c.notes}</div></div>`:''}
+      ${c.notes?`<div><div style="font-family:'Share Tech Mono',monospace;font-size:10px;color:var(--text2);letter-spacing:2px;margin-bottom:8px">NOTES</div><div style="font-size:13px;color:var(--text2)">${c.notes}</div></div>`:''}
     `;
 
     document.getElementById('detailFooter').innerHTML = `

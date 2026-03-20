@@ -2,6 +2,7 @@
 <html lang="fr">
 <head>
   <meta charset="UTF-8">
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@400;500;600;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
   <style>
 :root {
   --bg: #05080f;
@@ -52,7 +53,7 @@
 }
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
 html,body{height:100%;}
-body{font-family:'IBM Plex Sans',sans-serif;background:var(--bg);color:var(--text);font-size:13px;line-height:1.5;}
+body{font-family:'Rajdhani',sans-serif;background:var(--bg);color:var(--text);font-size:13px;line-height:1.5;}
 </style>
   <link rel="icon" type="image/png" href="https://r2.fivemanage.com/XEcvh0aBGRYhLzNNcRsQI/lspdnouveau.png">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -68,11 +69,11 @@ body{font-family:'IBM Plex Sans',sans-serif;background:var(--bg);color:var(--tex
     .arme-card.perdue::before{background:var(--red);}
     .arme-card:hover{border-color:var(--blue);box-shadow:0 0 16px rgba(59,130,246,.15);transform:translateY(-2px);}
     .arme-icon{font-size:44px;text-align:center;padding:18px 0 8px;}
-    .arme-serie{font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--text2);text-align:center;letter-spacing:2px;margin-bottom:4px;}
-    .arme-modele{font-family:'IBM Plex Mono',monospace;font-size:13px;font-weight:700;text-align:center;margin-bottom:12px;}
+    .arme-serie{font-family:'Share Tech Mono',monospace;font-size:11px;color:var(--text2);text-align:center;letter-spacing:2px;margin-bottom:4px;}
+    .arme-modele{font-family:'Share Tech Mono',monospace;font-size:13px;font-weight:700;text-align:center;margin-bottom:12px;}
     .arme-row{display:flex;justify-content:space-between;margin-bottom:6px;font-size:12px;padding-bottom:6px;border-bottom:1px solid rgba(27,58,94,.3);}
     .arme-row:last-child{border-bottom:none;}
-    .arme-lbl{color:var(--text2);font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:1px;}
+    .arme-lbl{color:var(--text2);font-family:'Share Tech Mono',monospace;font-size:10px;letter-spacing:1px;}
     .arme-body{padding:0 16px 14px;}
     .arme-actions{display:flex;gap:6px;padding:10px 16px;border-top:1px solid var(--line);}
     .arme-actions button{flex:1;}
@@ -115,7 +116,7 @@ body{font-family:'IBM Plex Sans',sans-serif;background:var(--bg);color:var(--tex
       <div class="page-head">
         <div class="page-head-left"><h2>ARMURERIE</h2><p>// INVENTAIRE DES ARMES DE SERVICE — LSPD</p></div>
         <div style="display:flex;gap:8px">
-          <button class="btn btn-ghost btn-sm" onclick="window.print()">📋 Imprimer liste inventaire</button>
+          
           <button class="btn btn-primary" id="btnNew" style="display:none">+ Ajouter arme</button>
         </div>
       </div>
@@ -241,7 +242,7 @@ body{font-family:'IBM Plex Sans',sans-serif;background:var(--bg);color:var(--tex
           <div class="ei">🔒</div>
           <p>ACCÈS RESTREINT — GRADE INSUFFISANT</p>
           <p style="margin-top:8px;font-size:11px">Réservé au grade Capitaine et supérieur</p>
-          <a href="dashboard.html" style="display:inline-block;margin-top:20px;padding:10px 24px;background:var(--blue);color:#fff;border-radius:6px;font-family:'IBM Plex Sans',sans-serif;font-size:13px;font-weight:700;text-decoration:none">← RETOUR</a>
+          <a href="dashboard.html" style="display:inline-block;margin-top:20px;padding:10px 24px;background:var(--blue);color:#fff;border-radius:6px;font-family:'Rajdhani',sans-serif;font-size:13px;font-weight:700;text-decoration:none">← RETOUR</a>
         </div>`;
       return;
     }
@@ -284,14 +285,14 @@ body{font-family:'IBM Plex Sans',sans-serif;background:var(--bg);color:var(--tex
           <div class="arme-row"><span class="arme-lbl">TYPE</span><span style="font-size:12px">${a.type||'—'}</span></div>
           <div class="arme-row"><span class="arme-lbl">STATUT</span>${statusBadge(a.statut)}</div>
           <div class="arme-row"><span class="arme-lbl">ASSIGNÉE</span><span style="font-size:12px">${a.assigne||'—'}</span></div>
-          <div class="arme-row"><span class="arme-lbl">DATE</span><span style="font-family:'IBM Plex Mono',monospace;font-size:11px">${a.dateEntree||'—'}</span></div>
-          ${a.notes?`<div style="font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--text2);margin-top:6px">${a.notes}</div>`:''}
+          <div class="arme-row"><span class="arme-lbl">DATE</span><span style="font-family:'Share Tech Mono',monospace;font-size:11px">${a.dateEntree||'—'}</span></div>
+          ${a.notes?`<div style="font-family:'Share Tech Mono',monospace;font-size:10px;color:var(--text2);margin-top:6px">${a.notes}</div>`:''}
         </div>
         <div class="arme-actions">
           ${userPerms.canWrite ? `
             <button class="btn btn-ghost btn-sm" onclick="editArme('${a.id}')">✏️ Modifier</button>
             <button class="btn btn-danger btn-sm" onclick="deleteArme('${a.id}')">🗑️</button>
-          ` : `<div style="flex:1;text-align:center;font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--text2)">LECTURE SEULE</div>`}
+          ` : `<div style="flex:1;text-align:center;font-family:'Share Tech Mono',monospace;font-size:11px;color:var(--text2)">LECTURE SEULE</div>`}
         </div>
       </div>`).join('');
   }
@@ -302,12 +303,12 @@ body{font-family:'IBM Plex Sans',sans-serif;background:var(--bg);color:var(--tex
     tb.innerHTML = list.map(a => `
       <tr>
         <td style="font-size:18px">${TYPE_ICONS[a.type]||'🔫'}</td>
-        <td style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--text2)">${a.serie||'—'}</td>
+        <td style="font-family:'Share Tech Mono',monospace;font-size:11px;color:var(--text2)">${a.serie||'—'}</td>
         <td style="font-size:13px;font-weight:600">${a.modele||'—'}</td>
         <td style="font-size:12px">${a.assigne||'—'}</td>
         <td>${statusBadge(a.statut)}</td>
-        <td style="font-family:'IBM Plex Mono',monospace;font-size:11px">${a.dateEntree||'—'}</td>
-        <td style="font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--text2)">${a.notes||'—'}</td>
+        <td style="font-family:'Share Tech Mono',monospace;font-size:11px">${a.dateEntree||'—'}</td>
+        <td style="font-family:'Share Tech Mono',monospace;font-size:10px;color:var(--text2)">${a.notes||'—'}</td>
         <td style="display:flex;gap:4px">
           ${userPerms.canWrite ? `
             <button class="btn btn-ghost btn-sm" onclick="editArme('${a.id}')">✏️</button>

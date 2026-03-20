@@ -2,6 +2,7 @@
 <html lang="fr">
 <head>
   <meta charset="UTF-8">
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@400;500;600;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
   <style>
 :root {
   --bg: #05080f;
@@ -52,7 +53,7 @@
 }
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
 html,body{height:100%;}
-body{font-family:'IBM Plex Sans',sans-serif;background:var(--bg);color:var(--text);font-size:13px;line-height:1.5;}
+body{font-family:'Rajdhani',sans-serif;background:var(--bg);color:var(--text);font-size:13px;line-height:1.5;}
 </style>
   <link rel="icon" type="image/png" href="https://r2.fivemanage.com/XEcvh0aBGRYhLzNNcRsQI/lspdnouveau.png">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -98,7 +99,7 @@ body{font-family:'IBM Plex Sans',sans-serif;background:var(--bg);color:var(--tex
           <p>// JOURNAUX OPÉRATIONNELS — LOS SANTOS POLICE DEPARTMENT</p>
         </div>
         <div style="display:flex;gap:8px">
-          <button class="btn btn-ghost btn-sm" onclick="window.print()">📋 Imprimer liste liste</button>
+          
           <button class="btn btn-primary" id="btnNew">+ Nouveau rapport</button>
         </div>
       </div>
@@ -131,7 +132,7 @@ body{font-family:'IBM Plex Sans',sans-serif;background:var(--bg);color:var(--tex
           <div class="table-wrap">
             <table>
               <thead><tr><th>RÉFÉRENCE</th><th>TITRE</th><th>TYPE</th><th>OFFICIER</th><th>DATE</th><th>SUSPECTS</th><th>STATUT</th><th>ACTIONS</th></tr></thead>
-              <tbody id="rapportsTable"><tr><td colspan="8" style="text-align:center;padding:30px;color:var(--text2);font-family:'IBM Plex Mono',monospace;font-size:11px">CHARGEMENT...</td></tr></tbody>
+              <tbody id="rapportsTable"><tr><td colspan="8" style="text-align:center;padding:30px;color:var(--text2);font-family:'Share Tech Mono',monospace;font-size:11px">CHARGEMENT...</td></tr></tbody>
             </table>
           </div>
         </div>
@@ -264,11 +265,11 @@ body{font-family:'IBM Plex Sans',sans-serif;background:var(--bg);color:var(--tex
     const perms = getPerms(userGrade);
     tb.innerHTML = list.map(r => `
       <tr>
-        <td style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--text2)">${r.reference||'—'}</td>
+        <td style="font-family:'Share Tech Mono',monospace;font-size:11px;color:var(--text2)">${r.reference||'—'}</td>
         <td><strong>${r.titre||'—'}</strong></td>
         <td style="font-size:12px">${r.type||'—'}</td>
         <td style="font-size:12px">${r.officier||'—'}</td>
-        <td style="font-family:'IBM Plex Mono',monospace;font-size:11px">${r.date||'—'} ${r.heure||''}</td>
+        <td style="font-family:'Share Tech Mono',monospace;font-size:11px">${r.date||'—'} ${r.heure||''}</td>
         <td style="font-size:12px;color:var(--text2)">${r.suspects||'—'}</td>
         <td>${r.statut==='Ouvert'?'<span class="badge b-open">Ouvert</span>':'<span class="badge b-closed">Fermé</span>'}</td>
         <td style="display:flex;gap:4px;flex-wrap:wrap">
@@ -368,18 +369,18 @@ body{font-family:'IBM Plex Sans',sans-serif;background:var(--bg);color:var(--tex
     document.getElementById('detailTitle').textContent = r.titre||'RAPPORT';
     document.getElementById('detailBody').innerHTML = `
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:18px">
-        <div><div style="font-family:'IBM Plex Mono',monospace;font-size:9px;color:var(--text2);letter-spacing:2px;margin-bottom:3px">RÉFÉRENCE</div><div style="font-family:'IBM Plex Mono',monospace;font-size:13px">${r.reference||'—'}</div></div>
-        <div><div style="font-family:'IBM Plex Mono',monospace;font-size:9px;color:var(--text2);letter-spacing:2px;margin-bottom:3px">STATUT</div>${r.statut==='Ouvert'?'<span class="badge b-open">Ouvert</span>':'<span class="badge b-closed">Fermé</span>'}</div>
-        <div><div style="font-family:'IBM Plex Mono',monospace;font-size:9px;color:var(--text2);letter-spacing:2px;margin-bottom:3px">TYPE</div><div style="font-size:13px">${r.type||'—'}</div></div>
-        <div><div style="font-family:'IBM Plex Mono',monospace;font-size:9px;color:var(--text2);letter-spacing:2px;margin-bottom:3px">DATE / HEURE</div><div style="font-family:'IBM Plex Mono',monospace;font-size:13px">${r.date||'—'} ${r.heure||''}</div></div>
-        <div><div style="font-family:'IBM Plex Mono',monospace;font-size:9px;color:var(--text2);letter-spacing:2px;margin-bottom:3px">OFFICIER</div><div style="font-size:13px">${r.officier||'—'}</div></div>
-        <div><div style="font-family:'IBM Plex Mono',monospace;font-size:9px;color:var(--text2);letter-spacing:2px;margin-bottom:3px">ÉQUIPE</div><div style="font-size:13px">${r.equipe||'—'}</div></div>
-        <div><div style="font-family:'IBM Plex Mono',monospace;font-size:9px;color:var(--text2);letter-spacing:2px;margin-bottom:3px">LIEU</div><div style="font-size:13px">${r.lieu||'—'}</div></div>
-        <div><div style="font-family:'IBM Plex Mono',monospace;font-size:9px;color:var(--text2);letter-spacing:2px;margin-bottom:3px">SUSPECTS</div><div style="font-size:13px;color:var(--red-l)">${r.suspects||'—'}</div></div>
+        <div><div style="font-family:'Share Tech Mono',monospace;font-size:9px;color:var(--text2);letter-spacing:2px;margin-bottom:3px">RÉFÉRENCE</div><div style="font-family:'Share Tech Mono',monospace;font-size:13px">${r.reference||'—'}</div></div>
+        <div><div style="font-family:'Share Tech Mono',monospace;font-size:9px;color:var(--text2);letter-spacing:2px;margin-bottom:3px">STATUT</div>${r.statut==='Ouvert'?'<span class="badge b-open">Ouvert</span>':'<span class="badge b-closed">Fermé</span>'}</div>
+        <div><div style="font-family:'Share Tech Mono',monospace;font-size:9px;color:var(--text2);letter-spacing:2px;margin-bottom:3px">TYPE</div><div style="font-size:13px">${r.type||'—'}</div></div>
+        <div><div style="font-family:'Share Tech Mono',monospace;font-size:9px;color:var(--text2);letter-spacing:2px;margin-bottom:3px">DATE / HEURE</div><div style="font-family:'Share Tech Mono',monospace;font-size:13px">${r.date||'—'} ${r.heure||''}</div></div>
+        <div><div style="font-family:'Share Tech Mono',monospace;font-size:9px;color:var(--text2);letter-spacing:2px;margin-bottom:3px">OFFICIER</div><div style="font-size:13px">${r.officier||'—'}</div></div>
+        <div><div style="font-family:'Share Tech Mono',monospace;font-size:9px;color:var(--text2);letter-spacing:2px;margin-bottom:3px">ÉQUIPE</div><div style="font-size:13px">${r.equipe||'—'}</div></div>
+        <div><div style="font-family:'Share Tech Mono',monospace;font-size:9px;color:var(--text2);letter-spacing:2px;margin-bottom:3px">LIEU</div><div style="font-size:13px">${r.lieu||'—'}</div></div>
+        <div><div style="font-family:'Share Tech Mono',monospace;font-size:9px;color:var(--text2);letter-spacing:2px;margin-bottom:3px">SUSPECTS</div><div style="font-size:13px;color:var(--red-l)">${r.suspects||'—'}</div></div>
       </div>
-      ${r.resume?`<div style="margin-bottom:14px"><div style="font-family:'IBM Plex Mono',monospace;font-size:9px;color:var(--text2);letter-spacing:2px;margin-bottom:6px">RÉSUMÉ</div><div style="font-size:13px;line-height:1.6;padding:12px;background:var(--panel2);border-radius:5px">${r.resume}</div></div>`:''}
-      ${r.description?`<div style="margin-bottom:14px"><div style="font-family:'IBM Plex Mono',monospace;font-size:9px;color:var(--text2);letter-spacing:2px;margin-bottom:6px">DESCRIPTION COMPLÈTE</div><div style="font-size:13px;line-height:1.7;padding:12px;background:var(--panel2);border-radius:5px;white-space:pre-wrap">${r.description}</div></div>`:''}
-      ${r.conclusion?`<div><div style="font-family:'IBM Plex Mono',monospace;font-size:9px;color:var(--text2);letter-spacing:2px;margin-bottom:6px">CONCLUSION</div><div style="font-size:13px;line-height:1.6;padding:12px;background:var(--panel2);border-radius:5px">${r.conclusion}</div></div>`:''}
+      ${r.resume?`<div style="margin-bottom:14px"><div style="font-family:'Share Tech Mono',monospace;font-size:9px;color:var(--text2);letter-spacing:2px;margin-bottom:6px">RÉSUMÉ</div><div style="font-size:13px;line-height:1.6;padding:12px;background:var(--panel2);border-radius:5px">${r.resume}</div></div>`:''}
+      ${r.description?`<div style="margin-bottom:14px"><div style="font-family:'Share Tech Mono',monospace;font-size:9px;color:var(--text2);letter-spacing:2px;margin-bottom:6px">DESCRIPTION COMPLÈTE</div><div style="font-size:13px;line-height:1.7;padding:12px;background:var(--panel2);border-radius:5px;white-space:pre-wrap">${r.description}</div></div>`:''}
+      ${r.conclusion?`<div><div style="font-family:'Share Tech Mono',monospace;font-size:9px;color:var(--text2);letter-spacing:2px;margin-bottom:6px">CONCLUSION</div><div style="font-size:13px;line-height:1.6;padding:12px;background:var(--panel2);border-radius:5px">${r.conclusion}</div></div>`:''}
     `;
     const perms = getPerms(userGrade);
     document.getElementById('detailFooter').innerHTML = `
