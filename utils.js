@@ -34,7 +34,15 @@ export async function initPage(auth, db, onAuthStateChanged, pageName) {
           const data = snap.data();
           grade = (data.grade||'cadet').toLowerCase();
           name  = data.displayName || user.email;
-          if (data.suspended) { window.location.href = 'index.html'; return; }
+          if (data.suspended) {
+            // Déconnecter proprement pour éviter la boucle de reconnexion
+            try {
+              const { signOut } = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js");
+              await signOut(auth);
+            } catch(e) {}
+            window.location.replace('index.html');
+            return;
+          }
         }
       } catch(e) { console.warn('Grade load failed:', e); }
 
@@ -82,7 +90,7 @@ export async function initPage(auth, db, onAuthStateChanged, pageName) {
 
       // ── WATCHER MAINTENANCE EN TEMPS RÉEL ──────────────────
       // Déconnecte l'utilisateur si le site passe hors ligne
-      const ADMIN_GRADES = ['chef de police','chef assistant','chef adjoint','commandant','admin','invite'];
+      const ADMIN_GRADES = ['chef de police']; // Seul le Chef de Police bypass la maintenance
       const currentPageForMtn = window.location.pathname.split('/').pop() || '';
       const mtnBypass = ['maintenance.html','admin.html','index.html','change-password.html'];
       
