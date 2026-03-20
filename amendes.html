@@ -98,7 +98,7 @@ body{font-family:'IBM Plex Sans',sans-serif;background:var(--bg);color:var(--tex
           <p>// GESTION DES INFRACTIONS ROUTIÈRES ET AMENDES</p>
         </div>
         <div style="display:flex;gap:8px">
-          <button class="btn btn-ghost btn-sm" onclick="window.print()">📋 Imprimer liste liste</button>
+          
           <button class="btn btn-primary" id="btnNew">+ Nouvelle amende</button>
         </div>
       </div>
@@ -433,7 +433,6 @@ body{font-family:'IBM Plex Sans',sans-serif;background:var(--bg);color:var(--tex
     </div>
 </body></html>`);
     w.document.close();
-    setTimeout(() => w.print(), 500);
   };
 
   window.printAmende = function(id) {
