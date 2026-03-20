@@ -332,3 +332,82 @@ body{font-family:'IBM Plex Sans',sans-serif;background:var(--bg);color:var(--tex
     </style></head><body>${content}
 </body>
 </html>
+`);
+    w.document.close();
+    setTimeout(() => w.print(), 500);
+  }
+
+  window.printFiche = function(id) {
+    const a = allArrestations.find(x => x.id === id);
+    if (!a) { showToast('Introuvable', 'error'); return; }
+    printDoc('Fiche arrestation — ' + (a.nom||''), `
+      <div class="header">
+        <div><h1>L.S.P.D — FICHE D'ARRESTATION</h1><div class="sub">Los Santos Police Department</div></div>
+        <div class="ref">${a.reference||'—'}</div>
+      </div>
+      <h2>Identité du suspect</h2>
+      <div class="row"><span class="lbl">Nom complet :</span><span class="val"><strong>${a.nom||'—'}</strong></span></div>
+      <div class="row"><span class="lbl">Date de naissance :</span><span class="val">${a.dob||'—'}</span></div>
+      <h2>Détails de l'arrestation</h2>
+      <div class="row"><span class="lbl">Motif :</span><span class="val">${a.motif||'—'}</span></div>
+      <div class="row"><span class="lbl">Lieu :</span><span class="val">${a.lieu||'—'}</span></div>
+      <div class="row"><span class="lbl">Officier arrêtant :</span><span class="val">${a.officier||'—'}</span></div>
+      <div class="row"><span class="lbl">Date & heure :</span><span class="val">${a.date ? new Date(a.date).toLocaleString('fr-FR') : '—'}</span></div>
+      <div class="row"><span class="lbl">Statut :</span><span class="val">${a.statut||'—'}</span></div>
+      <div class="row"><span class="lbl">Durée MGV :</span><span class="val">${a.duree||'—'} heure(s)</span></div>
+      ${a.objets ? `<h2>Objets saisis</h2><div class="row"><span class="val">${a.objets}</span></div>` : ''}
+      ${a.description ? `<h2>Compte-rendu</h2><p style="font-size:13px;line-height:1.6">${a.description}</p>` : ''}
+    `);
+  };
+
+  window.printMGV = function(id) {
+    const a = allArrestations.find(x => x.id === id);
+    if (!a) { showToast('Introuvable', 'error'); return; }
+    printDoc('Mise en garde à vue — ' + (a.nom||''), `
+      <div class="header">
+        <div><h1>L.S.P.D — MISE EN GARDE À VUE</h1><div class="sub">Los Santos Police Department</div></div>
+        <div class="ref">${a.reference||'—'}</div>
+      </div>
+      <div class="warning">⚠ Ce document atteste que la personne ci-dessous est placée en garde à vue conformément à la procédure LSPD.</div>
+      <h2>Identité du détenu</h2>
+      <div class="row"><span class="lbl">Nom complet :</span><span class="val"><strong>${a.nom||'—'}</strong></span></div>
+      <div class="row"><span class="lbl">Date de naissance :</span><span class="val">${a.dob||'—'}</span></div>
+      <h2>Motif de garde à vue</h2>
+      <div class="row"><span class="val">${a.motif||'—'}</span></div>
+      <h2>Informations</h2>
+      <div class="row"><span class="lbl">Officier :</span><span class="val">${a.officier||'—'}</span></div>
+      <div class="row"><span class="lbl">Date d'entrée :</span><span class="val">${a.date ? new Date(a.date).toLocaleString('fr-FR') : '—'}</span></div>
+      <div class="row"><span class="lbl">Durée :</span><span class="val">${a.duree||'—'} heure(s)</span></div>
+      <div class="sig-grid">
+        <div class="sig-box"><div class="sig-space"></div>Officier responsable</div>
+        <div class="sig-box"><div class="sig-space"></div>Superviseur</div>
+      </div>
+    `);
+  };
+
+  window.printLiberation = function(id) {
+    const a = allArrestations.find(x => x.id === id);
+    if (!a) { showToast('Introuvable', 'error'); return; }
+    printDoc('Bon de libération — ' + (a.nom||''), `
+      <div class="header">
+        <div><h1>L.S.P.D — BON DE LIBÉRATION</h1><div class="sub">Los Santos Police Department</div></div>
+        <div class="ref">${a.reference||'—'}</div>
+      </div>
+      <h2>Identité</h2>
+      <div class="row"><span class="lbl">Nom complet :</span><span class="val"><strong>${a.nom||'—'}</strong></span></div>
+      <h2>Détails</h2>
+      <div class="row"><span class="lbl">Motif d'arrestation :</span><span class="val">${a.motif||'—'}</span></div>
+      <div class="row"><span class="lbl">Officier :</span><span class="val">${a.officier||'—'}</span></div>
+      <div class="row"><span class="lbl">Date d'arrestation :</span><span class="val">${a.date ? new Date(a.date).toLocaleString('fr-FR') : '—'}</span></div>
+      <h2>Libération</h2>
+      <div class="row"><span class="lbl">Date de libération :</span><span class="val"><strong>${new Date().toLocaleString('fr-FR')}</strong></span></div>
+      <div class="sig-grid">
+        <div class="sig-box"><div class="sig-space"></div>Officier responsable</div>
+        <div class="sig-box"><div class="sig-space"></div>Superviseur</div>
+      </div>
+    `);
+  };
+
+</script>
+</body>
+</html>
