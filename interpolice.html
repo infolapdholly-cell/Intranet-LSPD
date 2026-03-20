@@ -94,22 +94,28 @@ body{font-family:'IBM Plex Sans',sans-serif;background:var(--bg);color:var(--tex
 </head>
 <body>
 <div class="app-shell">
-  <div class="topbar">
-    <div class="tb-left">
+  <div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
+<div class="topbar">
+  <div class="tb-left">
+    <button class="tb-menu-btn" onclick="toggleSidebar()">☰</button>
+    <div class="tb-brand">
+      <div class="tb-shield"></div>
       <img class="tb-logo" src="https://r2.fivemanage.com/XEcvh0aBGRYhLzNNcRsQI/lspdnouveau.png" alt="LSPD" onerror="this.style.display='none'">
-      <div class="tb-sep" style="width:1px;height:26px;background:var(--line)"></div>
-      <div class="tb-title" style="color:var(--gold)">INTERPOLICE</div>
-      <div class="tb-sep" style="width:1px;height:26px;background:var(--line)"></div>
-      <div class="tb-page">SAN ANDREAS POLICE NETWORK</div>
+      <div class="tb-title">L.S.P.D</div>
     </div>
-    <div class="tb-right">
-      <div class="tb-time" id="tbClock">--:--:--</div>
+    <div class="tb-page">Interpolice</div>
+  </div>
+  <div class="tb-right">
+    <div class="tb-status"><div class="live-dot"></div>En ligne</div>
+    <div class="tb-time" id="tbClock">--:--:--</div>
+    <div class="tb-user">
       <span class="tb-grade" id="tbGrade">—</span>
       <span class="tb-name" id="tbName">Officier</span>
-      <button class="btn-out" onclick="logout()">Déconnexion</button>
     </div>
+    <button class="btn-out" onclick="logout()">Quitter</button>
   </div>
-  <div class="shell">
+</div>
+<div class="shell">
     <div class="sidebar" id="sidebar"></div>
     <div class="main">
 
