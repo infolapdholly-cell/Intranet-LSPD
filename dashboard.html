@@ -5,222 +5,261 @@
   <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@400;500;600;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
   <link rel="icon" type="image/png" href="https://r2.fivemanage.com/XEcvh0aBGRYhLzNNcRsQI/lspdnouveau.png">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>LSPD — Tableau de bord</title>
+  <title>LSPD — Tableau de Bord</title>
   <link rel="stylesheet" href="style.css?v=13">
   <style>
-    .dash-grid { display:grid; grid-template-columns:1fr 1fr; gap:14px; }
-    @media(max-width:900px){ .dash-grid{grid-template-columns:1fr;} }
-
-    .alert-item { display:flex; align-items:center; gap:11px; padding:10px 12px; border-radius:3px; margin-bottom:7px; }
-    .alert-item:last-child { margin-bottom:0; }
-    .alert-wanted { background:rgba(185,28,28,.07); border:1px solid rgba(185,28,28,.2); }
-    .alert-warn   { background:rgba(180,83,9,.07);  border:1px solid rgba(180,83,9,.2); }
-    .alert-info   { background:rgba(37,99,235,.07); border:1px solid rgba(37,99,235,.2); }
-    .ai-ico  { font-size:15px; flex-shrink:0; }
-    .ai-text { flex:1; font-size:12px; }
-    .ai-meta { font-family:var(--mono); font-size:8px; color:var(--text3); white-space:nowrap; }
-
-    .activity-item { display:flex; align-items:center; gap:11px; padding:10px 14px; border-bottom:1px solid var(--line); transition:background .1s; }
-    .activity-item:last-child { border-bottom:none; }
-    .activity-item:hover { background:rgba(37,99,235,.03); }
-    .act-ico { width:32px; height:32px; border-radius:3px; display:flex; align-items:center; justify-content:center; font-size:14px; flex-shrink:0; background:rgba(255,255,255,.04); border:1px solid var(--line); }
-    .act-info { flex:1; min-width:0; }
-    .act-title { font-size:12px; font-weight:500; margin-bottom:2px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
-    .act-sub   { font-family:var(--mono); font-size:9px; color:var(--text2); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
-    .act-time  { font-family:var(--mono); font-size:9px; color:var(--text3); text-align:right; white-space:nowrap; line-height:1.4; }
+    .dash-grid { display: grid; grid-template-columns: 1fr; gap: 16px; }
+    .alert-item { padding: 10px 14px; border-radius: 6px; margin-bottom: 8px; display: flex; align-items: center; gap: 10px; }
+    .alert-wanted { background: rgba(192,57,43,.1); border: 1px solid rgba(192,57,43,.4); }
+    .alert-info   { background: rgba(37,137,208,.1); border: 1px solid rgba(37,137,208,.3); }
+    .alert-warn   { background: rgba(214,137,16,.1); border: 1px solid rgba(214,137,16,.3); }
+    .ai-icon { font-size: 18px; }
+    .ai-text { flex: 1; font-size: 13px; }
+    .ai-badge { font-family: 'Share Tech Mono', monospace; font-size: 9px; color: var(--muted); }
+    .recent-item { display:flex; align-items:center; gap:14px; padding:10px 14px; border-radius:8px; margin-bottom:6px; background:var(--surface2); border:1px solid var(--border); transition:all .2s; }
+    .recent-item:hover { border-color:var(--accent); transform:translateX(3px); }
+    .recent-item:last-child { margin-bottom:0; }
+    .ri-icon { width:36px; height:36px; border-radius:8px; display:flex; align-items:center; justify-content:center; font-size:16px; flex-shrink:0; }
+    .ri-info { flex:1; min-width:0; }
+    .ri-title { font-size:12px; font-weight:700; letter-spacing:.5px; margin-bottom:3px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+    .ri-sub { font-family:'Share Tech Mono',monospace; font-size:10px; color:var(--muted); margin-top:2px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+    .ri-time { font-family:'Share Tech Mono',monospace; font-size:10px; color:var(--muted); white-space:nowrap; text-align:right; }
+    .live-dot { width: 8px; height: 8px; background: var(--success); border-radius: 50%; display: inline-block; margin-right: 6px; animation: livePulse 1.5s ease infinite; }
+    @keyframes livePulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:.5;transform:scale(1.3)} }
   </style>
+  
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <meta name="theme-color" content="#2563eb">
+  <meta name="apple-mobile-web-app-title" content="LSPD">
+  <meta name="theme-color" content="#1458a0">
   <link rel="apple-touch-icon" href="https://r2.fivemanage.com/XEcvh0aBGRYhLzNNcRsQI/lspdnouveau.png">
 </head>
 <body>
 <div class="app-shell">
 <div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
-<div class="topbar">
-  <div class="tb-left">
-    <button class="tb-menu-btn" onclick="toggleSidebar()">☰</button>
-    <div class="tb-brand">
-      <div class="tb-shield"></div>
-      <img class="tb-logo" src="https://r2.fivemanage.com/XEcvh0aBGRYhLzNNcRsQI/lspdnouveau.png" alt="LSPD" onerror="this.style.display='none'">
+  <div class="topbar">
+    <div class="tb-left">
+      <button class="tb-menu-btn" onclick="toggleSidebar()">☰</button>
+      <img class="tb-logo" src="https://r2.fivemanage.com/XEcvh0aBGRYhLzNNcRsQI/lspdnouveau.png" alt="LSPD">
+      <div class="tb-sep" style="width:1px;height:26px;background:var(--border)"></div>
       <div class="tb-title">L.S.P.D</div>
+      <div class="tb-sep" style="width:1px;height:26px;background:var(--border)"></div>
+      <div class="tb-page">TABLEAU DE BORD</div>
     </div>
-    <div class="tb-page">Tableau de bord</div>
-  </div>
-  <div class="tb-right">
-    <div class="tb-status"><div class="live-dot"></div>En ligne</div>
-    <div class="tb-time" id="tbClock">--:--:--</div>
-    <div class="tb-user">
-      <span class="tb-grade" id="tbGrade">—</span>
+    <div class="tb-right">
+      <div class="tb-time" id="tbClock">--:--:--</div>
+      <span class="tb-grade g-recruit" id="tbGrade">RECRUIT</span>
       <span class="tb-name" id="tbName">Officier</span>
+      <button class="btn-out" onclick="logout()">Déconnexion</button>
     </div>
-    <button class="btn-out" onclick="logout()">Quitter</button>
   </div>
-</div>
-<div class="shell">
-  <div class="sidebar" id="sidebar"></div>
-  <div class="main">
-
-    <div class="page-head">
-      <div class="page-head-left">
-        <h2>Tableau de bord</h2>
-        <p>// Vue d'ensemble — Los Santos Police Department</p>
-      </div>
-      <div style="display:flex;align-items:center;gap:9px">
-        <div style="font-family:var(--mono);font-size:9px;color:var(--text3)" id="lastUpdate">—</div>
-        <button class="btn btn-ghost btn-sm" id="refreshBtn" onclick="manualRefresh()">⟳ Actualiser</button>
-      </div>
-    </div>
-
-    <div class="stats-grid">
-      <div class="stat-box blue">  <div class="stat-lbl">Casiers total</div>    <div class="stat-val" id="sCasiers">—</div>    <div class="stat-sub">Base criminelle</div></div>
-      <div class="stat-box red">   <div class="stat-lbl">Recherchés</div>       <div class="stat-val" id="sWanted">—</div>     <div class="stat-sub">Wanted actifs</div></div>
-      <div class="stat-box orange"><div class="stat-lbl">Amendes impayées</div> <div class="stat-val" id="sAmendes">—</div>    <div class="stat-sub">En attente</div></div>
-      <div class="stat-box gold">  <div class="stat-lbl">Rapports ouverts</div><div class="stat-val" id="sRapports">—</div>   <div class="stat-sub">En cours</div></div>
-    </div>
-    <div class="stats-grid">
-      <div class="stat-box green"> <div class="stat-lbl">Officiers actifs</div> <div class="stat-val" id="sOfficiers">—</div>  <div class="stat-sub">En service</div></div>
-      <div class="stat-box blue">  <div class="stat-lbl">Véhicules dispo</div>  <div class="stat-val" id="sVehicules">—</div>  <div class="stat-sub">Flotte</div></div>
-      <div class="stat-box gold">  <div class="stat-lbl">Armes en stock</div>   <div class="stat-val" id="sArmes">—</div>      <div class="stat-sub">Armurerie</div></div>
-      <div class="stat-box red">   <div class="stat-lbl">Arrestations / mois</div><div class="stat-val" id="sArrestations">—</div><div class="stat-sub">Période actuelle</div></div>
-    </div>
-
-    <div class="dash-grid">
-      <div class="card">
-        <div class="card-head">
-          <div class="card-title">▲ Alertes actives</div>
-          <span style="font-family:var(--mono);font-size:9px;color:var(--text3)" id="alertCount">0 alerte(s)</span>
+  <div class="shell">
+    <div class="sidebar" id="sidebar"></div>
+    <div class="main">
+      <div class="page-head">
+        <div class="page-head-left">
+          <h2>TABLEAU DE BORD</h2>
+          <p>// VUE D'ENSEMBLE EN TEMPS RÉEL — LOS SANTOS POLICE DEPARTMENT</p>
         </div>
-        <div class="card-body" id="dashAlerts">
-          <div class="empty-state"><span class="ei">◉</span><p>Aucune alerte active</p></div>
+        <div style="display:flex;align-items:center;gap:10px">
+          <div style="font-family:'Share Tech Mono',monospace;font-size:11px;color:var(--muted)" id="lastUpdate">Dernière mise à jour : —</div>
+          <button class="btn btn-ghost btn-sm" onclick="manualRefresh()" title="Rafraîchir maintenant">🔄</button>
         </div>
       </div>
-      <div class="card">
-        <div class="card-head"><div class="card-title">≡ Activité récente</div></div>
-        <div id="dashActivity" style="max-height:380px;overflow-y:auto">
-          <div class="empty-state"><span class="ei">≡</span><p>Aucune activité</p></div>
+
+      <div class="stats-grid">
+        <div class="stat-box blue"><div class="stat-lbl">CASIERS TOTAL</div><div class="stat-val" id="sCasiers">—</div></div>
+        <div class="stat-box red"><div class="stat-lbl">RECHERCHÉS</div><div class="stat-val" id="sWanted">—</div></div>
+        <div class="stat-box orange"><div class="stat-lbl">AMENDES IMPAYÉES</div><div class="stat-val" id="sAmendes">—</div></div>
+        <div class="stat-box gold"><div class="stat-lbl">RAPPORTS OUVERTS</div><div class="stat-val" id="sRapports">—</div></div>
+      </div>
+      <div class="stats-grid">
+        <div class="stat-box green"><div class="stat-lbl">OFFICIERS ACTIFS</div><div class="stat-val" id="sOfficiers">—</div></div>
+        <div class="stat-box blue"><div class="stat-lbl">VÉHICULES DISPO</div><div class="stat-val" id="sVehicules">—</div></div>
+        <div class="stat-box gold"><div class="stat-lbl">ARMES EN STOCK</div><div class="stat-val" id="sArmes">—</div></div>
+        <div class="stat-box red"><div class="stat-lbl">ARRESTATIONS CE MOIS</div><div class="stat-val" id="sArrestations">—</div></div>
+      </div>
+
+      <div class="dash-grid">
+        <div class="card">
+          <div class="card-head">
+            <div class="card-title">🚨 ALERTES ACTIVES</div>
+            <span style="font-family:'Share Tech Mono',monospace;font-size:10px;color:var(--muted)" id="alertCount">0 alerte(s)</span>
+          </div>
+          <div class="card-body" id="dashAlerts">
+            <div class="empty-state"><div class="ei">🔔</div><p>AUCUNE ALERTE ACTIVE</p></div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-head"><div class="card-title">📜 ACTIVITÉ RÉCENTE</div></div>
+          <div class="card-body" id="dashActivity" style="max-height:400px;overflow-y:auto">
+            <div class="empty-state"><div class="ei">📜</div><p>AUCUNE ACTIVITÉ</p></div>
+          </div>
         </div>
       </div>
     </div>
-
   </div>
-</div>
 </div>
 <div class="toast" id="toast"></div>
 
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-  import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+  import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
   import { getFirestore, collection, getDocs, query, where, orderBy, limit } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
-  import { initPage, startClock, showToast, statusBadge } from './utils.js';
+  import { initPage, startClock, showToast } from './utils.js';
+  import { checkMaintenance, watchMaintenance } from './maintenance.js';
 
-
-  const FC = {
-    apiKey:"AIzaSyA4GxYd32GNs5EDjjm2UI1a0d25YxigMVU",
-    authDomain:"lspd-intranet-2aed9.firebaseapp.com",
-    projectId:"lspd-intranet-2aed9",
-    storageBucket:"lspd-intranet-2aed9.firebasestorage.app",
-    messagingSenderId:"780922925382",
-    appId:"1:780922925382:web:a32d5e89bcff75bd8b3547"
+  const firebaseConfig = {
+    apiKey: "AIzaSyA4GxYd32GNs5EDjjm2UI1a0d25YxigMVU",
+    authDomain: "lspd-intranet-2aed9.firebaseapp.com",
+    projectId: "lspd-intranet-2aed9",
+    storageBucket: "lspd-intranet-2aed9.firebasestorage.app",
+    messagingSenderId: "780922925382",
+    appId: "1:780922925382:web:a32d5e89bcff75bd8b3547"
   };
-  const app  = initializeApp(FC);
+
+  const app = initializeApp(firebaseConfig);
   const auth = getAuth(app);
-  const db   = getFirestore(app);  startClock('tbClock');
-  initPage(auth, db, onAuthStateChanged, 'dashboard').then(async () => {
+  const db = getFirestore(app);
+
+  checkMaintenance(db);
+  watchMaintenance(db);
+
+  startClock('tbClock');
+
+  initPage(auth, db, onAuthStateChanged, 'dashboard').then(async ({ grade, name, perms }) => {
+    // Afficher le grade et le nom dans la topbar
+    const gradeEl = document.getElementById('tbGrade');
+    const nameEl = document.getElementById('tbName');
+    if (gradeEl) gradeEl.textContent = perms.label || grade;
+    if (nameEl) nameEl.textContent = name;
     await loadDashboard();
-    setInterval(loadDashboard, 300000);
+    setInterval(loadDashboard, 300000); // Rafraîchir toutes les 5 minutes
   });
 
   async function loadDashboard() {
     try {
+      // Optimisé : une seule requête par collection avec limit
       const [casSnap, amendesSnap, rapportsSnap, officSnap] = await Promise.all([
-        getDocs(query(collection(db,'casiers'),  limit(500))),
-        getDocs(query(collection(db,'amendes'),  where('statut','==','Impayée'), limit(100))),
-        getDocs(query(collection(db,'rapports'), where('statut','==','Ouvert'), limit(100))),
-        getDocs(query(collection(db,'officiers'),where('statut','==','Actif'), limit(100))),
+        getDocs(query(collection(db, 'casiers'), limit(500))),
+        getDocs(query(collection(db, 'amendes'), where('statut', '==', 'Impayée'), limit(100))),
+        getDocs(query(collection(db, 'rapports'), where('statut', '==', 'Ouvert'), limit(100))),
+        getDocs(query(collection(db, 'officiers'), where('statut', '==', 'Actif'), limit(100))),
       ]);
+
+      // Compter wanted depuis les casiers déjà chargés (0 lecture supplémentaire)
       const wanted = casSnap.docs.filter(d => d.data().wanted).length;
+      const dispo = 0; // Chargé séparément si besoin
 
-      document.getElementById('sCasiers').textContent   = casSnap.size;
-      document.getElementById('sWanted').textContent    = wanted;
-      document.getElementById('sAmendes').textContent   = amendesSnap.size;
-      document.getElementById('sRapports').textContent  = rapportsSnap.size;
+      document.getElementById('sCasiers').textContent = casSnap.size;
+      document.getElementById('sWanted').textContent = wanted;
+      document.getElementById('sAmendes').textContent = amendesSnap.size;
+      document.getElementById('sRapports').textContent = rapportsSnap.size;
       document.getElementById('sOfficiers').textContent = officSnap.size;
+      document.getElementById('sVehicules').textContent = '—';
+      document.getElementById('sArmes').textContent = '—';
 
-      try {
-        const [vSnap,aSnap] = await Promise.all([
-          getDocs(query(collection(db,'vehicules'),where('statut','==','Disponible'),limit(100))),
-          getDocs(query(collection(db,'armurerie'),limit(100))),
-        ]);
-        document.getElementById('sVehicules').textContent = vSnap.size;
-        document.getElementById('sArmes').textContent     = aSnap.size;
-      } catch(e) { document.getElementById('sVehicules').textContent='—'; document.getElementById('sArmes').textContent='—'; }
-
-      if (document.getElementById('sArrestations').textContent==='—') {
-        try {
-          const mois = new Date(new Date().getFullYear(),new Date().getMonth(),1).toISOString();
-          const arrSnap = await getDocs(query(collection(db,'arrestations'),where('createdAt','>=',mois),limit(200)));
-          document.getElementById('sArrestations').textContent = arrSnap.size;
-        } catch(e) { document.getElementById('sArrestations').textContent='—'; }
+      // Arrestations - pas rechargées à chaque refresh pour économiser les lectures
+      if (!document.getElementById('sArrestations').textContent || document.getElementById('sArrestations').textContent === '—') {
+        const now = new Date();
+        const moisDebut = new Date(now.getFullYear(), now.getMonth(), 1).toISOString();
+        const arrestSnap = await getDocs(query(collection(db, 'arrestations'), where('createdAt', '>=', moisDebut), limit(200)));
+        document.getElementById('sArrestations').textContent = arrestSnap.size;
       }
 
-      // Alertes
-      const wantedDocs = casSnap.docs.filter(d=>d.data().wanted).map(d=>d.data());
-      const alertCount = wantedDocs.length + amendesSnap.size;
-      document.getElementById('alertCount').textContent = alertCount+' alerte(s)';
+      // Alertes — utilise wanted déjà calculé plus haut
       const alertsEl = document.getElementById('dashAlerts');
+      const wantedDocs = casSnap.docs.filter(d => d.data().wanted).map(d => d.data());
+      const alertCount = wantedDocs.length + amendesSnap.size;
+      document.getElementById('alertCount').textContent = alertCount + ' alerte(s)';
 
       if (!wantedDocs.length && !amendesSnap.size) {
-        alertsEl.innerHTML = '<div class="empty-state"><span class="ei">◉</span><p>Aucune alerte active</p></div>';
+        alertsEl.innerHTML = '<div class="empty-state"><div class="ei">🔔</div><p>AUCUNE ALERTE ACTIVE</p></div>';
       } else {
-        let h = '';
-        wantedDocs.slice(0,4).forEach(c => {
-          h += `<div class="alert-item alert-wanted"><span class="ai-ico">⚠</span><div class="ai-text"><strong>${c.nom||''} ${c.prenom||''}</strong> — activement recherché</div><span class="badge b-wanted">Wanted</span></div>`;
+        let html = '';
+        wantedDocs.slice(0,3).forEach(c => {
+          html += `<div class="alert-item alert-wanted"><span class="ai-icon">⚠️</span><div class="ai-text"><strong>${c.nom||''} ${c.prenom||''}</strong> est activement recherché</div><span class="ai-badge">WANTED</span></div>`;
         });
-        if (amendesSnap.size) h += `<div class="alert-item alert-warn"><span class="ai-ico">◇</span><div class="ai-text"><strong>${amendesSnap.size} amende(s)</strong> en attente de paiement</div></div>`;
-        alertsEl.innerHTML = h;
+        if (amendesSnap.size) {
+          html += `<div class="alert-item alert-warn"><span class="ai-icon">💰</span><div class="ai-text"><strong>${amendesSnap.size} amende(s)</strong> en attente de paiement</div></div>`;
+        }
+        alertsEl.innerHTML = html;
       }
 
-      // Activité
+      // Activité récente (logs)
       const actEl = document.getElementById('dashActivity');
       try {
-        const logsSnap = await getDocs(query(collection(db,'logs'),orderBy('timestamp','desc'),limit(8)));
+        const logsSnap = await getDocs(query(collection(db, 'logs'), orderBy('timestamp', 'desc'), limit(6)));
         if (logsSnap.empty) {
-          actEl.innerHTML = '<div class="empty-state"><span class="ei">≡</span><p>Aucune activité</p></div>';
+          actEl.innerHTML = '<div class="empty-state"><div class="ei">📜</div><p>AUCUNE ACTIVITÉ</p></div>';
         } else {
-          const ico = {'Casier créé':'▤','Casier modifié':'▤','Arrestation':'◎','Arrestation créée':'◎','Amende créée':'◇','Rapport créé':'▣','Saisie enregistrée':'▨','Officier ajouté':'▦','Officier modifié':'▦','Véhicule ajouté':'◉','Arme ajoutée':'▲','Compte créé':'⊞','Grade modifié':'⊞','Compte suspendu':'⊘'};
-          let h = '';
+          const iconMap = {
+            'Casier créé':'📁','Casier modifié':'✏️','Casier supprimé':'🗑️',
+            'Rapport créé':'📋','Rapport modifié':'📝','Rapport supprimé':'🗑️',
+            'Arrestation créée':'🚔','Arrestation modifiée':'🚔',
+            'Amende créée':'💰','Amende modifiée':'💰',
+            'Officier ajouté':'👮','Officier modifié':'👮','Officier supprimé':'👮',
+            'Véhicule ajouté':'🚓','Véhicule modifié':'🚓','Véhicule statut':'🚓',
+            'Arme ajoutée':'🔫','Arme modifiée':'🔫',
+            'Saisie enregistrée':'📦','Saisie modifiée':'📦','Saisie détruite et supprimée':'💥','Saisie restituée et supprimée':'✅',
+            'Compte créé':'🆕','Grade modifié':'🏅','Compte suspendu':'⛔','Compte réactivé':'✅',
+            'Planning ajouté':'📅','Planning modifié':'📅',
+          };
+          const bgMap = {
+            'Casier créé':'rgba(37,137,208,.15)','Casier modifié':'rgba(37,137,208,.1)',
+            'Arrestation créée':'rgba(192,57,43,.15)',
+            'Amende créée':'rgba(201,170,77,.15)',
+            'Saisie enregistrée':'rgba(125,60,152,.15)',
+            'Saisie détruite et supprimée':'rgba(192,57,43,.15)',
+            'Saisie restituée et supprimée':'rgba(30,158,86,.15)',
+            'Compte suspendu':'rgba(192,57,43,.15)',
+            'Grade modifié':'rgba(201,170,77,.15)',
+          };
+          let html = '';
           logsSnap.forEach(d => {
             const l = d.data();
-            const i  = ico[l.action] || '≡';
-            const time = l.timestamp ? new Date(l.timestamp).toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'}) : '';
-            const date = l.timestamp ? new Date(l.timestamp).toLocaleDateString('fr-FR',{day:'2-digit',month:'2-digit'}) : '';
-            h += `<div class="activity-item">
-              <div class="act-ico">${i}</div>
-              <div class="act-info">
-                <div class="act-title">${l.action||'Action'}</div>
-                <div style="display:flex;gap:8px;align-items:center"><span style="font-family:var(--mono);font-size:9px;color:var(--blue-l)">↳ ${l.user||'Inconnu'}</span>${l.details?`<span class="act-sub">${l.details}</span>`:''}</div>
+            const icon = iconMap[l.action] || '📜';
+            const bg = bgMap[l.action] || 'var(--surface2)';
+            const time = l.timestamp ? new Date(l.timestamp).toLocaleTimeString('fr-FR', {hour:'2-digit',minute:'2-digit'}) : '';
+            const date = l.timestamp ? new Date(l.timestamp).toLocaleDateString('fr-FR', {day:'2-digit',month:'2-digit'}) : '';
+            html += `<div class="recent-item" style="background:${bg}">
+              <div class="ri-icon" style="background:rgba(255,255,255,.05)">${icon}</div>
+              <div class="ri-info">
+                <div class="ri-title">${l.action||''}</div>
+                <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+                  <span style="font-family:'Share Tech Mono',monospace;font-size:10px;color:var(--accent-b)">👮 ${l.user||'Inconnu'}</span>
+                  ${l.details ? `<span class="ri-sub">↳ ${l.details}</span>` : ''}
+                </div>
               </div>
-              <div class="act-time">${date}<br>${time}</div>
+              <div class="ri-time">${date}<br>${time}</div>
             </div>`;
           });
-          actEl.innerHTML = h;
+          actEl.innerHTML = html;
         }
       } catch(e) {}
 
-      document.getElementById('lastUpdate').textContent = 'MAJ ' + new Date().toLocaleTimeString('fr-FR');
+      document.getElementById('lastUpdate').textContent = 'Dernière mise à jour : ' + new Date().toLocaleTimeString('fr-FR');
     } catch(e) { console.error(e); }
   }
 
   window.manualRefresh = async function() {
-    const btn = document.getElementById('refreshBtn');
-    btn.style.opacity='.5'; btn.style.pointerEvents='none';
-    document.getElementById('sArrestations').textContent='—';
     await loadDashboard();
-    btn.style.opacity=''; btn.style.pointerEvents='';
-    showToast('Tableau de bord actualisé','success');
+    showToast('Tableau de bord actualisé', 'success');
+  };
+
+  window.logout = async function() {
+    try {
+      const user = auth.currentUser;
+      if (user) {
+        await deleteDoc(doc(db, 'online', user.uid));
+      }
+    } catch(e) { console.warn('Logout online removal failed:', e); }
+    await signOut(auth);
+    sessionStorage.clear();
+    window.location.href = 'index.html';
   };
 </script>
+
 </body>
 </html>

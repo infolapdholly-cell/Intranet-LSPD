@@ -12,33 +12,29 @@
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="LSPD">
-  <meta name="theme-color" content="#2563eb">
+  <meta name="theme-color" content="#1458a0">
   <link rel="apple-touch-icon" href="https://r2.fivemanage.com/XEcvh0aBGRYhLzNNcRsQI/lspdnouveau.png">
 </head>
 <body>
 <div class="app-shell">
 <div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
-<div class="topbar">
-  <div class="tb-left">
-    <button class="tb-menu-btn" onclick="toggleSidebar()">☰</button>
-    <div class="tb-brand">
-      <div class="tb-shield"></div>
-      <img class="tb-logo" src="https://r2.fivemanage.com/XEcvh0aBGRYhLzNNcRsQI/lspdnouveau.png" alt="LSPD" onerror="this.style.display='none'">
+  <div class="topbar">
+    <div class="tb-left">
+      <button class="tb-menu-btn" onclick="toggleSidebar()">☰</button>
+      <img class="tb-logo" src="https://r2.fivemanage.com/XEcvh0aBGRYhLzNNcRsQI/lspdnouveau.png" alt="LSPD">
+      <div class="tb-sep" style="width:1px;height:26px;background:var(--border)"></div>
       <div class="tb-title">L.S.P.D</div>
+      <div class="tb-sep" style="width:1px;height:26px;background:var(--border)"></div>
+      <div class="tb-page">RAPPORTS</div>
     </div>
-    <div class="tb-page">Rapports</div>
-  </div>
-  <div class="tb-right">
-    <div class="tb-status"><div class="live-dot"></div>En ligne</div>
-    <div class="tb-time" id="tbClock">--:--:--</div>
-    <div class="tb-user">
-      <span class="tb-grade" id="tbGrade">—</span>
+    <div class="tb-right">
+      <div class="tb-time" id="tbClock">--:--:--</div>
+      <span class="tb-grade g-recruit" id="tbGrade">RECRUIT</span>
       <span class="tb-name" id="tbName">Officier</span>
+      <button class="btn-out" onclick="logout()">Déconnexion</button>
     </div>
-    <button class="btn-out" onclick="logout()">Quitter</button>
   </div>
-</div>
-<div class="shell">
+  <div class="shell">
     <div class="sidebar" id="sidebar"></div>
     <div class="main">
       <div class="page-head">
@@ -47,7 +43,7 @@
           <p>// JOURNAUX OPÉRATIONNELS — LOS SANTOS POLICE DEPARTMENT</p>
         </div>
         <div style="display:flex;gap:8px">
-          
+          <button class="btn btn-ghost btn-sm" onclick="window.print()">📋 Imprimer liste liste</button>
           <button class="btn btn-primary" id="btnNew">+ Nouveau rapport</button>
         </div>
       </div>
@@ -80,7 +76,7 @@
           <div class="table-wrap">
             <table>
               <thead><tr><th>RÉFÉRENCE</th><th>TITRE</th><th>TYPE</th><th>OFFICIER</th><th>DATE</th><th>SUSPECTS</th><th>STATUT</th><th>ACTIONS</th></tr></thead>
-              <tbody id="rapportsTable"><tr><td colspan="8" style="text-align:center;padding:30px;color:var(--text2);font-family:'Share Tech Mono',monospace;font-size:11px">CHARGEMENT...</td></tr></tbody>
+              <tbody id="rapportsTable"><tr><td colspan="8" style="text-align:center;padding:30px;color:var(--muted);font-family:'Share Tech Mono',monospace;font-size:11px">CHARGEMENT...</td></tr></tbody>
             </table>
           </div>
         </div>
@@ -159,6 +155,7 @@
   import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
   import { getFirestore, collection, addDoc, getDocs, doc, updateDoc, deleteDoc, query, orderBy } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
   import { initPage, startClock, showToast, openModal, closeModal, setupModalClose, statusBadge, addLog, generateRef, getPerms, captureModal } from './utils.js';
+  import { checkMaintenance, watchMaintenance } from './maintenance.js';
   import { printRapport } from './pdf-templates.js';
 
   const firebaseConfig = {
@@ -173,6 +170,10 @@
   const app = initializeApp(firebaseConfig);
   const auth = getAuth(app);
   const db = getFirestore(app);
+
+  checkMaintenance(db);
+  watchMaintenance(db);
+
   let allRapports = [];
   let editingId = null;
   let userGrade = 'recruit';
@@ -213,12 +214,12 @@
     const perms = getPerms(userGrade);
     tb.innerHTML = list.map(r => `
       <tr>
-        <td style="font-family:'Share Tech Mono',monospace;font-size:11px;color:var(--text2)">${r.reference||'—'}</td>
+        <td style="font-family:'Share Tech Mono',monospace;font-size:11px;color:var(--muted)">${r.reference||'—'}</td>
         <td><strong>${r.titre||'—'}</strong></td>
         <td style="font-size:12px">${r.type||'—'}</td>
         <td style="font-size:12px">${r.officier||'—'}</td>
         <td style="font-family:'Share Tech Mono',monospace;font-size:11px">${r.date||'—'} ${r.heure||''}</td>
-        <td style="font-size:12px;color:var(--text2)">${r.suspects||'—'}</td>
+        <td style="font-size:12px;color:var(--muted)">${r.suspects||'—'}</td>
         <td>${r.statut==='Ouvert'?'<span class="badge b-open">Ouvert</span>':'<span class="badge b-closed">Fermé</span>'}</td>
         <td style="display:flex;gap:4px;flex-wrap:wrap">
           <button class="btn btn-ghost btn-sm" onclick="viewRapport('${r.id}')">👁️</button>
@@ -317,18 +318,18 @@
     document.getElementById('detailTitle').textContent = r.titre||'RAPPORT';
     document.getElementById('detailBody').innerHTML = `
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:18px">
-        <div><div style="font-family:'Share Tech Mono',monospace;font-size:9px;color:var(--text2);letter-spacing:2px;margin-bottom:3px">RÉFÉRENCE</div><div style="font-family:'Share Tech Mono',monospace;font-size:13px">${r.reference||'—'}</div></div>
-        <div><div style="font-family:'Share Tech Mono',monospace;font-size:9px;color:var(--text2);letter-spacing:2px;margin-bottom:3px">STATUT</div>${r.statut==='Ouvert'?'<span class="badge b-open">Ouvert</span>':'<span class="badge b-closed">Fermé</span>'}</div>
-        <div><div style="font-family:'Share Tech Mono',monospace;font-size:9px;color:var(--text2);letter-spacing:2px;margin-bottom:3px">TYPE</div><div style="font-size:13px">${r.type||'—'}</div></div>
-        <div><div style="font-family:'Share Tech Mono',monospace;font-size:9px;color:var(--text2);letter-spacing:2px;margin-bottom:3px">DATE / HEURE</div><div style="font-family:'Share Tech Mono',monospace;font-size:13px">${r.date||'—'} ${r.heure||''}</div></div>
-        <div><div style="font-family:'Share Tech Mono',monospace;font-size:9px;color:var(--text2);letter-spacing:2px;margin-bottom:3px">OFFICIER</div><div style="font-size:13px">${r.officier||'—'}</div></div>
-        <div><div style="font-family:'Share Tech Mono',monospace;font-size:9px;color:var(--text2);letter-spacing:2px;margin-bottom:3px">ÉQUIPE</div><div style="font-size:13px">${r.equipe||'—'}</div></div>
-        <div><div style="font-family:'Share Tech Mono',monospace;font-size:9px;color:var(--text2);letter-spacing:2px;margin-bottom:3px">LIEU</div><div style="font-size:13px">${r.lieu||'—'}</div></div>
-        <div><div style="font-family:'Share Tech Mono',monospace;font-size:9px;color:var(--text2);letter-spacing:2px;margin-bottom:3px">SUSPECTS</div><div style="font-size:13px;color:var(--red-l)">${r.suspects||'—'}</div></div>
+        <div><div style="font-family:'Share Tech Mono',monospace;font-size:9px;color:var(--muted);letter-spacing:2px;margin-bottom:3px">RÉFÉRENCE</div><div style="font-family:'Share Tech Mono',monospace;font-size:13px">${r.reference||'—'}</div></div>
+        <div><div style="font-family:'Share Tech Mono',monospace;font-size:9px;color:var(--muted);letter-spacing:2px;margin-bottom:3px">STATUT</div>${r.statut==='Ouvert'?'<span class="badge b-open">Ouvert</span>':'<span class="badge b-closed">Fermé</span>'}</div>
+        <div><div style="font-family:'Share Tech Mono',monospace;font-size:9px;color:var(--muted);letter-spacing:2px;margin-bottom:3px">TYPE</div><div style="font-size:13px">${r.type||'—'}</div></div>
+        <div><div style="font-family:'Share Tech Mono',monospace;font-size:9px;color:var(--muted);letter-spacing:2px;margin-bottom:3px">DATE / HEURE</div><div style="font-family:'Share Tech Mono',monospace;font-size:13px">${r.date||'—'} ${r.heure||''}</div></div>
+        <div><div style="font-family:'Share Tech Mono',monospace;font-size:9px;color:var(--muted);letter-spacing:2px;margin-bottom:3px">OFFICIER</div><div style="font-size:13px">${r.officier||'—'}</div></div>
+        <div><div style="font-family:'Share Tech Mono',monospace;font-size:9px;color:var(--muted);letter-spacing:2px;margin-bottom:3px">ÉQUIPE</div><div style="font-size:13px">${r.equipe||'—'}</div></div>
+        <div><div style="font-family:'Share Tech Mono',monospace;font-size:9px;color:var(--muted);letter-spacing:2px;margin-bottom:3px">LIEU</div><div style="font-size:13px">${r.lieu||'—'}</div></div>
+        <div><div style="font-family:'Share Tech Mono',monospace;font-size:9px;color:var(--muted);letter-spacing:2px;margin-bottom:3px">SUSPECTS</div><div style="font-size:13px;color:var(--danger-l)">${r.suspects||'—'}</div></div>
       </div>
-      ${r.resume?`<div style="margin-bottom:14px"><div style="font-family:'Share Tech Mono',monospace;font-size:9px;color:var(--text2);letter-spacing:2px;margin-bottom:6px">RÉSUMÉ</div><div style="font-size:13px;line-height:1.6;padding:12px;background:var(--panel2);border-radius:5px">${r.resume}</div></div>`:''}
-      ${r.description?`<div style="margin-bottom:14px"><div style="font-family:'Share Tech Mono',monospace;font-size:9px;color:var(--text2);letter-spacing:2px;margin-bottom:6px">DESCRIPTION COMPLÈTE</div><div style="font-size:13px;line-height:1.7;padding:12px;background:var(--panel2);border-radius:5px;white-space:pre-wrap">${r.description}</div></div>`:''}
-      ${r.conclusion?`<div><div style="font-family:'Share Tech Mono',monospace;font-size:9px;color:var(--text2);letter-spacing:2px;margin-bottom:6px">CONCLUSION</div><div style="font-size:13px;line-height:1.6;padding:12px;background:var(--panel2);border-radius:5px">${r.conclusion}</div></div>`:''}
+      ${r.resume?`<div style="margin-bottom:14px"><div style="font-family:'Share Tech Mono',monospace;font-size:9px;color:var(--muted);letter-spacing:2px;margin-bottom:6px">RÉSUMÉ</div><div style="font-size:13px;line-height:1.6;padding:12px;background:var(--surface2);border-radius:5px">${r.resume}</div></div>`:''}
+      ${r.description?`<div style="margin-bottom:14px"><div style="font-family:'Share Tech Mono',monospace;font-size:9px;color:var(--muted);letter-spacing:2px;margin-bottom:6px">DESCRIPTION COMPLÈTE</div><div style="font-size:13px;line-height:1.7;padding:12px;background:var(--surface2);border-radius:5px;white-space:pre-wrap">${r.description}</div></div>`:''}
+      ${r.conclusion?`<div><div style="font-family:'Share Tech Mono',monospace;font-size:9px;color:var(--muted);letter-spacing:2px;margin-bottom:6px">CONCLUSION</div><div style="font-size:13px;line-height:1.6;padding:12px;background:var(--surface2);border-radius:5px">${r.conclusion}</div></div>`:''}
     `;
     const perms = getPerms(userGrade);
     document.getElementById('detailFooter').innerHTML = `

@@ -2,7 +2,6 @@
 <html lang="fr">
 <head>
   <meta charset="UTF-8">
-  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@400;500;600;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
   <link rel="icon" type="image/png" href="https://r2.fivemanage.com/XEcvh0aBGRYhLzNNcRsQI/lspdnouveau.png">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>LSPD — Saisies</title>
@@ -20,33 +19,29 @@
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="LSPD">
-  <meta name="theme-color" content="#2563eb">
+  <meta name="theme-color" content="#1458a0">
   <link rel="apple-touch-icon" href="https://r2.fivemanage.com/XEcvh0aBGRYhLzNNcRsQI/lspdnouveau.png">
 </head>
 <body>
 <div class="app-shell">
 <div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
-<div class="topbar">
-  <div class="tb-left">
-    <button class="tb-menu-btn" onclick="toggleSidebar()">☰</button>
-    <div class="tb-brand">
-      <div class="tb-shield"></div>
-      <img class="tb-logo" src="https://r2.fivemanage.com/XEcvh0aBGRYhLzNNcRsQI/lspdnouveau.png" alt="LSPD" onerror="this.style.display='none'">
+  <div class="topbar">
+    <div class="tb-left">
+      <button class="tb-menu-btn" onclick="toggleSidebar()">☰</button>
+      <img class="tb-logo" src="https://r2.fivemanage.com/XEcvh0aBGRYhLzNNcRsQI/lspdnouveau.png" alt="LSPD">
+      <div class="tb-sep" style="width:1px;height:26px;background:var(--border)"></div>
       <div class="tb-title">L.S.P.D</div>
+      <div class="tb-sep" style="width:1px;height:26px;background:var(--border)"></div>
+      <div class="tb-page">SAISIES</div>
     </div>
-    <div class="tb-page">Saisies</div>
-  </div>
-  <div class="tb-right">
-    <div class="tb-status"><div class="live-dot"></div>En ligne</div>
-    <div class="tb-time" id="tbClock">--:--:--</div>
-    <div class="tb-user">
-      <span class="tb-grade" id="tbGrade">—</span>
+    <div class="tb-right">
+      <div class="tb-time" id="tbClock">--:--:--</div>
+      <span class="tb-grade g-recruit" id="tbGrade">RECRUIT</span>
       <span class="tb-name" id="tbName">Officier</span>
+      <button class="btn-out" onclick="logout()">Déconnexion</button>
     </div>
-    <button class="btn-out" onclick="logout()">Quitter</button>
   </div>
-</div>
-<div class="shell">
+  <div class="shell">
     <div class="sidebar" id="sidebar"></div>
     <div class="main">
       <div class="page-head">
@@ -103,7 +98,7 @@
                 </tr>
               </thead>
               <tbody id="saisisTable">
-                <tr><td colspan="10" style="text-align:center;padding:30px;color:var(--text2);font-family:'Share Tech Mono',monospace;font-size:11px">CHARGEMENT...</td></tr>
+                <tr><td colspan="10" style="text-align:center;padding:30px;color:var(--muted);font-family:'Share Tech Mono',monospace;font-size:11px">CHARGEMENT...</td></tr>
               </tbody>
             </table>
           </div>
@@ -171,6 +166,7 @@
   import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
   import { getFirestore, collection, addDoc, getDocs, doc, updateDoc, deleteDoc, query, orderBy } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
   import { initPage, startClock, showToast, openModal, closeModal, setupModalClose, statusBadge, addLog, generateRef, getPerms, captureModal } from './utils.js';
+  import { checkMaintenance, watchMaintenance } from './maintenance.js';
   import { printSaisie } from './pdf-templates.js';
 
   const firebaseConfig = {
@@ -222,6 +218,10 @@
   const app = initializeApp(firebaseConfig);
   const auth = getAuth(app);
   const db = getFirestore(app);
+
+  checkMaintenance(db);
+  watchMaintenance(db);
+
   let allSaisies = [], editingId = null, userPerms = {};
 
   const TYPE_ICONS = {
@@ -272,14 +272,14 @@
     }
     tb.innerHTML = list.map(s => `
       <tr style="background:${TYPE_COLORS[s.type]||'transparent'}">
-        <td style="font-family:'Share Tech Mono',monospace;font-size:11px;color:var(--text2);white-space:nowrap">${s.reference||'—'}</td>
+        <td style="font-family:'Share Tech Mono',monospace;font-size:11px;color:var(--muted);white-space:nowrap">${s.reference||'—'}</td>
         <td><span style="font-size:18px">${TYPE_ICONS[s.type]||'📦'}</span> <span style="font-size:12px">${s.type||'—'}</span></td>
         <td><strong>${s.nom||'—'}</strong></td>
         <td style="font-size:12px;max-width:160px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${s.quantite?`<strong>${s.quantite}</strong> — `:''}${s.description||'—'}</td>
         <td style="font-size:12px">${s.officier||'—'}</td>
         <td style="font-family:'Share Tech Mono',monospace;font-size:11px;white-space:nowrap">${s.date||'—'}</td>
         <td style="font-size:12px">${s.lieu||'—'}</td>
-        <td style="font-family:'Share Tech Mono',monospace;font-size:10px;color:var(--text2)">${s.refArrestation||'—'}</td>
+        <td style="font-family:'Share Tech Mono',monospace;font-size:10px;color:var(--muted)">${s.refArrestation||'—'}</td>
         <td>${statutSaisieBadge(s.statut)}</td>
         <td style="display:flex;gap:4px">
           <button class="btn btn-ghost btn-sm" onclick="viewSaisie('${s.id}')">👁️</button>
@@ -394,23 +394,23 @@
     if (!s) return;
     document.getElementById('detailTitle').textContent = `${TYPE_ICONS[s.type]||'📦'} SAISIE — ${s.reference||'—'}`;
     document.getElementById('detailBody').innerHTML = `
-      <div style="background:${TYPE_COLORS[s.type]||'var(--panel2)'};border:1px solid var(--line);border-radius:8px;padding:16px;margin-bottom:16px;display:flex;align-items:center;gap:14px">
+      <div style="background:${TYPE_COLORS[s.type]||'var(--surface2)'};border:1px solid var(--border);border-radius:8px;padding:16px;margin-bottom:16px;display:flex;align-items:center;gap:14px">
         <div style="font-size:48px">${TYPE_ICONS[s.type]||'📦'}</div>
         <div>
-          <div style="font-family:'Share Tech Mono',monospace;font-size:16px;font-weight:700;margin-bottom:6px">${s.type||'—'}</div>
+          <div style="font-family:'Orbitron',monospace;font-size:16px;font-weight:700;margin-bottom:6px">${s.type||'—'}</div>
           <div style="display:flex;gap:8px;flex-wrap:wrap">${statutSaisieBadge(s.statut)}</div>
           ${s.quantite?`<div style="font-family:'Share Tech Mono',monospace;font-size:13px;color:var(--gold);margin-top:6px">Quantité : ${s.quantite}</div>`:''}
         </div>
       </div>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px">
-        <div><div style="font-family:'Share Tech Mono',monospace;font-size:9px;color:var(--text2);letter-spacing:2px;margin-bottom:3px">SUSPECT</div><div style="font-size:14px;font-weight:700">${s.nom||'—'}</div></div>
-        <div><div style="font-family:'Share Tech Mono',monospace;font-size:9px;color:var(--text2);letter-spacing:2px;margin-bottom:3px">N° DOSSIER</div><div style="font-family:'Share Tech Mono',monospace;font-size:13px">${s.reference||'—'}</div></div>
-        <div><div style="font-family:'Share Tech Mono',monospace;font-size:9px;color:var(--text2);letter-spacing:2px;margin-bottom:3px">OFFICIER</div><div style="font-size:13px">${s.officier||'—'}</div></div>
-        <div><div style="font-family:'Share Tech Mono',monospace;font-size:9px;color:var(--text2);letter-spacing:2px;margin-bottom:3px">DATE</div><div style="font-family:'Share Tech Mono',monospace;font-size:13px">${s.date||'—'}</div></div>
-        <div><div style="font-family:'Share Tech Mono',monospace;font-size:9px;color:var(--text2);letter-spacing:2px;margin-bottom:3px">LIEU</div><div style="font-size:13px">${s.lieu||'—'}</div></div>
-        <div><div style="font-family:'Share Tech Mono',monospace;font-size:9px;color:var(--text2);letter-spacing:2px;margin-bottom:3px">RÉF. ARRESTATION</div><div style="font-family:'Share Tech Mono',monospace;font-size:12px;color:var(--blue-b)">${s.refArrestation||'—'}</div></div>
+        <div><div style="font-family:'Share Tech Mono',monospace;font-size:9px;color:var(--muted);letter-spacing:2px;margin-bottom:3px">SUSPECT</div><div style="font-size:14px;font-weight:700">${s.nom||'—'}</div></div>
+        <div><div style="font-family:'Share Tech Mono',monospace;font-size:9px;color:var(--muted);letter-spacing:2px;margin-bottom:3px">N° DOSSIER</div><div style="font-family:'Share Tech Mono',monospace;font-size:13px">${s.reference||'—'}</div></div>
+        <div><div style="font-family:'Share Tech Mono',monospace;font-size:9px;color:var(--muted);letter-spacing:2px;margin-bottom:3px">OFFICIER</div><div style="font-size:13px">${s.officier||'—'}</div></div>
+        <div><div style="font-family:'Share Tech Mono',monospace;font-size:9px;color:var(--muted);letter-spacing:2px;margin-bottom:3px">DATE</div><div style="font-family:'Share Tech Mono',monospace;font-size:13px">${s.date||'—'}</div></div>
+        <div><div style="font-family:'Share Tech Mono',monospace;font-size:9px;color:var(--muted);letter-spacing:2px;margin-bottom:3px">LIEU</div><div style="font-size:13px">${s.lieu||'—'}</div></div>
+        <div><div style="font-family:'Share Tech Mono',monospace;font-size:9px;color:var(--muted);letter-spacing:2px;margin-bottom:3px">RÉF. ARRESTATION</div><div style="font-family:'Share Tech Mono',monospace;font-size:12px;color:var(--accent-b)">${s.refArrestation||'—'}</div></div>
       </div>
-      ${s.description?`<div><div style="font-family:'Share Tech Mono',monospace;font-size:9px;color:var(--text2);letter-spacing:2px;margin-bottom:6px">DESCRIPTION</div><div style="font-size:13px;line-height:1.6;padding:12px;background:var(--panel2);border-radius:5px">${s.description}</div></div>`:''}
+      ${s.description?`<div><div style="font-family:'Share Tech Mono',monospace;font-size:9px;color:var(--muted);letter-spacing:2px;margin-bottom:6px">DESCRIPTION</div><div style="font-size:13px;line-height:1.6;padding:12px;background:var(--surface2);border-radius:5px">${s.description}</div></div>`:''}
     `;
     document.getElementById('detailFooter').innerHTML = `
       <button class="btn btn-ghost" onclick="closeModal('modalDetail')">Fermer</button>

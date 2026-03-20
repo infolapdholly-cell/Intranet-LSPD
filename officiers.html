@@ -2,66 +2,61 @@
 <html lang="fr">
 <head>
   <meta charset="UTF-8">
-  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@400;500;600;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
   <link rel="icon" type="image/png" href="https://r2.fivemanage.com/XEcvh0aBGRYhLzNNcRsQI/lspdnouveau.png">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>LSPD — Officiers</title>
   <link rel="stylesheet" href="style.css?v=13">
   <style>
     .officers-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(260px,1fr)); gap:16px; }
-    .officer-card { background:var(--panel); border:1px solid var(--line); border-radius:10px; overflow:hidden; transition:all .2s; animation:fadeIn .3s ease both; }
+    .officer-card { background:var(--surface); border:1px solid var(--border); border-radius:10px; overflow:hidden; transition:all .2s; animation:fadeIn .3s ease both; }
 
-    .officer-card:hover { border-color:var(--blue); box-shadow:0 0 16px rgba(59,130,246,.15); transform:translateY(-2px); }
+    .officer-card:hover { border-color:var(--accent); box-shadow:0 0 16px var(--accent-glow); transform:translateY(-2px); }
     .oc-header { display:flex; gap:14px; align-items:center; padding:16px; }
-    .oc-photo { width:60px; height:60px; border-radius:50%; border:2px solid var(--line); background:var(--panel2); display:flex; align-items:center; justify-content:center; font-size:26px; flex-shrink:0; overflow:hidden; }
+    .oc-photo { width:60px; height:60px; border-radius:50%; border:2px solid var(--border); background:var(--surface2); display:flex; align-items:center; justify-content:center; font-size:26px; flex-shrink:0; overflow:hidden; }
     .oc-photo img { width:100%; height:100%; object-fit:cover; border-radius:50%; }
-    .oc-name { font-family:'Share Tech Mono',monospace; font-size:13px; font-weight:700; letter-spacing:1px; margin-bottom:4px; }
-    .oc-grade { font-family:'Share Tech Mono',monospace; font-size:10px; color:var(--blue-b); letter-spacing:1px; margin-bottom:4px; }
-    .oc-body { padding:0 16px 14px; border-top:1px solid var(--line); padding-top:12px; }
+    .oc-name { font-family:'Orbitron',monospace; font-size:13px; font-weight:700; letter-spacing:1px; margin-bottom:4px; }
+    .oc-grade { font-family:'Share Tech Mono',monospace; font-size:10px; color:var(--accent-b); letter-spacing:1px; margin-bottom:4px; }
+    .oc-body { padding:0 16px 14px; border-top:1px solid var(--border); padding-top:12px; }
     .oc-row { display:flex; justify-content:space-between; margin-bottom:6px; font-size:12px; }
-    .oc-lbl { color:var(--text2); font-family:'Share Tech Mono',monospace; font-size:10px; letter-spacing:1px; }
-    .oc-actions { display:flex; gap:6px; padding:10px 16px; border-top:1px solid var(--line); }
+    .oc-lbl { color:var(--muted); font-family:'Share Tech Mono',monospace; font-size:10px; letter-spacing:1px; }
+    .oc-actions { display:flex; gap:6px; padding:10px 16px; border-top:1px solid var(--border); }
     .oc-actions button { flex:1; }
-    .locked-overlay { position:absolute; inset:0; background:rgba(5,8,15,.7); display:flex; align-items:center; justify-content:center; border-radius:10px; font-family:'Share Tech Mono',monospace; font-size:12px; color:var(--text2); letter-spacing:2px; }
+    .locked-overlay { position:absolute; inset:0; background:rgba(5,8,15,.7); display:flex; align-items:center; justify-content:center; border-radius:10px; font-family:'Share Tech Mono',monospace; font-size:12px; color:var(--muted); letter-spacing:2px; }
     @keyframes fadeIn { from{opacity:0;transform:translateY(-4px)} to{opacity:1;transform:none} }
 
     /* GRADE BADGE COLORS */
     .grade-or { color:var(--gold); }
-    .grade-bleu { color:var(--blue-b); }
-    .grade-gris { color:var(--text2); }
+    .grade-bleu { color:var(--accent-b); }
+    .grade-gris { color:var(--muted); }
   </style>
   
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="LSPD">
-  <meta name="theme-color" content="#2563eb">
+  <meta name="theme-color" content="#1458a0">
   <link rel="apple-touch-icon" href="https://r2.fivemanage.com/XEcvh0aBGRYhLzNNcRsQI/lspdnouveau.png">
 </head>
 <body>
 <div class="app-shell">
 <div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
-<div class="topbar">
-  <div class="tb-left">
-    <button class="tb-menu-btn" onclick="toggleSidebar()">☰</button>
-    <div class="tb-brand">
-      <div class="tb-shield"></div>
-      <img class="tb-logo" src="https://r2.fivemanage.com/XEcvh0aBGRYhLzNNcRsQI/lspdnouveau.png" alt="LSPD" onerror="this.style.display='none'">
+  <div class="topbar">
+    <div class="tb-left">
+      <button class="tb-menu-btn" onclick="toggleSidebar()">☰</button>
+      <img class="tb-logo" src="https://r2.fivemanage.com/XEcvh0aBGRYhLzNNcRsQI/lspdnouveau.png" alt="LSPD">
+      <div class="tb-sep" style="width:1px;height:26px;background:var(--border)"></div>
       <div class="tb-title">L.S.P.D</div>
+      <div class="tb-sep" style="width:1px;height:26px;background:var(--border)"></div>
+      <div class="tb-page">OFFICIERS</div>
     </div>
-    <div class="tb-page">Officiers</div>
-  </div>
-  <div class="tb-right">
-    <div class="tb-status"><div class="live-dot"></div>En ligne</div>
-    <div class="tb-time" id="tbClock">--:--:--</div>
-    <div class="tb-user">
-      <span class="tb-grade" id="tbGrade">—</span>
+    <div class="tb-right">
+      <div class="tb-time" id="tbClock">--:--:--</div>
+      <span class="tb-grade g-recruit" id="tbGrade">RECRUIT</span>
       <span class="tb-name" id="tbName">Officier</span>
+      <button class="btn-out" onclick="logout()">Déconnexion</button>
     </div>
-    <button class="btn-out" onclick="logout()">Quitter</button>
   </div>
-</div>
-<div class="shell">
+  <div class="shell">
     <div class="sidebar" id="sidebar"></div>
     <div class="main">
 
@@ -189,6 +184,7 @@
   import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
   import { getFirestore, collection, addDoc, getDocs, doc, updateDoc, deleteDoc, query, orderBy, onSnapshot } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
   import { initPage, startClock, showToast, openModal, closeModal, setupModalClose, statusBadge, addLog, getPerms, captureModal } from './utils.js';
+  import { checkMaintenance, watchMaintenance } from './maintenance.js';
 
   const firebaseConfig = {
     apiKey: "AIzaSyA4GxYd32GNs5EDjjm2UI1a0d25YxigMVU",
@@ -202,6 +198,10 @@
   const app = initializeApp(firebaseConfig);
   const auth = getAuth(app);
   const db = getFirestore(app);
+
+  checkMaintenance(db);
+  watchMaintenance(db);
+
   let allOfficiers = [];
   let onlineUsers = [];
   let editingId = null;
@@ -258,8 +258,8 @@
     const moyens = ['lieutenant','sergent','officier'];
     const gl = (g||'').toLowerCase();
     if (hauts.includes(gl)) return 'var(--gold)';
-    if (moyens.includes(gl)) return 'var(--blue-b)';
-    return 'var(--text2)';
+    if (moyens.includes(gl)) return 'var(--accent-b)';
+    return 'var(--muted)';
   }
 
   function statutClass(s) {
@@ -278,7 +278,7 @@
     const grid = document.getElementById('officersGrid');
     if (!list.length) { grid.innerHTML = '<div class="empty-state" style="grid-column:1/-1"><div class="ei">👮</div><p>AUCUN OFFICIER</p></div>'; return; }
     grid.innerHTML = list.map(o => { const isOnline = onlineUsers.some(u => (u.displayName||'').toLowerCase().trim() === (o.nom||'').toLowerCase().trim()); return `
-      <div class="officer-card" style="border-color:${isOnline ? 'var(--green)' : 'var(--line)'}; box-shadow:${isOnline ? '0 0 16px rgba(30,158,86,.3)' : 'none'}">
+      <div class="officer-card" style="border-color:${isOnline ? 'var(--success)' : 'var(--border)'}; box-shadow:${isOnline ? '0 0 16px rgba(30,158,86,.3)' : 'none'}">
         <div class="oc-header">
           <div class="oc-photo">
             ${o.photoUrl?`<img src="${o.photoUrl}" onerror="this.parentNode.innerHTML='👮'">`:'👮'}
@@ -288,8 +288,8 @@
             <div class="oc-grade" style="color:${gradeColor(o.grade)}">${o.grade||'—'}</div>
             <div style="margin-top:4px">
               ${isOnline 
-                ? '<span style="display:flex;align-items:center;gap:4px;font-family:Share Tech Mono,monospace;font-size:10px;color:var(--green)"><span style="width:8px;height:8px;border-radius:50%;background:var(--green);display:inline-block;animation:pulse 1.5s infinite"></span>En ligne</span>'
-                : '<span style="display:flex;align-items:center;gap:4px;font-family:Share Tech Mono,monospace;font-size:10px;color:var(--text2)"><span style="width:8px;height:8px;border-radius:50%;background:var(--text2);display:inline-block"></span>Hors service</span>'}
+                ? '<span style="display:flex;align-items:center;gap:4px;font-family:Share Tech Mono,monospace;font-size:10px;color:var(--success)"><span style="width:8px;height:8px;border-radius:50%;background:var(--success);display:inline-block;animation:pulse 1.5s infinite"></span>En ligne</span>'
+                : '<span style="display:flex;align-items:center;gap:4px;font-family:Share Tech Mono,monospace;font-size:10px;color:var(--muted)"><span style="width:8px;height:8px;border-radius:50%;background:var(--muted);display:inline-block"></span>Hors service</span>'}
             </div>
           </div>
         </div>
@@ -320,8 +320,8 @@
         <td style="font-size:12px">${o.specialite||'—'}</td>
         <td>${statusBadge(o.statut)}</td>
         <td>${isOnline
-          ? '<span style="display:flex;align-items:center;gap:4px;font-family:Share Tech Mono,monospace;font-size:10px;color:var(--green)"><span style="width:8px;height:8px;border-radius:50%;background:var(--green);display:inline-block"></span>En ligne</span>'
-          : '<span style="display:flex;align-items:center;gap:4px;font-family:Share Tech Mono,monospace;font-size:10px;color:var(--text2)"><span style="width:8px;height:8px;border-radius:50%;background:var(--text2);display:inline-block"></span>Hors service</span>'}</td>
+          ? '<span style="display:flex;align-items:center;gap:4px;font-family:Share Tech Mono,monospace;font-size:10px;color:var(--success)"><span style="width:8px;height:8px;border-radius:50%;background:var(--success);display:inline-block"></span>En ligne</span>'
+          : '<span style="display:flex;align-items:center;gap:4px;font-family:Share Tech Mono,monospace;font-size:10px;color:var(--muted)"><span style="width:8px;height:8px;border-radius:50%;background:var(--muted);display:inline-block"></span>Hors service</span>'}</td>
         <td style="font-family:'Share Tech Mono',monospace;font-size:11px">${o.dateEntree||'—'}</td>
         <td style="display:flex;gap:4px">
           <button class="btn btn-ghost btn-sm" onclick="viewOfficier('${o.id}')">👁️</button>
@@ -355,19 +355,19 @@
     // Infos de base — visibles par TOUS
     let html = `
       <div style="display:flex;gap:20px;align-items:flex-start;margin-bottom:20px">
-        <div style="width:88px;height:88px;border-radius:50%;overflow:hidden;border:3px solid var(--line);flex-shrink:0;background:var(--panel2);display:flex;align-items:center;justify-content:center;font-size:36px">
+        <div style="width:88px;height:88px;border-radius:50%;overflow:hidden;border:3px solid var(--border);flex-shrink:0;background:var(--surface2);display:flex;align-items:center;justify-content:center;font-size:36px">
           ${o.photoUrl?`<img src="${o.photoUrl}" style="width:100%;height:100%;object-fit:cover" onerror="this.parentNode.innerHTML='👮'">`:'👮'}
         </div>
         <div style="flex:1">
-          <div style="font-family:'Share Tech Mono',monospace;font-size:17px;font-weight:700;margin-bottom:5px">${o.nom||'—'}</div>
+          <div style="font-family:'Orbitron',monospace;font-size:17px;font-weight:700;margin-bottom:5px">${o.nom||'—'}</div>
           <div style="font-family:'Share Tech Mono',monospace;font-size:12px;font-weight:700;color:${gradeColor(o.grade)};margin-bottom:8px">${o.grade||'—'}</div>
           <div style="display:flex;gap:6px">${statusBadge(o.statut)}</div>
         </div>
       </div>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px">
-        <div><div style="font-family:'Share Tech Mono',monospace;font-size:9px;color:var(--text2);letter-spacing:2px;margin-bottom:3px">MATRICULE</div><div style="font-family:'Share Tech Mono',monospace;font-size:13px">${o.matricule||'—'}</div></div>
-        <div><div style="font-family:'Share Tech Mono',monospace;font-size:9px;color:var(--text2);letter-spacing:2px;margin-bottom:3px">SPÉCIALITÉ</div><div style="font-size:13px">${o.specialite||'—'}</div></div>
-        <div><div style="font-family:'Share Tech Mono',monospace;font-size:9px;color:var(--text2);letter-spacing:2px;margin-bottom:3px">DATE D'ENTRÉE</div><div style="font-family:'Share Tech Mono',monospace;font-size:13px">${o.dateEntree||'—'}</div></div>
+        <div><div style="font-family:'Share Tech Mono',monospace;font-size:9px;color:var(--muted);letter-spacing:2px;margin-bottom:3px">MATRICULE</div><div style="font-family:'Share Tech Mono',monospace;font-size:13px">${o.matricule||'—'}</div></div>
+        <div><div style="font-family:'Share Tech Mono',monospace;font-size:9px;color:var(--muted);letter-spacing:2px;margin-bottom:3px">SPÉCIALITÉ</div><div style="font-size:13px">${o.specialite||'—'}</div></div>
+        <div><div style="font-family:'Share Tech Mono',monospace;font-size:9px;color:var(--muted);letter-spacing:2px;margin-bottom:3px">DATE D'ENTRÉE</div><div style="font-family:'Share Tech Mono',monospace;font-size:13px">${o.dateEntree||'—'}</div></div>
       </div>`;
 
     // Dossier complet — visible seulement par les grades avec canViewOfficierDossier
@@ -376,16 +376,16 @@
         <div style="background:rgba(201,170,77,.06);border:1px solid rgba(201,170,77,.2);border-radius:8px;padding:14px;margin-top:8px">
           <div style="font-family:'Share Tech Mono',monospace;font-size:10px;color:var(--gold);letter-spacing:3px;margin-bottom:12px">🔒 DOSSIER CONFIDENTIEL</div>
           <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px">
-            <div><div style="font-family:'Share Tech Mono',monospace;font-size:9px;color:var(--text2);letter-spacing:2px;margin-bottom:3px">EMAIL</div><div style="font-size:13px;color:var(--blue-b)">${o.email||'—'}</div></div>
+            <div><div style="font-family:'Share Tech Mono',monospace;font-size:9px;color:var(--muted);letter-spacing:2px;margin-bottom:3px">EMAIL</div><div style="font-size:13px;color:var(--accent-b)">${o.email||'—'}</div></div>
           </div>
-          ${o.notes?`<div><div style="font-family:'Share Tech Mono',monospace;font-size:9px;color:var(--text2);letter-spacing:2px;margin-bottom:6px">NOTES INTERNES</div><div style="font-size:13px;padding:10px;background:var(--panel2);border-radius:5px;line-height:1.6">${o.notes}</div></div>`:''}
+          ${o.notes?`<div><div style="font-family:'Share Tech Mono',monospace;font-size:9px;color:var(--muted);letter-spacing:2px;margin-bottom:6px">NOTES INTERNES</div><div style="font-size:13px;padding:10px;background:var(--surface2);border-radius:5px;line-height:1.6">${o.notes}</div></div>`:''}
         </div>`;
     } else {
       html += `
-        <div style="background:rgba(68,94,122,.08);border:1px solid var(--line);border-radius:8px;padding:14px;margin-top:8px;text-align:center">
+        <div style="background:rgba(68,94,122,.08);border:1px solid var(--border);border-radius:8px;padding:14px;margin-top:8px;text-align:center">
           <div style="font-size:24px;margin-bottom:6px">🔒</div>
-          <div style="font-family:'Share Tech Mono',monospace;font-size:11px;color:var(--text2);letter-spacing:2px">DOSSIER CONFIDENTIEL — ACCÈS RESTREINT</div>
-          <div style="font-size:11px;color:var(--text2);margin-top:4px">Grade insuffisant pour voir les informations complètes</div>
+          <div style="font-family:'Share Tech Mono',monospace;font-size:11px;color:var(--muted);letter-spacing:2px">DOSSIER CONFIDENTIEL — ACCÈS RESTREINT</div>
+          <div style="font-size:11px;color:var(--muted);margin-top:4px">Grade insuffisant pour voir les informations complètes</div>
         </div>`;
     }
 
