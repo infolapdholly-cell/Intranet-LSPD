@@ -111,6 +111,68 @@ body{font-family:'IBM Plex Sans',sans-serif;background:var(--bg);color:var(--tex
         <button class="btn btn-primary" id="btnNew">+ Créer un compte</button>
       </div>
 
+
+      <!-- ══════════════════════════════════════════════
+           PANNEAU MAINTENANCE
+      ══════════════════════════════════════════════ -->
+      <div class="card" id="mtnCard" style="margin-bottom:20px">
+        <div class="card-head" id="mtnCardHead">
+          <div class="card-title" id="mtnCardTitle" style="color:var(--green-l)">▲ Contrôle d'accès système</div>
+          <span id="mtnBadge" style="font-family:'IBM Plex Mono',monospace;font-size:9px;padding:3px 10px;border-radius:2px;border:1px solid rgba(34,199,94,.3);background:rgba(34,199,94,.1);color:var(--green-l)">● EN LIGNE</span>
+        </div>
+        <div class="card-body">
+          <!-- Bannière active si maintenance ON -->
+          <div id="mtnActiveBanner" style="display:none;margin-bottom:14px;padding:10px 14px;background:rgba(180,83,9,.08);border:1px solid rgba(180,83,9,.35);border-radius:4px;display:none;align-items:center;gap:10px">
+            <span>⚠</span>
+            <div style="flex:1;font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--amber-l)">Le site est <strong>HORS LIGNE</strong> — Les officiers voient la page de maintenance</div>
+            <span id="mtnSince" style="font-family:'IBM Plex Mono',monospace;font-size:9px;color:var(--text3)"></span>
+          </div>
+
+          <div class="form-grid g3" style="margin-bottom:14px">
+            <div class="fg">
+              <label>Motif de maintenance</label>
+              <select id="mtnReason">
+                <option value="Maintenance programmée">Maintenance programmée</option>
+                <option value="Mise à jour du système">Mise à jour du système</option>
+                <option value="Incident technique">Incident technique</option>
+                <option value="Sauvegarde en cours">Sauvegarde en cours</option>
+                <option value="Autre">Autre</option>
+              </select>
+            </div>
+            <div class="fg">
+              <label>Retour en ligne estimé</label>
+              <input type="text" id="mtnEta" placeholder="ex: 14h30, dans 30 min...">
+            </div>
+            <div class="fg">
+              <label>Message aux officiers</label>
+              <input type="text" id="mtnMsg" placeholder="Message affiché sur la page de maintenance">
+            </div>
+          </div>
+
+          <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+            <button class="btn btn-sm" id="btnMtnOFF" onclick="setMaintenance(true)"
+              style="background:rgba(185,28,28,.1);border:1px solid rgba(185,28,28,.4);color:var(--red-l);font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:2px;cursor:pointer">
+              ⊘ Mettre hors ligne
+            </button>
+            <button class="btn btn-success btn-sm" id="btnMtnON" onclick="setMaintenance(false)"
+              style="font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:2px;opacity:.4;cursor:not-allowed">
+              ✓ Remettre en ligne
+            </button>
+            <div style="width:1px;height:20px;background:var(--line);margin:0 4px"></div>
+            <button class="btn btn-sm" onclick="forceDisconnectAll()"
+              style="background:rgba(180,83,9,.1);border:1px solid rgba(180,83,9,.35);color:var(--amber-l);font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:2px;cursor:pointer">
+              ⚡ Déconnecter tous les officiers
+            </button>
+            <button class="btn btn-sm" onclick="confirmClearLogs()"
+              style="background:rgba(185,28,28,.1);border:1px solid rgba(185,28,28,.3);color:var(--red-l);font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:2px;cursor:pointer">
+              🗑 Supprimer tous les logs
+            </button>
+            <span id="mtnLastUpdate" style="font-family:'IBM Plex Mono',monospace;font-size:9px;color:var(--text3);margin-left:4px"></span>
+          </div>
+        </div>
+      </div>
+      <!-- ══════════════════════════════════════════════ -->
+
       <div class="stats-grid">
         <div class="stat-box blue"><div class="stat-lbl">TOTAL COMPTES</div><div class="stat-val" id="sTotal">—</div></div>
         <div class="stat-box green"><div class="stat-lbl">ACTIFS</div><div class="stat-val" id="sActifs">—</div></div>
@@ -192,7 +254,7 @@ body{font-family:'IBM Plex Sans',sans-serif;background:var(--bg);color:var(--tex
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
   import { getAuth, onAuthStateChanged, signOut, createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
-  import { getFirestore, collection, getDocs, doc, updateDoc, setDoc, deleteDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+  import { getFirestore, collection, getDocs, getDoc, doc, updateDoc, setDoc, deleteDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
   import { initPage, startClock, showToast, openModal, closeModal, setupModalClose, addLog, getPerms } from './utils.js';
 
   const firebaseConfig = {
@@ -249,6 +311,7 @@ body{font-family:'IBM Plex Sans',sans-serif;background:var(--bg);color:var(--tex
       renderUsers(allUsers);
     });
 
+    await loadMaintenanceStatus();
     await loadUsers();
   });
 
@@ -300,6 +363,111 @@ body{font-family:'IBM Plex Sans',sans-serif;background:var(--bg);color:var(--tex
         </div>`;
     }).join('');
   }
+
+
+  // ══════════════════════════════════════════
+  // MAINTENANCE
+  // ══════════════════════════════════════════
+
+  async function loadMaintenanceStatus() {
+    try {
+      const snap = await getDoc(doc(db, 'config', 'maintenance'));
+      applyMaintenanceUI(snap.exists() ? snap.data() : { enabled: false });
+    } catch(e) { console.warn('Maintenance load:', e); }
+  }
+
+  function applyMaintenanceUI(data) {
+    const on = data.enabled === true;
+    const badge    = document.getElementById('mtnBadge');
+    const banner   = document.getElementById('mtnActiveBanner');
+    const since    = document.getElementById('mtnSince');
+    const btnOff   = document.getElementById('btnMtnOFF');
+    const btnOn    = document.getElementById('btnMtnON');
+    const card     = document.getElementById('mtnCard');
+    const title    = document.getElementById('mtnCardTitle');
+    const lastUpd  = document.getElementById('mtnLastUpdate');
+
+    if (badge) {
+      badge.textContent = on ? '● HORS LIGNE' : '● EN LIGNE';
+      badge.style.color  = on ? 'var(--amber-l)' : 'var(--green-l)';
+      badge.style.background  = on ? 'rgba(180,83,9,.1)' : 'rgba(34,199,94,.1)';
+      badge.style.borderColor = on ? 'rgba(180,83,9,.35)' : 'rgba(34,199,94,.3)';
+    }
+    if (card)  card.style.borderColor = on ? 'rgba(180,83,9,.5)' : 'var(--line)';
+    if (title) title.style.color      = on ? 'var(--amber-l)'    : 'var(--green-l)';
+    if (banner){ banner.style.display = on ? 'flex' : 'none'; }
+    if (btnOff){ btnOff.style.opacity = on ? '.4'  : '1'; btnOff.style.cursor = on ? 'not-allowed' : 'pointer'; }
+    if (btnOn) { btnOn.style.opacity  = on ? '1'   : '.4'; btnOn.style.cursor  = on ? 'pointer' : 'not-allowed'; }
+
+    if (since && data.enabledAt) {
+      since.textContent = 'Depuis ' + new Date(data.enabledAt).toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'});
+    }
+    if (lastUpd && data.updatedAt) {
+      lastUpd.textContent = 'MAJ ' + new Date(data.updatedAt).toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'});
+    }
+    // Pré-remplir les champs
+    if (on) {
+      if (data.reason)  { const el = document.getElementById('mtnReason'); if(el) el.value = data.reason; }
+      if (data.eta)     { const el = document.getElementById('mtnEta');    if(el) el.value = data.eta; }
+      if (data.message) { const el = document.getElementById('mtnMsg');    if(el) el.value = data.message; }
+    }
+  }
+
+  window.setMaintenance = async function(enable) {
+    if (enable && !confirm('Mettre le site HORS LIGNE ? Les officiers connectés seront bloqués.')) return;
+    if (!enable && !confirm('Remettre le site EN LIGNE ?')) return;
+    try {
+      const now = new Date().toISOString();
+      const payload = {
+        enabled:   enable,
+        reason:    document.getElementById('mtnReason')?.value || '',
+        eta:       document.getElementById('mtnEta')?.value    || '',
+        message:   document.getElementById('mtnMsg')?.value    || '',
+        updatedAt: now,
+        updatedBy: document.getElementById('tbName')?.textContent || 'Admin',
+      };
+      if (enable) payload.enabledAt = now;
+
+      await setDoc(doc(db, 'config', 'maintenance'), payload);
+      await addLog(db, enable ? 'Site mis hors ligne' : 'Site remis en ligne', payload.reason || '');
+
+      // Si activation: vider la collection "online" pour forcer la déco des autres
+      if (enable) {
+        const myUidNow = auth.currentUser?.uid;
+        const onlineSnap = await getDocs(collection(db, 'online'));
+        const dels = onlineSnap.docs
+          .filter(d => d.id !== myUidNow)
+          .map(d => deleteDoc(doc(db,'online',d.id)));
+        await Promise.all(dels);
+      }
+
+      applyMaintenanceUI(payload);
+      showToast(enable ? 'Site hors ligne — Officiers déconnectés' : 'Site remis en ligne ✓', enable ? 'info' : 'success');
+    } catch(e) { showToast('Erreur: ' + e.message, 'error'); }
+  };
+
+  window.forceDisconnectAll = async function() {
+    if (!confirm('Déconnecter TOUS les officiers actuellement en ligne (sauf vous) ?')) return;
+    try {
+      const myUidNow = auth.currentUser?.uid;
+      const snap = await getDocs(collection(db, 'online'));
+      const dels = snap.docs.filter(d => d.id !== myUidNow).map(d => deleteDoc(doc(db,'online',d.id)));
+      await Promise.all(dels);
+      await addLog(db, 'Déconnexion forcée', 'Tous les officiers en ligne');
+      showToast('Tous les officiers ont été déconnectés ✓', 'success');
+    } catch(e) { showToast('Erreur: ' + e.message, 'error'); }
+  };
+
+  window.confirmClearLogs = async function() {
+    if (!confirm('Supprimer DÉFINITIVEMENT tous les logs ? Cette action est irréversible.')) return;
+    if (!confirm('Dernière confirmation — supprimer tous les logs ?')) return;
+    try {
+      const snap = await getDocs(collection(db, 'logs'));
+      const dels = snap.docs.map(d => deleteDoc(doc(db,'logs',d.id)));
+      await Promise.all(dels);
+      showToast(`${snap.size} log(s) supprimé(s) ✓`, 'success');
+    } catch(e) { showToast('Erreur: ' + e.message, 'error'); }
+  };
 
   window.filterUsers = function() {
     const q = document.getElementById('searchInput').value.toLowerCase();

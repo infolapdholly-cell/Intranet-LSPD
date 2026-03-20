@@ -263,6 +263,24 @@
       const cred = await signInWithEmailAndPassword(auth, email, pass);
       await refreshGrade(cred.user);
 
+      // Vérifier si maintenance active — bloquer sauf admins
+      try {
+        const mSnap = await getDoc(doc(db,'config','maintenance'));
+        if (mSnap.exists() && mSnap.data().enabled === true) {
+          // Récupérer le grade de l'utilisateur
+          const uSnap = await getDoc(doc(db,'users',cred.user.uid));
+          const userGrade = uSnap.exists() ? (uSnap.data().grade||'cadet').toLowerCase() : 'cadet';
+          const adminGrades = ['chef de police','chef assistant','chef adjoint','commandant','admin','invite'];
+          if (!adminGrades.includes(userGrade)) {
+            // Bloquer — afficher page maintenance
+            const d = mSnap.data();
+            const params = new URLSearchParams({ msg: d.message||'', eta: d.eta||'', reason: d.reason||'' });
+            window.location.href = 'maintenance.html?' + params.toString();
+            return;
+          }
+        }
+      } catch(e) { /* fail-open */ }
+
       btn.textContent = 'Authentifié ✓';
       btn.style.background = 'var(--green)';
 
