@@ -54,12 +54,11 @@ export async function initPage(auth, db, onAuthStateChanged, pageName) {
       if (gradeEl) {
         gradeEl.textContent = perms.label || grade;
         const map = {
-          gold: 'color:var(--gold-l);background:var(--gold-dim);border:1px solid rgba(212,170,88,.3)',
-          blue: 'color:var(--blue-l);background:var(--blue-dim);border:1px solid rgba(59,130,246,.3)',
-          gray: 'color:var(--text3);background:transparent;border:1px solid var(--line)',
+          gold: 'color:var(--gold-b);background:rgba(201,168,76,.12);border:1px solid rgba(201,168,76,.3)',
+          blue: 'color:var(--accent-b);background:rgba(37,137,208,.12);border:1px solid rgba(37,137,208,.25)',
+          gray: 'color:var(--text2);background:rgba(61,88,120,.12);border:1px solid rgba(61,88,120,.25)',
         };
-        gradeEl.style.cssText = (map[perms.color]||map.gray) +
-          ';font-family:"IBM Plex Mono",monospace;font-size:8px;font-weight:600;padding:2px 6px;border-radius:2px;letter-spacing:1.5px;text-transform:uppercase';
+        gradeEl.style.cssText = (map[perms.color]||map.gray) + ';font-family:"JetBrains Mono",monospace;font-size:9px;padding:3px 9px;border-radius:3px;letter-spacing:1px;text-transform:uppercase';font-family:"IBM Plex Mono",monospace;font-size:8px;font-weight:600;padding:2px 6px;border-radius:2px;letter-spacing:1.5px;text-transform:uppercase';
       }
       if (nameEl) nameEl.textContent = name;
 
@@ -188,7 +187,40 @@ export async function initPage(auth, db, onAuthStateChanged, pageName) {
       }
       // ─────────────────────────────────────────────────────────
 
-      resolve({ user, grade, name, perms });
+  
+      // ── WATCHER MAINTENANCE ──────────────────────────────────
+      const mtnBypass = ['maintenance.html','admin.html','index.html','change-password.html'];
+      const currentPageMtn = window.location.pathname.split('/').pop() || '';
+      if (!mtnBypass.some(function(p){ return currentPageMtn.endsWith(p); })) {
+        try {
+          const { doc: docM, onSnapshot: onSnapM } = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js");
+          onSnapM(docM(db, 'config', 'maintenance'), function(snap) {
+            if (snap.exists() && snap.data().enabled === true) {
+              if (grade !== 'chef de police') {
+                const d = snap.data();
+                const params = new URLSearchParams({ msg: d.message||'', eta: d.eta||'', reason: d.reason||'' });
+                window.location.replace('maintenance.html?' + params.toString());
+              }
+            }
+          });
+        } catch(e) { console.warn('[Maintenance watcher]', e); }
+      }
+      // ── WATCHER DÉCONNEXION FORCÉE ───────────────────────────
+      try {
+        const { doc: docFL, onSnapshot: onSnapFL, updateDoc: updFL } = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js");
+        onSnapFL(docFL(db, 'users', user.uid), async function(snap) {
+          if (snap.exists() && snap.data().forceLogout === true) {
+            try {
+              await updFL(docFL(db, 'users', user.uid), { forceLogout: false });
+              const { signOut: soFL } = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js");
+              await soFL(auth);
+            } catch(e) {}
+            window.location.replace('index.html');
+          }
+        });
+      } catch(e) { console.warn('[ForceLogout watcher]', e); }
+      // ────────────────────────────────────────────────────────
+    resolve({ user, grade, name, perms });
     });
   });
 }

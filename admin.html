@@ -2,20 +2,72 @@
 <html lang="fr">
 <head>
   <meta charset="UTF-8">
+  <style>
+:root {
+  --bg: #05080f;
+  --bg2: #05080f;
+  --surface: #0c1220;
+  --surface2: #101a2e;
+  --surface3: #152038;
+  --panel: #0c1220;
+  --panel2: #101a2e;
+  --panel3: #152038;
+  --border: #1b3a5e;
+  --line: #1b3a5e;
+  --line2: #1b3a5e;
+  --border2: #1b3a5e;
+  --accent: #1458a0;
+  --accent-b: #2589d0;
+  --accent-l: #2589d0;
+  --accent-glow: rgba(37,137,208,.22);
+  --accent-dim: rgba(37,137,208,.12);
+  --blue: #1458a0;
+  --blue-b: #2589d0;
+  --blue-l: #2589d0;
+  --blue-dim: rgba(37,137,208,.12);
+  --gold: #c9aa4d;
+  --gold-l: #c9aa4d;
+  --gold-dim: rgba(201,170,77,.15);
+  --text: #dce8f4;
+  --text2: #445e7a;
+  --text3: #2d4260;
+  --muted: #445e7a;
+  --danger: #c0392b;
+  --danger-l: #e74c3c;
+  --red: #c0392b;
+  --red-l: #e74c3c;
+  --red-dim: rgba(192,57,43,.12);
+  --success: #1e9e56;
+  --green: #1e9e56;
+  --green-l: #1e9e56;
+  --green-dim: rgba(30,158,86,.12);
+  --warning: #d68910;
+  --amber: #d68910;
+  --amber-l: #d68910;
+  --amber-dim: rgba(214,137,16,.12);
+  --purple: #7d3c98;
+  --purple-l: #bf7df0;
+  --mono: 'Share Tech Mono', monospace;
+  --sans: 'Rajdhani', sans-serif;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+html,body{height:100%;}
+body{font-family:'IBM Plex Sans',sans-serif;background:var(--bg);color:var(--text);font-size:13px;line-height:1.5;}
+</style>
   <link rel="icon" type="image/png" href="https://r2.fivemanage.com/XEcvh0aBGRYhLzNNcRsQI/lspdnouveau.png">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>LSPD — Administration</title>
-  <link rel="stylesheet" href="style.css?v=13">
+  <link rel="stylesheet" href="style.css?v=14">
   <style>
-    .user-card { background:var(--surface); border:1px solid var(--border); border-radius:10px; padding:16px; display:flex; align-items:center; gap:16px; transition:all .2s; animation:fadeIn .3s ease; }
-    .user-card:hover { border-color:var(--accent); }
-    .user-card.suspended { opacity:.5; border-color:var(--danger); }
-    .user-avatar { width:46px; height:46px; border-radius:50%; background:var(--surface2); border:2px solid var(--border); display:flex; align-items:center; justify-content:center; font-size:20px; flex-shrink:0; }
+    .user-card { background:var(--panel); border:1px solid var(--line); border-radius:10px; padding:16px; display:flex; align-items:center; gap:16px; transition:all .2s; animation:fadeIn .3s ease; }
+    .user-card:hover { border-color:var(--blue); }
+    .user-card.suspended { opacity:.5; border-color:var(--red); }
+    .user-avatar { width:46px; height:46px; border-radius:50%; background:var(--panel2); border:2px solid var(--line); display:flex; align-items:center; justify-content:center; font-size:20px; flex-shrink:0; }
     .user-info { flex:1; min-width:0; }
-    .user-name { font-family:'Orbitron',monospace; font-size:13px; font-weight:700; margin-bottom:3px; }
-    .user-email { font-family:'Share Tech Mono',monospace; font-size:10px; color:var(--muted); margin-bottom:4px; }
+    .user-name { font-family:'IBM Plex Mono',monospace; font-size:13px; font-weight:700; margin-bottom:3px; }
+    .user-email { font-family:'IBM Plex Mono',monospace; font-size:10px; color:var(--text2); margin-bottom:4px; }
     .user-actions { display:flex; gap:6px; flex-wrap:wrap; }
-    .grade-select { background:var(--surface2); border:1px solid var(--border); border-radius:4px; color:var(--text); font-family:'Share Tech Mono',monospace; font-size:11px; padding:4px 8px; cursor:pointer; }
+    .grade-select { background:var(--panel2); border:1px solid var(--line); border-radius:4px; color:var(--text); font-family:'IBM Plex Mono',monospace; font-size:11px; padding:4px 8px; cursor:pointer; }
     @keyframes fadeIn { from{opacity:0;transform:translateY(-4px)} to{opacity:1;transform:none} }
   </style>
   
@@ -23,29 +75,33 @@
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="LSPD">
-  <meta name="theme-color" content="#1458a0">
+  <meta name="theme-color" content="#2563eb">
   <link rel="apple-touch-icon" href="https://r2.fivemanage.com/XEcvh0aBGRYhLzNNcRsQI/lspdnouveau.png">
 </head>
 <body>
 <div class="app-shell">
 <div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
-  <div class="topbar">
-    <div class="tb-left">
-      <button class="tb-menu-btn" onclick="toggleSidebar()">☰</button>
-      <img class="tb-logo" src="https://r2.fivemanage.com/XEcvh0aBGRYhLzNNcRsQI/lspdnouveau.png" alt="LSPD">
-      <div class="tb-sep" style="width:1px;height:26px;background:var(--border)"></div>
+<div class="topbar">
+  <div class="tb-left">
+    <button class="tb-menu-btn" onclick="toggleSidebar()">☰</button>
+    <div class="tb-brand">
+      <div class="tb-shield"></div>
+      <img class="tb-logo" src="https://r2.fivemanage.com/XEcvh0aBGRYhLzNNcRsQI/lspdnouveau.png" alt="LSPD" onerror="this.style.display='none'">
       <div class="tb-title">L.S.P.D</div>
-      <div class="tb-sep" style="width:1px;height:26px;background:var(--border)"></div>
-      <div class="tb-page">ADMINISTRATION</div>
     </div>
-    <div class="tb-right">
-      <div class="tb-time" id="tbClock">--:--:--</div>
-      <span class="tb-grade g-recruit" id="tbGrade">RECRUIT</span>
-      <span class="tb-name" id="tbName">Officier</span>
-      <button class="btn-out" onclick="logout()">Déconnexion</button>
-    </div>
+    <div class="tb-page">Administration</div>
   </div>
-  <div class="shell">
+  <div class="tb-right">
+    <div class="tb-status"><div class="live-dot"></div>En ligne</div>
+    <div class="tb-time" id="tbClock">--:--:--</div>
+    <div class="tb-user">
+      <span class="tb-grade" id="tbGrade">—</span>
+      <span class="tb-name" id="tbName">Officier</span>
+    </div>
+    <button class="btn-out" onclick="logout()">Quitter</button>
+  </div>
+</div>
+<div class="shell">
     <div class="sidebar" id="sidebar"></div>
     <div class="main">
 
@@ -56,6 +112,68 @@
         </div>
         <button class="btn btn-primary" id="btnNew">+ Créer un compte</button>
       </div>
+
+
+      <!-- ══════════════════════════════════════════════
+           PANNEAU MAINTENANCE
+      ══════════════════════════════════════════════ -->
+      <div class="card" id="mtnCard" style="margin-bottom:20px">
+        <div class="card-head" id="mtnCardHead">
+          <div class="card-title" id="mtnCardTitle" style="color:var(--green-l)">▲ Contrôle d'accès système</div>
+          <span id="mtnBadge" style="font-family:'IBM Plex Mono',monospace;font-size:9px;padding:3px 10px;border-radius:2px;border:1px solid rgba(34,199,94,.3);background:rgba(34,199,94,.1);color:var(--green-l)">● EN LIGNE</span>
+        </div>
+        <div class="card-body">
+          <!-- Bannière active si maintenance ON -->
+          <div id="mtnActiveBanner" style="display:none;margin-bottom:14px;padding:10px 14px;background:rgba(180,83,9,.08);border:1px solid rgba(180,83,9,.35);border-radius:4px;display:none;align-items:center;gap:10px">
+            <span>⚠</span>
+            <div style="flex:1;font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--amber-l)">Le site est <strong>HORS LIGNE</strong> — Les officiers voient la page de maintenance</div>
+            <span id="mtnSince" style="font-family:'IBM Plex Mono',monospace;font-size:9px;color:var(--text3)"></span>
+          </div>
+
+          <div class="form-grid g3" style="margin-bottom:14px">
+            <div class="fg">
+              <label>Motif de maintenance</label>
+              <select id="mtnReason">
+                <option value="Maintenance programmée">Maintenance programmée</option>
+                <option value="Mise à jour du système">Mise à jour du système</option>
+                <option value="Incident technique">Incident technique</option>
+                <option value="Sauvegarde en cours">Sauvegarde en cours</option>
+                <option value="Autre">Autre</option>
+              </select>
+            </div>
+            <div class="fg">
+              <label>Retour en ligne estimé</label>
+              <input type="text" id="mtnEta" placeholder="ex: 14h30, dans 30 min...">
+            </div>
+            <div class="fg">
+              <label>Message aux officiers</label>
+              <input type="text" id="mtnMsg" placeholder="Message affiché sur la page de maintenance">
+            </div>
+          </div>
+
+          <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+            <button class="btn btn-sm" id="btnMtnOFF" onclick="setMaintenance(true)"
+              style="background:rgba(185,28,28,.1);border:1px solid rgba(185,28,28,.4);color:var(--red-l);font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:2px;cursor:pointer">
+              ⊘ Mettre hors ligne
+            </button>
+            <button class="btn btn-success btn-sm" id="btnMtnON" onclick="setMaintenance(false)"
+              style="font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:2px;opacity:.4;cursor:not-allowed">
+              ✓ Remettre en ligne
+            </button>
+            <div style="width:1px;height:20px;background:var(--line);margin:0 4px"></div>
+            <button class="btn btn-sm" onclick="openModal('modalMessage')"
+              style="background:rgba(59,130,246,.1);border:1px solid rgba(59,130,246,.35);color:var(--blue-l);font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:2px;cursor:pointer">
+              📢 Envoyer un message
+            </button>
+            <button class="btn btn-sm" onclick="confirmClearLogs()"
+              style="background:rgba(185,28,28,.1);border:1px solid rgba(185,28,28,.3);color:var(--red-l);font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:2px;cursor:pointer">
+              🗑 Supprimer tous les logs
+            </button>
+            <span id="mtnLastUpdate" style="font-family:'IBM Plex Mono',monospace;font-size:9px;color:var(--text3);margin-left:4px"></span>
+          </div>
+        </div>
+      </div>
+      <!-- ══════════════════════════════════════════════ -->
 
       <div class="stats-grid">
         <div class="stat-box blue"><div class="stat-lbl">TOTAL COMPTES</div><div class="stat-val" id="sTotal">—</div></div>
@@ -97,7 +215,7 @@
           <option>Chef Adjoint</option><option>Chef Assistant</option><option>Chef de Police</option>
         </select>
       </div>
-      <div style="background:rgba(37,137,208,.08);border:1px solid var(--border);border-radius:6px;padding:10px 14px;font-family:'Share Tech Mono',monospace;font-size:11px;color:var(--muted)">
+      <div style="background:rgba(37,137,208,.08);border:1px solid var(--line);border-radius:6px;padding:10px 14px;font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--text2)">
         🔑 Le mot de passe par défaut sera <strong style="color:var(--text)">123456</strong><br>
         L'officier devra le changer à sa première connexion.
       </div>
@@ -133,14 +251,53 @@
   </div>
 </div>
 
+
+<!-- MODAL MESSAGE AUX OFFICIERS -->
+<div class="modal-bg" id="modalMessage">
+  <div class="modal" style="max-width:500px">
+    <div class="modal-head">
+      <div class="modal-title">📢 Message aux officiers</div>
+      <button class="modal-close" onclick="closeModal('modalMessage')">×</button>
+    </div>
+    <div class="modal-body">
+      <p style="font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--text2);letter-spacing:1px;margin-bottom:14px">
+        Ce message s'affichera immédiatement à tous les officiers connectés sous forme de bannière.
+      </p>
+      <div class="fg" style="margin-bottom:12px">
+        <label>Type de message</label>
+        <select id="msgType">
+          <option value="warning">⚠ Avertissement (orange)</option>
+          <option value="info">ℹ Information (bleu)</option>
+          <option value="danger">🔴 Urgence (rouge)</option>
+        </select>
+      </div>
+      <div class="fg" style="margin-bottom:12px">
+        <label>Titre</label>
+        <input id="msgTitle" placeholder="ex: Maintenance prévue à 20h00">
+      </div>
+      <div class="fg">
+        <label>Message</label>
+        <textarea id="msgBody" style="min-height:90px" placeholder="ex: Le site sera inaccessible de 20h00 à 21h00 pour maintenance. Merci de votre compréhension."></textarea>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('modalMessage')">Annuler</button>
+      <button class="btn btn-sm" onclick="clearBroadcast()"
+        style="background:rgba(185,28,28,.1);border:1px solid rgba(185,28,28,.3);color:var(--red-l);font-family:'IBM Plex Mono',monospace;font-size:9px">
+        🗑 Effacer le message
+      </button>
+      <button class="btn btn-primary" onclick="sendBroadcast()">📢 Envoyer</button>
+    </div>
+  </div>
+</div>
+
 <div class="toast" id="toast"></div>
 
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
   import { getAuth, onAuthStateChanged, signOut, createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
-  import { getFirestore, collection, getDocs, doc, updateDoc, setDoc, deleteDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+  import { getFirestore, collection, getDocs, getDoc, doc, updateDoc, setDoc, deleteDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
   import { initPage, startClock, showToast, openModal, closeModal, setupModalClose, addLog, getPerms } from './utils.js';
-  import { checkMaintenance, watchMaintenance } from './maintenance.js';
 
   const firebaseConfig = {
     apiKey: "AIzaSyA4GxYd32GNs5EDjjm2UI1a0d25YxigMVU",
@@ -154,17 +311,13 @@
   const app = initializeApp(firebaseConfig);
   const auth = getAuth(app);
   const db = getFirestore(app);
-
-  checkMaintenance(db);
-  watchMaintenance(db);
-
   let allUsers = [], onlineUsers = [], selectedUid = null, myUid = null;
 
   const GRADE_COLORS = {
     'chef de police':'var(--gold)','chef assistant':'var(--gold)',
     'chef adjoint':'var(--gold)','commandant':'var(--gold)',
-    'capitaine':'var(--accent-b)','lieutenant':'var(--accent-b)',
-    'sergent':'var(--accent-b)','officier':'var(--accent-b)','cadet':'var(--muted)'
+    'capitaine':'var(--blue-b)','lieutenant':'var(--blue-b)',
+    'sergent':'var(--blue-b)','officier':'var(--blue-b)','cadet':'var(--text2)'
   };
 
   startClock('tbClock');
@@ -179,7 +332,7 @@
       document.querySelector('.main').innerHTML = `
         <div class="empty-state" style="padding:100px 20px">
           <div class="ei">🔒</div><p>ACCÈS RÉSERVÉ AUX ADMINISTRATEURS</p>
-          <a href="dashboard.html" style="display:inline-block;margin-top:20px;padding:10px 24px;background:var(--accent);color:#fff;border-radius:6px;font-family:'Rajdhani',sans-serif;font-size:13px;font-weight:700;text-decoration:none">← RETOUR</a>
+          <a href="dashboard.html" style="display:inline-block;margin-top:20px;padding:10px 24px;background:var(--blue);color:#fff;border-radius:6px;font-family:'IBM Plex Sans',sans-serif;font-size:13px;font-weight:700;text-decoration:none">← RETOUR</a>
         </div>`;
       return;
     }
@@ -200,6 +353,7 @@
       renderUsers(allUsers);
     });
 
+    await loadMaintenanceStatus();
     await loadUsers();
   });
 
@@ -230,17 +384,17 @@
           <div class="user-info">
             <div class="user-name">
               ${u.displayName || '—'}
-              ${isMe ? '<span style="font-family:\'Share Tech Mono\',monospace;font-size:9px;color:var(--muted);margin-left:6px">(vous)</span>' : ''}
+              ${isMe ? '<span style="font-family:\'IBM Plex Mono\',monospace;font-size:9px;color:var(--text2);margin-left:6px">(vous)</span>' : ''}
             </div>
             <div class="user-email">${u.email || '—'}</div>
             <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
-              <span style="font-family:'Share Tech Mono',monospace;font-size:11px;font-weight:700;color:${GRADE_COLORS[grade]||'var(--muted)'}">${perms.label || u.grade || '—'}</span>
-              <span style="display:flex;align-items:center;gap:4px;font-family:'Share Tech Mono',monospace;font-size:10px;color:${isOnline?'var(--success)':'var(--muted)'}">
-                <span style="width:6px;height:6px;border-radius:50%;background:${isOnline?'var(--success)':'var(--muted)'};display:inline-block${isOnline?';animation:pulse 1.5s infinite':''}"></span>
+              <span style="font-family:'IBM Plex Mono',monospace;font-size:11px;font-weight:700;color:${GRADE_COLORS[grade]||'var(--text2)'}">${perms.label || u.grade || '—'}</span>
+              <span style="display:flex;align-items:center;gap:4px;font-family:'IBM Plex Mono',monospace;font-size:10px;color:${isOnline?'var(--green)':'var(--text2)'}">
+                <span style="width:6px;height:6px;border-radius:50%;background:${isOnline?'var(--green)':'var(--text2)'};display:inline-block${isOnline?';animation:pulse 1.5s infinite':''}"></span>
                 ${isOnline ? 'En ligne' : 'Hors ligne'}
               </span>
-              ${u.suspended ? '<span style="font-family:\'Share Tech Mono\',monospace;font-size:10px;color:var(--danger)">⛔ SUSPENDU</span>' : ''}
-              ${u.forcePasswordChange ? '<span style="font-family:\'Share Tech Mono\',monospace;font-size:10px;color:var(--warning)">🔑 MDP À CHANGER</span>' : ''}
+              ${u.suspended ? '<span style="font-family:\'IBM Plex Mono\',monospace;font-size:10px;color:var(--red)">⛔ SUSPENDU</span>' : ''}
+              ${u.forcePasswordChange ? '<span style="font-family:\'IBM Plex Mono\',monospace;font-size:10px;color:var(--amber-l)">🔑 MDP À CHANGER</span>' : ''}
             </div>
           </div>
           <div class="user-actions">
@@ -251,6 +405,128 @@
         </div>`;
     }).join('');
   }
+
+
+  // ══════════════════════════════════════════
+  // MAINTENANCE
+  // ══════════════════════════════════════════
+
+  async function loadMaintenanceStatus() {
+    try {
+      const snap = await getDoc(doc(db, 'config', 'maintenance'));
+      applyMaintenanceUI(snap.exists() ? snap.data() : { enabled: false });
+    } catch(e) { console.warn('Maintenance load:', e); }
+  }
+
+  function applyMaintenanceUI(data) {
+    const on = data.enabled === true;
+    const badge    = document.getElementById('mtnBadge');
+    const banner   = document.getElementById('mtnActiveBanner');
+    const since    = document.getElementById('mtnSince');
+    const btnOff   = document.getElementById('btnMtnOFF');
+    const btnOn    = document.getElementById('btnMtnON');
+    const card     = document.getElementById('mtnCard');
+    const title    = document.getElementById('mtnCardTitle');
+    const lastUpd  = document.getElementById('mtnLastUpdate');
+
+    if (badge) {
+      badge.textContent = on ? '● HORS LIGNE' : '● EN LIGNE';
+      badge.style.color  = on ? 'var(--amber-l)' : 'var(--green-l)';
+      badge.style.background  = on ? 'rgba(180,83,9,.1)' : 'rgba(34,199,94,.1)';
+      badge.style.borderColor = on ? 'rgba(180,83,9,.35)' : 'rgba(34,199,94,.3)';
+    }
+    if (card)  card.style.borderColor = on ? 'rgba(180,83,9,.5)' : 'var(--line)';
+    if (title) title.style.color      = on ? 'var(--amber-l)'    : 'var(--green-l)';
+    if (banner){ banner.style.display = on ? 'flex' : 'none'; }
+    if (btnOff){ btnOff.style.opacity = on ? '.4'  : '1'; btnOff.style.cursor = on ? 'not-allowed' : 'pointer'; }
+    if (btnOn) { btnOn.style.opacity  = on ? '1'   : '.4'; btnOn.style.cursor  = on ? 'pointer' : 'not-allowed'; }
+
+    if (since && data.enabledAt) {
+      since.textContent = 'Depuis ' + new Date(data.enabledAt).toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'});
+    }
+    if (lastUpd && data.updatedAt) {
+      lastUpd.textContent = 'MAJ ' + new Date(data.updatedAt).toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'});
+    }
+    // Pré-remplir les champs
+    if (on) {
+      if (data.reason)  { const el = document.getElementById('mtnReason'); if(el) el.value = data.reason; }
+      if (data.eta)     { const el = document.getElementById('mtnEta');    if(el) el.value = data.eta; }
+      if (data.message) { const el = document.getElementById('mtnMsg');    if(el) el.value = data.message; }
+    }
+  }
+
+  window.setMaintenance = async function(enable) {
+    if (enable && !confirm('Mettre le site HORS LIGNE ? Les officiers connectés seront bloqués.')) return;
+    if (!enable && !confirm('Remettre le site EN LIGNE ?')) return;
+    try {
+      const now = new Date().toISOString();
+      const payload = {
+        enabled:   enable,
+        reason:    document.getElementById('mtnReason')?.value || '',
+        eta:       document.getElementById('mtnEta')?.value    || '',
+        message:   document.getElementById('mtnMsg')?.value    || '',
+        updatedAt: now,
+        updatedBy: document.getElementById('tbName')?.textContent || 'Admin',
+      };
+      if (enable) payload.enabledAt = now;
+
+      await setDoc(doc(db, 'config', 'maintenance'), payload);
+      await addLog(db, enable ? 'Site mis hors ligne' : 'Site remis en ligne', payload.reason || '');
+
+      // Si activation: forcer la déconnexion de tous les non-chefs via forceLogout
+      if (enable) {
+        const myUidNow = auth.currentUser?.uid;
+        const onlineSnap = await getDocs(collection(db, 'online'));
+        const targets = onlineSnap.docs.filter(d => d.id !== myUidNow);
+        const updates = targets.map(d => updateDoc(doc(db,'users',d.id), { forceLogout: true }));
+        await Promise.all(updates);
+      }
+
+      applyMaintenanceUI(payload);
+      showToast(enable ? 'Site hors ligne — Officiers déconnectés' : 'Site remis en ligne ✓', enable ? 'info' : 'success');
+    } catch(e) { showToast('Erreur: ' + e.message, 'error'); }
+  };
+
+  // ── BROADCAST MESSAGE ────────────────────────────────────
+  window.sendBroadcast = async function() {
+    const title = document.getElementById('msgTitle').value.trim();
+    const body  = document.getElementById('msgBody').value.trim();
+    const type  = document.getElementById('msgType').value;
+    if (!title && !body) { showToast('Saisissez un titre ou un message', 'error'); return; }
+    try {
+      await setDoc(doc(db, 'config', 'broadcast'), {
+        title,
+        body,
+        type,
+        active: true,
+        sentAt: new Date().toISOString(),
+        sentBy: document.getElementById('tbName')?.textContent || 'Admin'
+      });
+      await addLog(db, 'Message diffusé', title || body.substring(0, 50));
+      closeModal('modalMessage');
+      showToast('Message envoyé à tous les officiers ✓', 'success');
+    } catch(e) { showToast('Erreur: ' + e.message, 'error'); }
+  };
+
+  window.clearBroadcast = async function() {
+    try {
+      await setDoc(doc(db, 'config', 'broadcast'), { active: false });
+      closeModal('modalMessage');
+      showToast('Message effacé ✓', 'success');
+    } catch(e) { showToast('Erreur: ' + e.message, 'error'); }
+  };
+  // ─────────────────────────────────────────────────────────
+
+  window.confirmClearLogs = async function() {
+    if (!confirm('Supprimer DÉFINITIVEMENT tous les logs ? Cette action est irréversible.')) return;
+    if (!confirm('Dernière confirmation — supprimer tous les logs ?')) return;
+    try {
+      const snap = await getDocs(collection(db, 'logs'));
+      const dels = snap.docs.map(d => deleteDoc(doc(db,'logs',d.id)));
+      await Promise.all(dels);
+      showToast(`${snap.size} log(s) supprimé(s) ✓`, 'success');
+    } catch(e) { showToast('Erreur: ' + e.message, 'error'); }
+  };
 
   window.filterUsers = function() {
     const q = document.getElementById('searchInput').value.toLowerCase();
