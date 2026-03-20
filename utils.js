@@ -58,7 +58,8 @@ export async function initPage(auth, db, onAuthStateChanged, pageName) {
           blue: 'color:var(--accent-b);background:rgba(37,137,208,.12);border:1px solid rgba(37,137,208,.25)',
           gray: 'color:var(--text2);background:rgba(61,88,120,.12);border:1px solid rgba(61,88,120,.25)',
         };
-        gradeEl.style.cssText = (map[perms.color]||map.gray) + ';font-family:"JetBrains Mono",monospace;font-size:9px;padding:3px 9px;border-radius:3px;letter-spacing:1px;text-transform:uppercase';font-family:"IBM Plex Mono",monospace;font-size:8px;font-weight:600;padding:2px 6px;border-radius:2px;letter-spacing:1.5px;text-transform:uppercase';
+        gradeEl.style.cssText = (map[perms.color]||map.gray) +
+          ';font-family:"JetBrains Mono",monospace;font-size:9px;padding:3px 9px;border-radius:3px;letter-spacing:1px;text-transform:uppercase';
       }
       if (nameEl) nameEl.textContent = name;
 
@@ -87,138 +88,32 @@ export async function initPage(auth, db, onAuthStateChanged, pageName) {
       };
 
 
-      // ── WATCHER MAINTENANCE EN TEMPS RÉEL ──────────────────
-      // Déconnecte l'utilisateur si le site passe hors ligne
-      const ADMIN_GRADES = ['chef de police']; // Seul le Chef de Police bypass la maintenance
-      const currentPageForMtn = window.location.pathname.split('/').pop() || '';
-      const mtnBypass = ['maintenance.html','admin.html','index.html','change-password.html'];
-      
-      if (!mtnBypass.some(p => currentPageForMtn.endsWith(p))) {
-        try {
-          const { doc: docFn2, onSnapshot } = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js");
-          onSnapshot(docFn2(db, 'config', 'maintenance'), snap => {
-            if (snap.exists() && snap.data().enabled === true) {
-              // Vérifier si l'utilisateur actuel est admin → bypass
-              if (!ADMIN_GRADES.includes(grade)) {
-                const d = snap.data();
-                const params = new URLSearchParams({ msg: d.message||'', eta: d.eta||'', reason: d.reason||'' });
-                window.location.replace('maintenance.html?' + params.toString());
-              }
-            }
-          });
-        } catch(e) { console.warn('[Maintenance watcher]', e); }
-      }
-      // ────────────────────────────────────────────────────────
-
-      // ── WATCHER DÉCONNEXION FORCÉE ──────────────────────────
-      // Si un admin écrit forceLogout:true dans le doc user → déconnexion immédiate
-      try {
-        const { doc: docFn3, onSnapshot: onSnap3, updateDoc } = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js");
-        onSnap3(docFn3(db, 'users', user.uid), async snap => {
-          if (snap.exists() && snap.data().forceLogout === true) {
-            try {
-              // Remettre forceLogout à false avant de déco (évite boucle)
-              await updateDoc(docFn3(db, 'users', user.uid), { forceLogout: false });
-              const { signOut } = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js");
-              await signOut(auth);
-            } catch(e) {}
-            window.location.replace('index.html');
-          }
-        });
-      } catch(e) { console.warn('[ForceLogout watcher]', e); }
-      // ────────────────────────────────────────────────────────
-
-      // ── WATCHER BROADCAST MESSAGE ────────────────────────────
-      const broadcastBypassPages = ['admin.html','index.html','maintenance.html'];
-      const currentPageBcast = window.location.pathname.split('/').pop() || '';
-      if (!broadcastBypassPages.some(p => currentPageBcast.endsWith(p))) {
-        try {
-          // Injecter le CSS de la bannière
-          const style = document.createElement('style');
-          style.textContent = `
-/* ── BANNIÈRE BROADCAST ── */
-.broadcast-banner {
-  position: fixed;
-  top: 48px; left: 0; right: 0;
-  z-index: 190;
-  padding: 10px 20px;
-  display: none;
-  align-items: center;
-  gap: 12px;
-  font-family: var(--mono);
-  font-size: 12px;
-  font-weight: 500;
-  letter-spacing: 1px;
-  box-shadow: 0 2px 12px rgba(0,0,0,.4);
-  animation: slideDown .3s ease;
-}
-@keyframes slideDown { from{transform:translateY(-100%);opacity:0} to{transform:none;opacity:1} }
-.broadcast-banner.warning { background:rgba(180,83,9,.92); color:#fff; border-bottom:1px solid var(--amber); }
-.broadcast-banner.info    { background:rgba(37,99,235,.92); color:#fff; border-bottom:1px solid var(--blue-b); }
-.broadcast-banner.danger  { background:rgba(185,28,28,.92); color:#fff; border-bottom:1px solid var(--red); }
-.broadcast-banner .bb-title { font-weight:700; margin-right:4px; }
-.broadcast-banner .bb-close { margin-left:auto; cursor:pointer; opacity:.7; font-size:16px; background:none; border:none; color:inherit; padding:0 4px; }
-.broadcast-banner .bb-close:hover { opacity:1; }
-`;
-          document.head.appendChild(style);
-
-          // Créer la bannière DOM
-          const banner = document.createElement('div');
-          banner.id = 'broadcastBanner';
-          banner.className = 'broadcast-banner';
-          banner.innerHTML = `<span class="bb-title" id="bbTitle"></span><span id="bbBody"></span><button class="bb-close" onclick="document.getElementById('broadcastBanner').style.display='none'">×</button>`;
-          document.body.appendChild(banner);
-
-          const { doc: docBcast, onSnapshot: onSnapBcast } = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js");
-          onSnapBcast(docBcast(db, 'config', 'broadcast'), snap => {
-            const b = document.getElementById('broadcastBanner');
-            if (!b) return;
-            if (snap.exists() && snap.data().active === true) {
-              const d = snap.data();
-              b.className = 'broadcast-banner ' + (d.type || 'warning');
-              document.getElementById('bbTitle').textContent = d.title ? d.title + ' —' : '';
-              document.getElementById('bbBody').textContent = d.body || '';
-              b.style.display = 'flex';
-            } else {
-              b.style.display = 'none';
-            }
-          });
-        } catch(e) { console.warn('[Broadcast watcher]', e); }
-      }
-      // ─────────────────────────────────────────────────────────
-
   
       // ── WATCHER MAINTENANCE ──────────────────────────────────
       const mtnBypass = ['maintenance.html','admin.html','index.html','change-password.html'];
-      const currentPageMtn = window.location.pathname.split('/').pop() || '';
-      if (!mtnBypass.some(function(p){ return currentPageMtn.endsWith(p); })) {
+      const curPageMtn = window.location.pathname.split('/').pop() || '';
+      if (!mtnBypass.some(function(p){ return curPageMtn.endsWith(p); })) {
         try {
           const { doc: docM, onSnapshot: onSnapM } = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js");
           onSnapM(docM(db, 'config', 'maintenance'), function(snap) {
-            if (snap.exists() && snap.data().enabled === true) {
-              if (grade !== 'chef de police') {
-                const d = snap.data();
-                const params = new URLSearchParams({ msg: d.message||'', eta: d.eta||'', reason: d.reason||'' });
-                window.location.replace('maintenance.html?' + params.toString());
-              }
+            if (snap.exists() && snap.data().enabled === true && grade !== 'chef de police') {
+              const d = snap.data();
+              window.location.replace('maintenance.html?' + new URLSearchParams({ msg: d.message||'', eta: d.eta||'', reason: d.reason||'' }).toString());
             }
           });
-        } catch(e) { console.warn('[Maintenance watcher]', e); }
+        } catch(e) { console.warn('[Maintenance]', e); }
       }
       // ── WATCHER DÉCONNEXION FORCÉE ───────────────────────────
       try {
         const { doc: docFL, onSnapshot: onSnapFL, updateDoc: updFL } = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js");
         onSnapFL(docFL(db, 'users', user.uid), async function(snap) {
           if (snap.exists() && snap.data().forceLogout === true) {
-            try {
-              await updFL(docFL(db, 'users', user.uid), { forceLogout: false });
-              const { signOut: soFL } = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js");
-              await soFL(auth);
-            } catch(e) {}
+            try { await updFL(docFL(db, 'users', user.uid), { forceLogout: false }); } catch(e2) {}
+            try { const { signOut: so } = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js"); await so(auth); } catch(e2) {}
             window.location.replace('index.html');
           }
         });
-      } catch(e) { console.warn('[ForceLogout watcher]', e); }
+      } catch(e) { console.warn('[ForceLogout]', e); }
       // ────────────────────────────────────────────────────────
     resolve({ user, grade, name, perms });
     });

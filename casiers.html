@@ -82,24 +82,28 @@
 <div class="app-shell">
 <div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
   <!-- TOPBAR -->
-  <div class="topbar">
-    <div class="tb-left">
-      <button class="tb-menu-btn" onclick="toggleSidebar()">☰</button>
-      <img class="tb-logo" src="https://r2.fivemanage.com/XEcvh0aBGRYhLzNNcRsQI/lspdnouveau.png" alt="LSPD">
-      <div class="tb-sep" style="width:1px;height:26px;background:var(--line)"></div>
+  <div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
+<div class="topbar">
+  <div class="tb-left">
+    <button class="tb-menu-btn" onclick="toggleSidebar()">☰</button>
+    <div class="tb-brand">
+      <div class="tb-shield"></div>
+      <img class="tb-logo" src="https://r2.fivemanage.com/XEcvh0aBGRYhLzNNcRsQI/lspdnouveau.png" alt="LSPD" onerror="this.style.display='none'">
       <div class="tb-title">L.S.P.D</div>
-      <div class="tb-sep" style="width:1px;height:26px;background:var(--line)"></div>
-      <div class="tb-page">CASIERS JUDICIAIRES</div>
     </div>
-    <div class="tb-right">
-      <div class="tb-time" id="tbClock">--:--:--</div>
-      <span class="tb-grade g-recruit" id="tbGrade">RECRUIT</span>
-      <span class="tb-name" id="tbName">Officier</span>
-      <button class="btn-out" onclick="logout()">Déconnexion</button>
-    </div>
+    <div class="tb-page">Casiers judiciaires</div>
   </div>
-
-  <div class="shell">
+  <div class="tb-right">
+    <div class="tb-status"><div class="live-dot"></div>En ligne</div>
+    <div class="tb-time" id="tbClock">--:--:--</div>
+    <div class="tb-user">
+      <span class="tb-grade" id="tbGrade">—</span>
+      <span class="tb-name" id="tbName">Officier</span>
+    </div>
+    <button class="btn-out" onclick="logout()">Quitter</button>
+  </div>
+</div>
+<div class="shell">
     <div class="sidebar" id="sidebar"></div>
     <div class="main">
       <!-- HEADER -->
@@ -259,7 +263,7 @@
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
   import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
   import { getFirestore, collection, addDoc, getDocs, doc, updateDoc, deleteDoc, query, orderBy, where } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
-  import { initPage, startClock, showToast, openModal, closeModal, setupModalClose, statusBadge, addLog, generateRef, getPerms, captureModal } from './utils.js';
+  import { initPage, startClock, showToast, openModal, closeModal, setupModalClose, statusBadge, addLog, generateRef, getPerms, captureModal } from './utils.js?v=3';
 
   import { printCasier } from './pdf-templates.js';
 
