@@ -163,7 +163,6 @@ body{font-family:'IBM Plex Sans',sans-serif;background:var(--bg);color:var(--tex
   import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
   import { getFirestore, collection, getDocs, query, where, orderBy, limit } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
   import { initPage, startClock, showToast, statusBadge } from './utils.js';
-  import { checkMaintenance, watchMaintenance } from './maintenance.js';
 
 
   const FC = {
@@ -176,12 +175,7 @@ body{font-family:'IBM Plex Sans',sans-serif;background:var(--bg);color:var(--tex
   };
   const app  = initializeApp(FC);
   const auth = getAuth(app);
-  const db   = getFirestore(app);
-
-  // Vérification maintenance (fail-open)
-  checkMaintenance(db);
-  watchMaintenance(db);
-  startClock('tbClock');
+  const db   = getFirestore(app);  startClock('tbClock');
   initPage(auth, db, onAuthStateChanged, 'dashboard').then(async () => {
     await loadDashboard();
     setInterval(loadDashboard, 300000);

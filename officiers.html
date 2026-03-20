@@ -50,9 +50,8 @@
 }
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
 html,body{height:100%;}
-body{font-family:'IBM Plex Sans',sans-serif;background:var(--bg);color:var(--text);font-size:13px;line-height:1.5;-webkit-font-smoothing:antialiased;}
+body{font-family:'IBM Plex Sans',sans-serif;background:var(--bg);color:var(--text);font-size:13px;line-height:1.5;}
 </style>
-  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
   <link rel="icon" type="image/png" href="https://r2.fivemanage.com/XEcvh0aBGRYhLzNNcRsQI/lspdnouveau.png">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>LSPD — Officiers</title>
@@ -111,14 +110,7 @@ body{font-family:'IBM Plex Sans',sans-serif;background:var(--bg);color:var(--tex
     <button class="btn-out" onclick="logout()">Quitter</button>
   </div>
 </div>
-    <div class="tb-right">
-      <div class="tb-time" id="tbClock">--:--:--</div>
-      <span class="tb-grade" id="tbGrade">—</span>
-      <span class="tb-name" id="tbName">Officier</span>
-      <button class="btn-out" onclick="logout()">Déconnexion</button>
-    </div>
-  </div>
-  <div class="shell">
+<div class="shell">
     <div class="sidebar" id="sidebar"></div>
     <div class="main">
 
@@ -179,7 +171,7 @@ body{font-family:'IBM Plex Sans',sans-serif;background:var(--bg);color:var(--tex
       </div>
     </div>
   </div>
-
+</div>
 
 <!-- MODAL FORM -->
 <div class="modal-bg" id="modalOfficier">
@@ -246,8 +238,6 @@ body{font-family:'IBM Plex Sans',sans-serif;background:var(--bg);color:var(--tex
   import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
   import { getFirestore, collection, addDoc, getDocs, doc, updateDoc, deleteDoc, query, orderBy, onSnapshot } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
   import { initPage, startClock, showToast, openModal, closeModal, setupModalClose, statusBadge, addLog, getPerms, captureModal } from './utils.js';
-  import { checkMaintenance, watchMaintenance } from './maintenance.js';
-
 
   const firebaseConfig = {
     apiKey: "AIzaSyA4GxYd32GNs5EDjjm2UI1a0d25YxigMVU",
@@ -261,16 +251,12 @@ body{font-family:'IBM Plex Sans',sans-serif;background:var(--bg);color:var(--tex
   const app = initializeApp(firebaseConfig);
   const auth = getAuth(app);
   const db = getFirestore(app);
-
-  // Vérification maintenance (fail-open)
-  checkMaintenance(db);
-  watchMaintenance(db);
-
   let allOfficiers = [];
   let onlineUsers = [];
   let editingId = null;
   let userGrade = 'cadet';
   let userPerms = {};
+
   startClock('tbClock');
   setupModalClose();
   window.closeModal = closeModal;

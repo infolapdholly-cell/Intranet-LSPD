@@ -50,9 +50,8 @@
 }
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
 html,body{height:100%;}
-body{font-family:'IBM Plex Sans',sans-serif;background:var(--bg);color:var(--text);font-size:13px;line-height:1.5;-webkit-font-smoothing:antialiased;}
+body{font-family:'IBM Plex Sans',sans-serif;background:var(--bg);color:var(--text);font-size:13px;line-height:1.5;}
 </style>
-  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
   <link rel="icon" type="image/png" href="https://r2.fivemanage.com/XEcvh0aBGRYhLzNNcRsQI/lspdnouveau.png">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>LSPD — Arrestations</title>
@@ -88,14 +87,7 @@ body{font-family:'IBM Plex Sans',sans-serif;background:var(--bg);color:var(--tex
     <button class="btn-out" onclick="logout()">Quitter</button>
   </div>
 </div>
-    <div class="tb-right">
-      <div class="tb-time" id="tbClock">--:--:--</div>
-      <span class="tb-grade g-recruit" id="tbGrade">RECRUIT</span>
-      <span class="tb-name" id="tbName">Officier</span>
-      <button class="btn-out" onclick="logout()">Déconnexion</button>
-    </div>
-  </div>
-  <div class="shell">
+<div class="shell">
     <div class="sidebar" id="sidebar"></div>
     <div class="main">
       <div class="page-head">
@@ -130,7 +122,7 @@ body{font-family:'IBM Plex Sans',sans-serif;background:var(--bg);color:var(--tex
                 <tr><th>RÉFÉRENCE</th><th>SUSPECT</th><th>MOTIF</th><th>OFFICIER</th><th>DATE</th><th>STATUT</th><th>ACTIONS</th></tr>
               </thead>
               <tbody id="arrestationsTable">
-                <tr><td colspan="7" style="text-align:center;padding:30px;color:var(--muted);font-family:'Share Tech Mono',monospace;font-size:11px">CHARGEMENT...</td></tr>
+                <tr><td colspan="7" style="text-align:center;padding:30px;color:var(--text2);font-family:'IBM Plex Mono',monospace;font-size:11px">CHARGEMENT...</td></tr>
               </tbody>
             </table>
           </div>
@@ -138,7 +130,7 @@ body{font-family:'IBM Plex Sans',sans-serif;background:var(--bg);color:var(--tex
       </div>
     </div>
   </div>
-
+</div>
 
 <!-- MODAL ARRESTATION -->
 <div class="modal-bg" id="modalArrestation">
@@ -186,8 +178,6 @@ body{font-family:'IBM Plex Sans',sans-serif;background:var(--bg);color:var(--tex
   import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
   import { getFirestore, collection, addDoc, getDocs, doc, updateDoc, deleteDoc, query, orderBy } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
   import { initPage, startClock, showToast, openModal, closeModal, setupModalClose, statusBadge, addLog, generateRef, getPerms, captureModal } from './utils.js';
-  import { checkMaintenance, watchMaintenance } from './maintenance.js';
-
   import { printArrestation } from './pdf-templates.js';
 
   const firebaseConfig = {
@@ -230,13 +220,9 @@ body{font-family:'IBM Plex Sans',sans-serif;background:var(--bg);color:var(--tex
   const app = initializeApp(firebaseConfig);
   const auth = getAuth(app);
   const db = getFirestore(app);
-
-  // Vérification maintenance (fail-open)
-  checkMaintenance(db);
-  watchMaintenance(db);
-
   let allArrestations = [];
   let userGrade = 'recruit';
+
   startClock('tbClock');
   setupModalClose();
   window.closeModal = closeModal;
@@ -270,43 +256,22 @@ body{font-family:'IBM Plex Sans',sans-serif;background:var(--bg);color:var(--tex
     if (!list.length) { tb.innerHTML = '<tr><td colspan="7"><div class="empty-state"><div class="ei">🚔</div><p>AUCUNE ARRESTATION</p></div></td></tr>'; return; }
     tb.innerHTML = list.map(a => `
       <tr>
-        <td style="font-family:'Share Tech Mono',monospace;font-size:11px;color:var(--muted)">${a.reference||'—'}</td>
+        <td style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--text2)">${a.reference||'—'}</td>
         <td><strong>${a.nom||'—'}</strong></td>
         <td style="font-size:12px">${a.motif||'—'}</td>
         <td style="font-size:12px">${a.officier||'—'}</td>
-        <td style="font-family:'Share Tech Mono',monospace;font-size:11px">${a.date?new Date(a.date).toLocaleString('fr-FR',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'}):'—'}</td>
+        <td style="font-family:'IBM Plex Mono',monospace;font-size:11px">${a.date?new Date(a.date).toLocaleString('fr-FR',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'}):'—'}</td>
         <td>${statusBadge(a.statut)}</td>
         <td style="display:flex;gap:4px;flex-wrap:wrap">
           <button class="btn btn-ghost btn-sm" onclick="printFiche('${a.id}')" title="Fiche arrestation">🖨️</button>
           <button class="btn btn-ghost btn-sm" onclick="printMGV('${a.id}')" title="Mise en garde à vue">📋 MGV</button>
-            <button class="btn btn-ghost btn-sm" onclick="doPrintPDF('${a.id}')" title="PDF">📄 PDF</button>
+            <button class="btn btn-ghost btn-sm" onclick="window.printArrestation('{id}')" title="PDF">📄 PDF</button>
           <button class="btn btn-ghost btn-sm" onclick="printLiberation('${a.id}')" title="Bon de libération">🔓 Libération</button>
           ${userGrade!=='recruit'?`<button class="btn btn-danger btn-sm" onclick="deleteArrestation('${a.id}')">🗑️</button>`:''}
         </td>
       </tr>`).join('');
   }
 
-
-  window.doPrintMGV = function(id) {
-    const a = allArrestations.find(x=>x.id===id);
-    if (!a) { showToast('Introuvable','error'); return; }
-    printArrestation(a,'LSPD','https://r2.fivemanage.com/XEcvh0aBGRYhLzNNcRsQI/lspdnouveau.png');
-  };
-  window.doPrintPDF = function(id) {
-    const a = allArrestations.find(x=>x.id===id);
-    if (!a) { showToast('Introuvable','error'); return; }
-    printArrestation(a,'LSPD','https://r2.fivemanage.com/XEcvh0aBGRYhLzNNcRsQI/lspdnouveau.png');
-  };
-  window.doPrintLib = function(id) {
-    const a = allArrestations.find(x=>x.id===id);
-    if (!a) { showToast('Introuvable','error'); return; }
-    const w=window.open('','_blank');
-    if(!w){showToast('Popup bloquée','error');return;}
-    const ref=a.reference||'ARR-?';
-    w.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Libération</title><style>body{font-family:Arial;padding:40px;max-width:700px;margin:0 auto}h1{color:#003087;border-bottom:2px solid #003087;padding-bottom:12px}h2{font-size:11px;text-transform:uppercase;color:#003087;border-bottom:1px solid #003087;padding-bottom:4px;margin:18px 0 10px;letter-spacing:2px}.row{display:flex;margin-bottom:7px}.lbl{font-weight:700;min-width:200px;font-size:13px}.val{font-size:13px}.sigs{display:grid;grid-template-columns:1fr 1fr;gap:40px;margin-top:40px}.sig{border-top:1px solid #000;padding-top:8px;font-size:11px;text-align:center}.sig-sp{height:60px}@media print{body{padding:0}}</style></head><body><h1>L.S.P.D — BON DE LIBÉRATION <span style="font-family:monospace;font-size:13px;font-weight:700;background:#e8f0fe;color:#003087;padding:3px 10px;border-radius:3px">${ref}</span></h1><h2>Identité du détenu</h2><div class="row"><span class="lbl">Nom :</span><span class="val"><strong>${a.nom||'—'}</strong></span></div><div class="row"><span class="lbl">Date de naissance :</span><span class="val">${a.dob||'—'}</span></div><h2>Détails de la garde à vue</h2><div class="row"><span class="lbl">Motif :</span><span class="val">${a.motif||'—'}</span></div><div class="row"><span class="lbl">Officier :</span><span class="val">${a.officier||'—'}</span></div><div class="row"><span class="lbl">Date d'arrestation :</span><span class="val">${a.date?new Date(a.date).toLocaleString('fr-FR'):'—'}</span></div><div class="row"><span class="lbl">Durée de GAV :</span><span class="val">${a.duree||'—'} heure(s)</span></div><h2>Libération</h2><div class="row"><span class="lbl">Date de libération :</span><span class="val"><strong>${new Date().toLocaleString('fr-FR')}</strong></span></div><div class="sigs"><div class="sig"><div class="sig-sp"></div>Officier responsable</div><div class="sig"><div class="sig-sp"></div>Superviseur</div></div></body></html>`);
-    w.document.close();
-    setTimeout(()=>w.print(),500);
-  };
   window.filterArrestations = function() {
     const q = document.getElementById('searchInput').value.toLowerCase();
     const s = document.getElementById('filterStatut').value;
