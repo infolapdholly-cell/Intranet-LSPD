@@ -2,27 +2,79 @@
 <html lang="fr">
 <head>
   <meta charset="UTF-8">
+  <style>
+:root {
+  --bg: #05080f;
+  --bg2: #05080f;
+  --surface: #0c1220;
+  --surface2: #101a2e;
+  --surface3: #152038;
+  --panel: #0c1220;
+  --panel2: #101a2e;
+  --panel3: #152038;
+  --border: #1b3a5e;
+  --line: #1b3a5e;
+  --line2: #1b3a5e;
+  --border2: #1b3a5e;
+  --accent: #1458a0;
+  --accent-b: #2589d0;
+  --accent-l: #2589d0;
+  --accent-glow: rgba(37,137,208,.22);
+  --accent-dim: rgba(37,137,208,.12);
+  --blue: #1458a0;
+  --blue-b: #2589d0;
+  --blue-l: #2589d0;
+  --blue-dim: rgba(37,137,208,.12);
+  --gold: #c9aa4d;
+  --gold-l: #c9aa4d;
+  --gold-dim: rgba(201,170,77,.15);
+  --text: #dce8f4;
+  --text2: #445e7a;
+  --text3: #2d4260;
+  --muted: #445e7a;
+  --danger: #c0392b;
+  --danger-l: #e74c3c;
+  --red: #c0392b;
+  --red-l: #e74c3c;
+  --red-dim: rgba(192,57,43,.12);
+  --success: #1e9e56;
+  --green: #1e9e56;
+  --green-l: #1e9e56;
+  --green-dim: rgba(30,158,86,.12);
+  --warning: #d68910;
+  --amber: #d68910;
+  --amber-l: #d68910;
+  --amber-dim: rgba(214,137,16,.12);
+  --purple: #7d3c98;
+  --purple-l: #bf7df0;
+  --mono: 'Share Tech Mono', monospace;
+  --sans: 'Rajdhani', sans-serif;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+html,body{height:100%;}
+body{font-family:'IBM Plex Sans',sans-serif;background:var(--bg);color:var(--text);font-size:13px;line-height:1.5;}
+</style>
   <link rel="icon" type="image/png" href="https://r2.fivemanage.com/XEcvh0aBGRYhLzNNcRsQI/lspdnouveau.png">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>LSPD — Véhicules</title>
-  <link rel="stylesheet" href="style.css?v=13">
+  <link rel="stylesheet" href="style.css?v=11">
   <style>
     .veh-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:16px;}
-    .veh-card{background:var(--surface);border:1px solid var(--border);border-radius:10px;overflow:hidden;transition:all .2s;animation:fadeIn .3s ease both;}
+    .veh-card{background:var(--panel);border:1px solid var(--line);border-radius:10px;overflow:hidden;transition:all .2s;animation:fadeIn .3s ease both;}
     .veh-card::before{content:'';display:block;height:3px;}
-    .veh-card.dispo::before{background:var(--success);}
-    .veh-card.service::before{background:var(--accent-b);}
-    .veh-card.maint::before{background:var(--warning);}
-    .veh-card.hors::before{background:var(--danger);}
-    .veh-card:hover{border-color:var(--accent);box-shadow:0 0 16px var(--accent-glow);transform:translateY(-2px);}
+    .veh-card.dispo::before{background:var(--green);}
+    .veh-card.service::before{background:var(--blue-b);}
+    .veh-card.maint::before{background:var(--amber-l);}
+    .veh-card.hors::before{background:var(--red);}
+    .veh-card:hover{border-color:var(--blue);box-shadow:0 0 16px rgba(59,130,246,.15);transform:translateY(-2px);}
     .veh-icon{font-size:48px;text-align:center;padding:18px 0 8px;}
-    .veh-plaque{font-family:'Orbitron',monospace;font-size:15px;font-weight:700;letter-spacing:3px;text-align:center;margin-bottom:4px;}
-    .veh-modele{font-family:'Share Tech Mono',monospace;font-size:11px;color:var(--muted);text-align:center;margin-bottom:12px;letter-spacing:1px;}
+    .veh-plaque{font-family:'IBM Plex Mono',monospace;font-size:15px;font-weight:700;letter-spacing:3px;text-align:center;margin-bottom:4px;}
+    .veh-modele{font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--text2);text-align:center;margin-bottom:12px;letter-spacing:1px;}
     .veh-row{display:flex;justify-content:space-between;margin-bottom:6px;font-size:12px;padding-bottom:6px;border-bottom:1px solid rgba(27,58,94,.3);}
     .veh-row:last-child{border-bottom:none;}
-    .veh-lbl{color:var(--muted);font-family:'Share Tech Mono',monospace;font-size:10px;letter-spacing:1px;}
+    .veh-lbl{color:var(--text2);font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:1px;}
     .veh-body{padding:0 16px 14px;}
-    .veh-actions{display:flex;gap:6px;padding:10px 16px;border-top:1px solid var(--border);}
+    .veh-actions{display:flex;gap:6px;padding:10px 16px;border-top:1px solid var(--line);}
     .veh-actions button{flex:1;}
     @keyframes fadeIn{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:none}}
   </style>
@@ -31,29 +83,33 @@
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="LSPD">
-  <meta name="theme-color" content="#1458a0">
+  <meta name="theme-color" content="#2563eb">
   <link rel="apple-touch-icon" href="https://r2.fivemanage.com/XEcvh0aBGRYhLzNNcRsQI/lspdnouveau.png">
 </head>
 <body>
 <div class="app-shell">
 <div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
-  <div class="topbar">
-    <div class="tb-left">
-      <button class="tb-menu-btn" onclick="toggleSidebar()">☰</button>
-      <img class="tb-logo" src="https://r2.fivemanage.com/XEcvh0aBGRYhLzNNcRsQI/lspdnouveau.png" alt="LSPD">
-      <div class="tb-sep" style="width:1px;height:26px;background:var(--border)"></div>
+<div class="topbar">
+  <div class="tb-left">
+    <button class="tb-menu-btn" onclick="toggleSidebar()">☰</button>
+    <div class="tb-brand">
+      <div class="tb-shield"></div>
+      <img class="tb-logo" src="https://r2.fivemanage.com/XEcvh0aBGRYhLzNNcRsQI/lspdnouveau.png" alt="LSPD" onerror="this.style.display='none'">
       <div class="tb-title">L.S.P.D</div>
-      <div class="tb-sep" style="width:1px;height:26px;background:var(--border)"></div>
-      <div class="tb-page">VÉHICULES</div>
     </div>
-    <div class="tb-right">
-      <div class="tb-time" id="tbClock">--:--:--</div>
-      <span class="tb-grade g-recruit" id="tbGrade">RECRUIT</span>
-      <span class="tb-name" id="tbName">Officier</span>
-      <button class="btn-out" onclick="logout()">Déconnexion</button>
-    </div>
+    <div class="tb-page">Véhicules</div>
   </div>
-  <div class="shell">
+  <div class="tb-right">
+    <div class="tb-status"><div class="live-dot"></div>En ligne</div>
+    <div class="tb-time" id="tbClock">--:--:--</div>
+    <div class="tb-user">
+      <span class="tb-grade" id="tbGrade">—</span>
+      <span class="tb-name" id="tbName">Officier</span>
+    </div>
+    <button class="btn-out" onclick="logout()">Quitter</button>
+  </div>
+</div>
+<div class="shell">
     <div class="sidebar" id="sidebar"></div>
     <div class="main">
       <div class="page-head">
@@ -138,7 +194,6 @@
   import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
   import { getFirestore, collection, addDoc, getDocs, doc, updateDoc, deleteDoc, query, orderBy } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
   import { initPage, startClock, showToast, openModal, closeModal, setupModalClose, statusBadge, addLog, getPerms } from './utils.js';
-  import { checkMaintenance, watchMaintenance } from './maintenance.js';
 
   const firebaseConfig = {
     apiKey: "AIzaSyA4GxYd32GNs5EDjjm2UI1a0d25YxigMVU",
@@ -152,10 +207,6 @@
   const app = initializeApp(firebaseConfig);
   const auth = getAuth(app);
   const db = getFirestore(app);
-
-  checkMaintenance(db);
-  watchMaintenance(db);
-
   let allVehicules = [], editingId = null, userPerms = {};
 
   const TYPE_ICONS = {'Patrouille':'🚓','SWAT':'🚐','Banalisé':'🚗','Moto':'🏍','Hélicoptère':'🚁','Bateau':'🚤','Fourgon':'🚐'};
@@ -201,14 +252,14 @@
           <div class="veh-row"><span class="veh-lbl">TYPE</span><span style="font-size:12px">${v.type||'—'}</span></div>
           <div class="veh-row"><span class="veh-lbl">STATUT</span>${statusBadge(v.statut)}</div>
           <div class="veh-row"><span class="veh-lbl">ASSIGNÉ</span><span style="font-size:12px">${v.assigne||'—'}</span></div>
-          ${v.notes?`<div style="font-family:'Share Tech Mono',monospace;font-size:10px;color:var(--muted);margin-top:6px">${v.notes}</div>`:''}
+          ${v.notes?`<div style="font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--text2);margin-top:6px">${v.notes}</div>`:''}
         </div>
         <div class="veh-actions">
           ${userPerms.canWrite && userPerms.canManageVehicles ? `
             <button class="btn btn-ghost btn-sm" onclick="changeStatut('${v.id}')">🔄 Statut</button>
             <button class="btn btn-ghost btn-sm" onclick="editVehicule('${v.id}')">✏️</button>
             <button class="btn btn-danger btn-sm" onclick="deleteVehicule('${v.id}')">🗑️</button>
-          ` : `<div style="flex:1;text-align:center;font-family:'Share Tech Mono',monospace;font-size:11px;color:var(--muted)">LECTURE SEULE</div>`}
+          ` : `<div style="flex:1;text-align:center;font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--text2)">LECTURE SEULE</div>`}
         </div>
       </div>`).join('');
   }
@@ -219,11 +270,11 @@
     tb.innerHTML = list.map(v => `
       <tr>
         <td style="font-size:20px">${TYPE_ICONS[v.type]||'🚗'}</td>
-        <td style="font-family:'Orbitron',monospace;font-size:13px;font-weight:700;letter-spacing:2px">${v.plaque||'—'}</td>
+        <td style="font-family:'IBM Plex Mono',monospace;font-size:13px;font-weight:700;letter-spacing:2px">${v.plaque||'—'}</td>
         <td style="font-size:12px">${v.modele||'—'}${v.annee?' · '+v.annee:''}</td>
         <td style="font-size:12px">${v.assigne||'—'}</td>
         <td>${statusBadge(v.statut)}</td>
-        <td style="font-family:'Share Tech Mono',monospace;font-size:11px;color:var(--muted)">${v.notes||'—'}</td>
+        <td style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--text2)">${v.notes||'—'}</td>
         <td style="display:flex;gap:4px">
           ${userPerms.canWrite && userPerms.canManageVehicles ? `
             <button class="btn btn-ghost btn-sm" onclick="changeStatut('${v.id}')" title="Changer statut">🔄</button>

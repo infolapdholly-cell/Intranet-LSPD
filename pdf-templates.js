@@ -105,6 +105,7 @@ export function printCasier(c, dept = 'LSPD', logo = '', source = '') {
   ${pdfFooter(dept, ref)}
   </div></body></html>`);
   w.document.close();
+  setTimeout(() => w.print(), 600);
 }
 
 // ============================================================
@@ -147,6 +148,7 @@ export function printArrestation(a, dept = 'LSPD', logo = '', source = '') {
   ${pdfFooter(dept, ref)}
   </div></body></html>`);
   w.document.close();
+  setTimeout(() => w.print(), 600);
 }
 
 // ============================================================
@@ -183,6 +185,7 @@ export function printAmende(a, dept = 'LSPD', logo = '') {
   ${pdfFooter(dept, ref)}
   </div></body></html>`);
   w.document.close();
+  setTimeout(() => w.print(), 600);
 }
 
 // ============================================================
@@ -215,6 +218,7 @@ export function printRapport(r, dept = 'LSPD', logo = '') {
   ${pdfFooter(dept, ref)}
   </div></body></html>`);
   w.document.close();
+  setTimeout(() => w.print(), 600);
 }
 
 // ============================================================
@@ -254,4 +258,5 @@ export function printSaisie(s, dept = 'LSPD', logo = '') {
   ${pdfFooter(dept, ref)}
   </div></body></html>`);
   w.document.close();
+  setTimeout(() => w.print(), 600);
 }

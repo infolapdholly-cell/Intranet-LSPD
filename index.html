@@ -207,30 +207,6 @@
   import { getAuth, signInWithEmailAndPassword, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
   import { getFirestore, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
-  // ── Vérifier maintenance DÈS l'arrivée sur la page login ──
-  (async () => {
-    try {
-      const _app = initializeApp({
-        apiKey:"AIzaSyA4GxYd32GNs5EDjjm2UI1a0d25YxigMVU",
-        authDomain:"lspd-intranet-2aed9.firebaseapp.com",
-        projectId:"lspd-intranet-2aed9",
-        storageBucket:"lspd-intranet-2aed9.firebasestorage.app",
-        messagingSenderId:"780922925382",
-        appId:"1:780922925382:web:a32d5e89bcff75bd8b3547"
-      });
-      const _db = getFirestore(_app);
-      const mSnap = await getDoc(doc(_db,'config','maintenance'));
-      if (mSnap.exists() && mSnap.data().enabled === true) {
-        const d = mSnap.data();
-        const params = new URLSearchParams({ msg: d.message||'', eta: d.eta||'', reason: d.reason||'' });
-        // Afficher overlay de maintenance sur la page login elle-même
-        document.body.style.opacity = '0';
-        window.location.replace('maintenance.html?' + params.toString());
-      }
-    } catch(e) { /* fail-open */ }
-  })();
-  // ──────────────────────────────────────────────────────────
-
   const firebaseConfig = {
     apiKey:"AIzaSyA4GxYd32GNs5EDjjm2UI1a0d25YxigMVU",
     authDomain:"lspd-intranet-2aed9.firebaseapp.com",
@@ -245,44 +221,7 @@
   const db   = getFirestore(app);
 
   onAuthStateChanged(auth, async user => {
-    if (!user) return; // Pas connecté, on reste sur la page login
-    try {
-      // Vérifier compte suspendu
-      const uSnap = await getDoc(doc(db,'users',user.uid));
-      if (uSnap.exists() && uSnap.data().suspended) {
-        // Compte suspendu : déconnecter silencieusement et afficher erreur
-        const { signOut } = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js");
-        await signOut(auth);
-        const errText = document.getElementById('liErrText');
-        const errBox  = document.getElementById('liErr');
-        if (errText) errText.textContent = 'Identifiants incorrects. Accès refusé.';
-        if (errBox)  errBox.classList.add('show');
-        return;
-      }
-
-      // Vérifier maintenance — seulement Chef de Police passe
-      const mSnap = await getDoc(doc(db,'config','maintenance'));
-      if (mSnap.exists() && mSnap.data().enabled === true) {
-        const userGrade = uSnap.exists() ? (uSnap.data().grade||'cadet').toLowerCase() : 'cadet';
-        if (userGrade !== 'chef de police') {
-          const d = mSnap.data();
-          const params = new URLSearchParams({ msg: d.message||'', eta: d.eta||'', reason: d.reason||'' });
-          window.location.replace('maintenance.html?' + params.toString());
-          return;
-        }
-      }
-
-      // Vérifier si première connexion (forcePasswordChange)
-      const forceChange = uSnap.exists() && uSnap.data().forcePasswordChange;
-
-      // Tout bon → rafraîchir grade et rediriger
-      await refreshGrade(user);
-      window.location.href = forceChange ? 'change-password.html' : 'dashboard.html';
-    } catch(e) {
-      // En cas d'erreur réseau, laisser passer (fail-open)
-      await refreshGrade(user);
-      window.location.href = 'dashboard.html';
-    }
+    if (user) { await refreshGrade(user); window.location.href = 'dashboard.html'; }
   });
 
   async function refreshGrade(user) {
@@ -324,10 +263,16 @@
       const cred = await signInWithEmailAndPassword(auth, email, pass);
       await refreshGrade(cred.user);
 
-      // onAuthStateChanged s'occupe des vérifications maintenance + suspension
-      // Ici on affiche juste le feedback visuel
       btn.textContent = 'Authentifié ✓';
       btn.style.background = 'var(--green)';
+
+      setInterval(async () => {
+        try { await setDoc(doc(db,'online',cred.user.uid), {lastSeen:new Date().toISOString()},{merge:true}); } catch(e) {}
+      }, 5*60*1000);
+
+      setTimeout(() => {
+        window.location.href = (pass === '123456') ? 'change-password.html' : 'dashboard.html';
+      }, 500);
 
     } catch(e) {
       let msg = 'Identifiants incorrects. Accès refusé.';

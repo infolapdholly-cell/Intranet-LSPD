@@ -21,37 +21,6 @@
   --success: #1e9e56;
   --warning: #d68910;
   --purple: #7d3c98;
-
-  /* Alias pour compatibilité avec les pages générées */
-  --mono:       'Share Tech Mono', monospace;
-  --sans:       'Rajdhani', sans-serif;
-  --bg2:        #05080f;
-  --panel:      #0c1220;
-  --panel2:     #101a2e;
-  --panel3:     #152038;
-  --line:       #1b3a5e;
-  --line2:      #1b3a5e;
-  --border2:    #1b3a5e;
-  --text2:      #445e7a;
-  --text3:      #2d4260;
-  --blue:       #1458a0;
-  --blue-b:     #2589d0;
-  --blue-l:     #2589d0;
-  --blue-dim:   rgba(37,137,208,.12);
-  --accent-l:   #2589d0;
-  --accent-dim: rgba(37,137,208,.12);
-  --gold-l:     #c9aa4d;
-  --gold-dim:   rgba(201,170,77,.15);
-  --red:        #c0392b;
-  --red-l:      #e74c3c;
-  --red-dim:    rgba(192,57,43,.12);
-  --green:      #1e9e56;
-  --green-l:    #1e9e56;
-  --green-dim:  rgba(30,158,86,.12);
-  --amber:      #d68910;
-  --amber-l:    #d68910;
-  --amber-dim:  rgba(214,137,16,.12);
-  --purple-l:   #bf7df0;
 }
 
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }

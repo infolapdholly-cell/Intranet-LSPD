@@ -2,39 +2,94 @@
 <html lang="fr">
 <head>
   <meta charset="UTF-8">
-  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@400;500;600;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+  <style>
+:root {
+  --bg: #05080f;
+  --bg2: #05080f;
+  --surface: #0c1220;
+  --surface2: #101a2e;
+  --surface3: #152038;
+  --panel: #0c1220;
+  --panel2: #101a2e;
+  --panel3: #152038;
+  --border: #1b3a5e;
+  --line: #1b3a5e;
+  --line2: #1b3a5e;
+  --border2: #1b3a5e;
+  --accent: #1458a0;
+  --accent-b: #2589d0;
+  --accent-l: #2589d0;
+  --accent-glow: rgba(37,137,208,.22);
+  --accent-dim: rgba(37,137,208,.12);
+  --blue: #1458a0;
+  --blue-b: #2589d0;
+  --blue-l: #2589d0;
+  --blue-dim: rgba(37,137,208,.12);
+  --gold: #c9aa4d;
+  --gold-l: #c9aa4d;
+  --gold-dim: rgba(201,170,77,.15);
+  --text: #dce8f4;
+  --text2: #445e7a;
+  --text3: #2d4260;
+  --muted: #445e7a;
+  --danger: #c0392b;
+  --danger-l: #e74c3c;
+  --red: #c0392b;
+  --red-l: #e74c3c;
+  --red-dim: rgba(192,57,43,.12);
+  --success: #1e9e56;
+  --green: #1e9e56;
+  --green-l: #1e9e56;
+  --green-dim: rgba(30,158,86,.12);
+  --warning: #d68910;
+  --amber: #d68910;
+  --amber-l: #d68910;
+  --amber-dim: rgba(214,137,16,.12);
+  --purple: #7d3c98;
+  --purple-l: #bf7df0;
+  --mono: 'Share Tech Mono', monospace;
+  --sans: 'Rajdhani', sans-serif;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+html,body{height:100%;}
+body{font-family:'IBM Plex Sans',sans-serif;background:var(--bg);color:var(--text);font-size:13px;line-height:1.5;}
+</style>
   <link rel="icon" type="image/png" href="https://r2.fivemanage.com/XEcvh0aBGRYhLzNNcRsQI/lspdnouveau.png">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>LSPD — Arrestations</title>
-  <link rel="stylesheet" href="style.css?v=13">
+  <link rel="stylesheet" href="style.css?v=11">
   
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="LSPD">
-  <meta name="theme-color" content="#1458a0">
+  <meta name="theme-color" content="#2563eb">
   <link rel="apple-touch-icon" href="https://r2.fivemanage.com/XEcvh0aBGRYhLzNNcRsQI/lspdnouveau.png">
 </head>
 <body>
 <div class="app-shell">
 <div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
-  <div class="topbar">
-    <div class="tb-left">
-      <button class="tb-menu-btn" onclick="toggleSidebar()">☰</button>
-      <img class="tb-logo" src="https://r2.fivemanage.com/XEcvh0aBGRYhLzNNcRsQI/lspdnouveau.png" alt="LSPD">
-      <div class="tb-sep" style="width:1px;height:26px;background:var(--border)"></div>
+<div class="topbar">
+  <div class="tb-left">
+    <button class="tb-menu-btn" onclick="toggleSidebar()">☰</button>
+    <div class="tb-brand">
+      <div class="tb-shield"></div>
+      <img class="tb-logo" src="https://r2.fivemanage.com/XEcvh0aBGRYhLzNNcRsQI/lspdnouveau.png" alt="LSPD" onerror="this.style.display='none'">
       <div class="tb-title">L.S.P.D</div>
-      <div class="tb-sep" style="width:1px;height:26px;background:var(--border)"></div>
-      <div class="tb-page">ARRESTATIONS</div>
     </div>
-    <div class="tb-right">
-      <div class="tb-time" id="tbClock">--:--:--</div>
-      <span class="tb-grade g-recruit" id="tbGrade">RECRUIT</span>
-      <span class="tb-name" id="tbName">Officier</span>
-      <button class="btn-out" onclick="logout()">Déconnexion</button>
-    </div>
+    <div class="tb-page">Arrestations</div>
   </div>
-  <div class="shell">
+  <div class="tb-right">
+    <div class="tb-status"><div class="live-dot"></div>En ligne</div>
+    <div class="tb-time" id="tbClock">--:--:--</div>
+    <div class="tb-user">
+      <span class="tb-grade" id="tbGrade">—</span>
+      <span class="tb-name" id="tbName">Officier</span>
+    </div>
+    <button class="btn-out" onclick="logout()">Quitter</button>
+  </div>
+</div>
+<div class="shell">
     <div class="sidebar" id="sidebar"></div>
     <div class="main">
       <div class="page-head">
@@ -69,7 +124,7 @@
                 <tr><th>RÉFÉRENCE</th><th>SUSPECT</th><th>MOTIF</th><th>OFFICIER</th><th>DATE</th><th>STATUT</th><th>ACTIONS</th></tr>
               </thead>
               <tbody id="arrestationsTable">
-                <tr><td colspan="7" style="text-align:center;padding:30px;color:var(--muted);font-family:'Share Tech Mono',monospace;font-size:11px">CHARGEMENT...</td></tr>
+                <tr><td colspan="7" style="text-align:center;padding:30px;color:var(--text2);font-family:'IBM Plex Mono',monospace;font-size:11px">CHARGEMENT...</td></tr>
               </tbody>
             </table>
           </div>
@@ -125,7 +180,6 @@
   import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
   import { getFirestore, collection, addDoc, getDocs, doc, updateDoc, deleteDoc, query, orderBy } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
   import { initPage, startClock, showToast, openModal, closeModal, setupModalClose, statusBadge, addLog, generateRef, getPerms, captureModal } from './utils.js';
-  import { checkMaintenance, watchMaintenance } from './maintenance.js';
   import { printArrestation } from './pdf-templates.js';
 
   const firebaseConfig = {
@@ -168,10 +222,6 @@
   const app = initializeApp(firebaseConfig);
   const auth = getAuth(app);
   const db = getFirestore(app);
-
-  checkMaintenance(db);
-  watchMaintenance(db);
-
   let allArrestations = [];
   let userGrade = 'recruit';
 
@@ -208,11 +258,11 @@
     if (!list.length) { tb.innerHTML = '<tr><td colspan="7"><div class="empty-state"><div class="ei">🚔</div><p>AUCUNE ARRESTATION</p></div></td></tr>'; return; }
     tb.innerHTML = list.map(a => `
       <tr>
-        <td style="font-family:'Share Tech Mono',monospace;font-size:11px;color:var(--muted)">${a.reference||'—'}</td>
+        <td style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--text2)">${a.reference||'—'}</td>
         <td><strong>${a.nom||'—'}</strong></td>
         <td style="font-size:12px">${a.motif||'—'}</td>
         <td style="font-size:12px">${a.officier||'—'}</td>
-        <td style="font-family:'Share Tech Mono',monospace;font-size:11px">${a.date?new Date(a.date).toLocaleString('fr-FR',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'}):'—'}</td>
+        <td style="font-family:'IBM Plex Mono',monospace;font-size:11px">${a.date?new Date(a.date).toLocaleString('fr-FR',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'}):'—'}</td>
         <td>${statusBadge(a.statut)}</td>
         <td style="display:flex;gap:4px;flex-wrap:wrap">
           <button class="btn btn-ghost btn-sm" onclick="printFiche('${a.id}')" title="Fiche arrestation">🖨️</button>
@@ -282,5 +332,84 @@
       .footer{margin-top:30px;font-size:11px;color:#666;text-align:center;border-top:1px solid #ccc;padding-top:12px}
       .warning{background:#fff3cd;border:1px solid #ffc107;padding:10px;border-radius:4px;font-size:12px;margin:10px 0}
     </style></head><body>${content}
+</body>
+</html>
+`);
+    w.document.close();
+    setTimeout(() => w.print(), 500);
+  }
+
+  window.printFiche = function(id) {
+    const a = allArrestations.find(x => x.id === id);
+    if (!a) { showToast('Introuvable', 'error'); return; }
+    printDoc('Fiche arrestation — ' + (a.nom||''), `
+      <div class="header">
+        <div><h1>L.S.P.D — FICHE D'ARRESTATION</h1><div class="sub">Los Santos Police Department</div></div>
+        <div class="ref">${a.reference||'—'}</div>
+      </div>
+      <h2>Identité du suspect</h2>
+      <div class="row"><span class="lbl">Nom complet :</span><span class="val"><strong>${a.nom||'—'}</strong></span></div>
+      <div class="row"><span class="lbl">Date de naissance :</span><span class="val">${a.dob||'—'}</span></div>
+      <h2>Détails de l'arrestation</h2>
+      <div class="row"><span class="lbl">Motif :</span><span class="val">${a.motif||'—'}</span></div>
+      <div class="row"><span class="lbl">Lieu :</span><span class="val">${a.lieu||'—'}</span></div>
+      <div class="row"><span class="lbl">Officier arrêtant :</span><span class="val">${a.officier||'—'}</span></div>
+      <div class="row"><span class="lbl">Date & heure :</span><span class="val">${a.date ? new Date(a.date).toLocaleString('fr-FR') : '—'}</span></div>
+      <div class="row"><span class="lbl">Statut :</span><span class="val">${a.statut||'—'}</span></div>
+      <div class="row"><span class="lbl">Durée MGV :</span><span class="val">${a.duree||'—'} heure(s)</span></div>
+      ${a.objets ? `<h2>Objets saisis</h2><div class="row"><span class="val">${a.objets}</span></div>` : ''}
+      ${a.description ? `<h2>Compte-rendu</h2><p style="font-size:13px;line-height:1.6">${a.description}</p>` : ''}
+    `);
+  };
+
+  window.printMGV = function(id) {
+    const a = allArrestations.find(x => x.id === id);
+    if (!a) { showToast('Introuvable', 'error'); return; }
+    printDoc('Mise en garde à vue — ' + (a.nom||''), `
+      <div class="header">
+        <div><h1>L.S.P.D — MISE EN GARDE À VUE</h1><div class="sub">Los Santos Police Department</div></div>
+        <div class="ref">${a.reference||'—'}</div>
+      </div>
+      <div class="warning">⚠ Ce document atteste que la personne ci-dessous est placée en garde à vue conformément à la procédure LSPD.</div>
+      <h2>Identité du détenu</h2>
+      <div class="row"><span class="lbl">Nom complet :</span><span class="val"><strong>${a.nom||'—'}</strong></span></div>
+      <div class="row"><span class="lbl">Date de naissance :</span><span class="val">${a.dob||'—'}</span></div>
+      <h2>Motif de garde à vue</h2>
+      <div class="row"><span class="val">${a.motif||'—'}</span></div>
+      <h2>Informations</h2>
+      <div class="row"><span class="lbl">Officier :</span><span class="val">${a.officier||'—'}</span></div>
+      <div class="row"><span class="lbl">Date d'entrée :</span><span class="val">${a.date ? new Date(a.date).toLocaleString('fr-FR') : '—'}</span></div>
+      <div class="row"><span class="lbl">Durée :</span><span class="val">${a.duree||'—'} heure(s)</span></div>
+      <div class="sig-grid">
+        <div class="sig-box"><div class="sig-space"></div>Officier responsable</div>
+        <div class="sig-box"><div class="sig-space"></div>Superviseur</div>
+      </div>
+    `);
+  };
+
+  window.printLiberation = function(id) {
+    const a = allArrestations.find(x => x.id === id);
+    if (!a) { showToast('Introuvable', 'error'); return; }
+    printDoc('Bon de libération — ' + (a.nom||''), `
+      <div class="header">
+        <div><h1>L.S.P.D — BON DE LIBÉRATION</h1><div class="sub">Los Santos Police Department</div></div>
+        <div class="ref">${a.reference||'—'}</div>
+      </div>
+      <h2>Identité</h2>
+      <div class="row"><span class="lbl">Nom complet :</span><span class="val"><strong>${a.nom||'—'}</strong></span></div>
+      <h2>Détails</h2>
+      <div class="row"><span class="lbl">Motif d'arrestation :</span><span class="val">${a.motif||'—'}</span></div>
+      <div class="row"><span class="lbl">Officier :</span><span class="val">${a.officier||'—'}</span></div>
+      <div class="row"><span class="lbl">Date d'arrestation :</span><span class="val">${a.date ? new Date(a.date).toLocaleString('fr-FR') : '—'}</span></div>
+      <h2>Libération</h2>
+      <div class="row"><span class="lbl">Date de libération :</span><span class="val"><strong>${new Date().toLocaleString('fr-FR')}</strong></span></div>
+      <div class="sig-grid">
+        <div class="sig-box"><div class="sig-space"></div>Officier responsable</div>
+        <div class="sig-box"><div class="sig-space"></div>Superviseur</div>
+      </div>
+    `);
+  };
+
+</script>
 </body>
 </html>

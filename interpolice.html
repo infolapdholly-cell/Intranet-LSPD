@@ -2,40 +2,93 @@
 <html lang="fr">
 <head>
   <meta charset="UTF-8">
+  <style>
+:root {
+  --bg: #05080f;
+  --bg2: #05080f;
+  --surface: #0c1220;
+  --surface2: #101a2e;
+  --surface3: #152038;
+  --panel: #0c1220;
+  --panel2: #101a2e;
+  --panel3: #152038;
+  --border: #1b3a5e;
+  --line: #1b3a5e;
+  --line2: #1b3a5e;
+  --border2: #1b3a5e;
+  --accent: #1458a0;
+  --accent-b: #2589d0;
+  --accent-l: #2589d0;
+  --accent-glow: rgba(37,137,208,.22);
+  --accent-dim: rgba(37,137,208,.12);
+  --blue: #1458a0;
+  --blue-b: #2589d0;
+  --blue-l: #2589d0;
+  --blue-dim: rgba(37,137,208,.12);
+  --gold: #c9aa4d;
+  --gold-l: #c9aa4d;
+  --gold-dim: rgba(201,170,77,.15);
+  --text: #dce8f4;
+  --text2: #445e7a;
+  --text3: #2d4260;
+  --muted: #445e7a;
+  --danger: #c0392b;
+  --danger-l: #e74c3c;
+  --red: #c0392b;
+  --red-l: #e74c3c;
+  --red-dim: rgba(192,57,43,.12);
+  --success: #1e9e56;
+  --green: #1e9e56;
+  --green-l: #1e9e56;
+  --green-dim: rgba(30,158,86,.12);
+  --warning: #d68910;
+  --amber: #d68910;
+  --amber-l: #d68910;
+  --amber-dim: rgba(214,137,16,.12);
+  --purple: #7d3c98;
+  --purple-l: #bf7df0;
+  --mono: 'Share Tech Mono', monospace;
+  --sans: 'Rajdhani', sans-serif;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+html,body{height:100%;}
+body{font-family:'IBM Plex Sans',sans-serif;background:var(--bg);color:var(--text);font-size:13px;line-height:1.5;-webkit-font-smoothing:antialiased;}
+</style>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>INTERPOLICE — San Andreas</title>
   <link rel="icon" type="image/png" href="https://r2.fivemanage.com/XEcvh0aBGRYhLzNNcRsQI/lspdnouveau.png">
-  <link rel="stylesheet" href="style.css?v=13">
+  <link rel="stylesheet" href="style.css?v=11">
   <style>
     .dept-badge {
       display:inline-flex; align-items:center; gap:6px; padding:3px 10px;
-      border-radius:20px; font-family:'Share Tech Mono',monospace; font-size:10px;
+      border-radius:20px; font-family:'IBM Plex Mono',monospace; font-size:10px;
       letter-spacing:1px; font-weight:700;
     }
-    .dept-lspd { background:rgba(20,88,160,.2); color:#2589d0; border:1px solid #1458a0; }
+    .dept-lspd { background:rgba(20,88,160,.2); color:#3b82f6; border:1px solid #2563eb; }
     .dept-bcso { background:rgba(122,82,48,.2); color:#c49a6c; border:1px solid #7a5230; }
     .dept-both { background:rgba(201,170,77,.2); color:#c9a84d; border:1px solid #c9a84d; }
 
-    .inter-tabs { display:flex; gap:4px; margin-bottom:22px; border-bottom:1px solid var(--border); padding-bottom:0; }
+    .inter-tabs { display:flex; gap:4px; margin-bottom:22px; border-bottom:1px solid var(--line); padding-bottom:0; }
     .inter-tab {
       padding:10px 20px; background:transparent; border:none; border-bottom:3px solid transparent;
-      color:var(--muted); font-family:'Rajdhani',sans-serif; font-size:13px; font-weight:700;
+      color:var(--text2); font-family:'IBM Plex Sans',sans-serif; font-size:13px; font-weight:700;
       letter-spacing:1px; cursor:pointer; transition:all .2s; margin-bottom:-1px;
     }
-    .inter-tab.active { color:var(--accent-b); border-bottom-color:var(--accent-b); }
+    .inter-tab.active { color:var(--blue-b); border-bottom-color:var(--blue-b); }
     .inter-tab:hover:not(.active) { color:var(--text); }
 
-    .msg-item { background:var(--surface); border:1px solid var(--border); border-radius:8px; padding:14px 16px; margin-bottom:10px; }
-    .msg-item.lspd { border-left:3px solid #1458a0; }
+    .msg-item { background:var(--panel); border:1px solid var(--line); border-radius:8px; padding:14px 16px; margin-bottom:10px; }
+    .msg-item.lspd { border-left:3px solid #2563eb; }
     .msg-item.bcso { border-left:3px solid #7a5230; }
     .msg-header { display:flex; align-items:center; gap:10px; margin-bottom:8px; }
     .msg-author { font-weight:700; font-size:13px; }
-    .msg-time { font-family:'Share Tech Mono',monospace; font-size:10px; color:var(--muted); margin-left:auto; }
+    .msg-time { font-family:'IBM Plex Mono',monospace; font-size:10px; color:var(--text2); margin-left:auto; }
     .msg-body { font-size:13px; line-height:1.6; }
 
-    .op-card { background:var(--surface); border:1px solid var(--border); border-radius:10px; padding:16px; margin-bottom:12px; }
+    .op-card { background:var(--panel); border:1px solid var(--line); border-radius:10px; padding:16px; margin-bottom:12px; }
     .op-card.active-op { border-color:rgba(201,170,77,.5); box-shadow:0 0 12px rgba(201,170,77,.1); }
-    .op-card::before { content:''; display:block; height:2px; margin:-16px -16px 14px; background:var(--border); border-radius:10px 10px 0 0; }
+    .op-card::before { content:''; display:block; height:2px; margin:-16px -16px 14px; background:var(--line); border-radius:10px 10px 0 0; }
     .op-card.active-op::before { background:var(--gold); }
   </style>
 </head>
@@ -44,9 +97,9 @@
   <div class="topbar">
     <div class="tb-left">
       <img class="tb-logo" src="https://r2.fivemanage.com/XEcvh0aBGRYhLzNNcRsQI/lspdnouveau.png" alt="LSPD" onerror="this.style.display='none'">
-      <div class="tb-sep" style="width:1px;height:26px;background:var(--border)"></div>
+      <div class="tb-sep" style="width:1px;height:26px;background:var(--line)"></div>
       <div class="tb-title" style="color:var(--gold)">INTERPOLICE</div>
-      <div class="tb-sep" style="width:1px;height:26px;background:var(--border)"></div>
+      <div class="tb-sep" style="width:1px;height:26px;background:var(--line)"></div>
       <div class="tb-page">SAN ANDREAS POLICE NETWORK</div>
     </div>
     <div class="tb-right">
@@ -68,7 +121,7 @@
         </div>
         <div style="display:flex;gap:8px;align-items:center">
           <span class="dept-badge dept-lspd">● LSPD</span>
-          <span style="color:var(--muted);font-size:12px">×</span>
+          <span style="color:var(--text2);font-size:12px">×</span>
           <span class="dept-badge dept-bcso">● BCSO</span>
         </div>
       </div>
@@ -198,7 +251,7 @@
   import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
   import { getFirestore, collection, addDoc, getDocs, onSnapshot, query, orderBy, limit } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
   import { initPage, startClock, showToast, openModal, closeModal, setupModalClose, statusBadge, addLog } from './utils.js';
-  import { checkMaintenance, watchMaintenance } from './maintenance.js';
+
   import { printCasier } from './pdf-templates.js';
 
   // ---- CONFIG LSPD (base principale) ----
@@ -231,7 +284,6 @@
   const dbInter = dbLspd;
 
   let allCasiers = [], userName = '', userDept = 'LSPD';
-
   startClock('tbClock');
   setupModalClose();
   window.closeModal = closeModal;
@@ -292,7 +344,7 @@
         <td><span class="dept-badge dept-${c.dept.toLowerCase()}">${c.dept}</span></td>
         <td><strong>${c.nom||'—'} ${c.prenom||''}</strong></td>
         <td>${statusBadge(c.statut)}</td>
-        <td style="font-family:'Share Tech Mono',monospace;font-size:11px">${c.empreinte||'—'}</td>
+        <td style="font-family:'IBM Plex Mono',monospace;font-size:11px">${c.empreinte||'—'}</td>
         <td style="font-size:12px">${(c.infractions||[]).length} infraction(s)</td>
         <td>${c.wanted?'<span class="badge b-wanted">⚠ WANTED</span>':'—'}</td>
       </tr>`).join('');
@@ -311,18 +363,18 @@
   function renderWanted(list) {
     const el = document.getElementById('wantedList');
     if (!list.length) { el.innerHTML = '<div class="empty-state"><div class="ei">⚠️</div><p>AUCUN AVIS DE RECHERCHE</p></div>'; return; }
-    const dangerColors = {'Faible':'var(--success)','Modérée':'var(--warning)','Élevée':'var(--danger-l)','Extrême':'#ff0000'};
+    const dangerColors = {'Faible':'var(--green)','Modérée':'var(--amber-l)','Élevée':'var(--red-l)','Extrême':'#ff0000'};
     el.innerHTML = list.map(w => `
       <div class="op-card active-op">
         <div style="display:flex;align-items:center;gap:12px;margin-bottom:10px">
-          <div style="font-family:'Orbitron',monospace;font-size:14px;font-weight:700">${w.nom||'—'}</div>
+          <div style="font-family:'IBM Plex Mono',monospace;font-size:14px;font-weight:700">${w.nom||'—'}</div>
           <span class="dept-badge dept-${(w.dept||'lspd').toLowerCase()}">${w.dept||'LSPD'}</span>
-          <span style="font-family:'Share Tech Mono',monospace;font-size:11px;color:${dangerColors[w.danger]||'var(--muted)'}">⚡ ${w.danger||'—'}</span>
-          <span style="margin-left:auto;font-family:'Share Tech Mono',monospace;font-size:10px;color:var(--muted)">${w.createdAt?new Date(w.createdAt).toLocaleDateString('fr-FR'):''}</span>
+          <span style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:${dangerColors[w.danger]||'var(--text2)'}">⚡ ${w.danger||'—'}</span>
+          <span style="margin-left:auto;font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--text2)">${w.createdAt?new Date(w.createdAt).toLocaleDateString('fr-FR'):''}</span>
         </div>
         <div style="font-size:13px;margin-bottom:6px">${w.motif||'—'}</div>
-        ${w.position?`<div style="font-family:'Share Tech Mono',monospace;font-size:11px;color:var(--muted)">📍 ${w.position}</div>`:''}
-        <div style="font-family:'Share Tech Mono',monospace;font-size:10px;color:var(--muted);margin-top:6px">Publié par ${w.auteur||'—'}</div>
+        ${w.position?`<div style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--text2)">📍 ${w.position}</div>`:''}
+        <div style="font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--text2);margin-top:6px">Publié par ${w.auteur||'—'}</div>
       </div>`).join('');
   }
 
@@ -375,14 +427,14 @@
       <div class="op-card active-op">
         <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:10px">
           <div>
-            <div style="font-family:'Orbitron',monospace;font-size:14px;font-weight:700;margin-bottom:4px">🎯 ${o.nom||'—'}</div>
-            <div style="font-family:'Share Tech Mono',monospace;font-size:10px;color:var(--muted)">${o.date||'—'}</div>
+            <div style="font-family:'IBM Plex Mono',monospace;font-size:14px;font-weight:700;margin-bottom:4px">🎯 ${o.nom||'—'}</div>
+            <div style="font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--text2)">${o.date||'—'}</div>
           </div>
           <span class="dept-badge dept-both">CONJOINT</span>
         </div>
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px">
-          <div><div style="font-family:'Share Tech Mono',monospace;font-size:9px;color:var(--muted);letter-spacing:2px;margin-bottom:2px">LSPD</div><div style="font-size:13px">${o.responsableLspd||'—'}</div></div>
-          <div><div style="font-family:'Share Tech Mono',monospace;font-size:9px;color:var(--muted);letter-spacing:2px;margin-bottom:2px">BCSO</div><div style="font-size:13px">${o.responsableBcso||'—'}</div></div>
+          <div><div style="font-family:'IBM Plex Mono',monospace;font-size:9px;color:var(--text2);letter-spacing:2px;margin-bottom:2px">LSPD</div><div style="font-size:13px">${o.responsableLspd||'—'}</div></div>
+          <div><div style="font-family:'IBM Plex Mono',monospace;font-size:9px;color:var(--text2);letter-spacing:2px;margin-bottom:2px">BCSO</div><div style="font-size:13px">${o.responsableBcso||'—'}</div></div>
         </div>
         <div style="font-size:13px;line-height:1.6">${o.objectif||'—'}</div>
       </div>`).join('');
