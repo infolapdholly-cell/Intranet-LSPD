@@ -96,7 +96,7 @@ export async function initPage(auth, db, onAuthStateChanged, pageName) {
           const banner = document.createElement('div');
           banner.id = 'broadcastBanner';
           banner.className = 'broadcast-banner';
-          banner.innerHTML = '<span class="bb-title" id="bbTitle"></span><span id="bbBody"></span><button class="bb-close" onclick="document.getElementById('broadcastBanner').style.display='none'">×</button>';
+          banner.innerHTML = '<span class="bb-title" id="bbTitle"></span><span id="bbBody"></span><button class="bb-close" onclick="this.parentElement.style.display=\'none\'">×</button>';
           document.body.appendChild(banner);
           const { doc: docBC, onSnapshot: onSnapBC } = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js");
           onSnapBC(docBC(db, 'config', 'broadcast'), snap => {
