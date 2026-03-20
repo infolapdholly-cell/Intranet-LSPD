@@ -128,6 +128,66 @@ export async function initPage(auth, db, onAuthStateChanged, pageName) {
         });
       } catch(e) { console.warn('[ForceLogout watcher]', e); }
       // ────────────────────────────────────────────────────────
+
+      // ── WATCHER BROADCAST MESSAGE ────────────────────────────
+      const broadcastBypassPages = ['admin.html','index.html','maintenance.html'];
+      const currentPageBcast = window.location.pathname.split('/').pop() || '';
+      if (!broadcastBypassPages.some(p => currentPageBcast.endsWith(p))) {
+        try {
+          // Injecter le CSS de la bannière
+          const style = document.createElement('style');
+          style.textContent = `
+/* ── BANNIÈRE BROADCAST ── */
+.broadcast-banner {
+  position: fixed;
+  top: 48px; left: 0; right: 0;
+  z-index: 190;
+  padding: 10px 20px;
+  display: none;
+  align-items: center;
+  gap: 12px;
+  font-family: var(--mono);
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 1px;
+  box-shadow: 0 2px 12px rgba(0,0,0,.4);
+  animation: slideDown .3s ease;
+}
+@keyframes slideDown { from{transform:translateY(-100%);opacity:0} to{transform:none;opacity:1} }
+.broadcast-banner.warning { background:rgba(180,83,9,.92); color:#fff; border-bottom:1px solid var(--amber); }
+.broadcast-banner.info    { background:rgba(37,99,235,.92); color:#fff; border-bottom:1px solid var(--blue-b); }
+.broadcast-banner.danger  { background:rgba(185,28,28,.92); color:#fff; border-bottom:1px solid var(--red); }
+.broadcast-banner .bb-title { font-weight:700; margin-right:4px; }
+.broadcast-banner .bb-close { margin-left:auto; cursor:pointer; opacity:.7; font-size:16px; background:none; border:none; color:inherit; padding:0 4px; }
+.broadcast-banner .bb-close:hover { opacity:1; }
+`;
+          document.head.appendChild(style);
+
+          // Créer la bannière DOM
+          const banner = document.createElement('div');
+          banner.id = 'broadcastBanner';
+          banner.className = 'broadcast-banner';
+          banner.innerHTML = `<span class="bb-title" id="bbTitle"></span><span id="bbBody"></span><button class="bb-close" onclick="document.getElementById('broadcastBanner').style.display='none'">×</button>`;
+          document.body.appendChild(banner);
+
+          const { doc: docBcast, onSnapshot: onSnapBcast } = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js");
+          onSnapBcast(docBcast(db, 'config', 'broadcast'), snap => {
+            const b = document.getElementById('broadcastBanner');
+            if (!b) return;
+            if (snap.exists() && snap.data().active === true) {
+              const d = snap.data();
+              b.className = 'broadcast-banner ' + (d.type || 'warning');
+              document.getElementById('bbTitle').textContent = d.title ? d.title + ' —' : '';
+              document.getElementById('bbBody').textContent = d.body || '';
+              b.style.display = 'flex';
+            } else {
+              b.style.display = 'none';
+            }
+          });
+        } catch(e) { console.warn('[Broadcast watcher]', e); }
+      }
+      // ─────────────────────────────────────────────────────────
+
       resolve({ user, grade, name, perms });
     });
   });

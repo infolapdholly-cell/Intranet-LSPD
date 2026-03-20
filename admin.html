@@ -4,49 +4,51 @@
   <meta charset="UTF-8">
   <style>
 :root {
-  --bg:        #07090e;
-  --bg2:       #0b0f18;
-  --panel:     #0e1420;
-  --panel2:    #121a2c;
-  --panel3:    #172035;
-  --line:      #1c2a42;
-  --line2:     #243350;
-  --line3:     #2d3f5e;
-
-  --blue:      #2563eb;
-  --blue-b:    #3b82f6;
-  --blue-l:    #93bbfd;
-  --blue-dim:  rgba(37,99,235,.1);
-
-  --gold:      #b8913a;
-  --gold-l:    #d4aa58;
-  --gold-dim:  rgba(184,145,58,.1);
-
-  --green:     #16a34a;
-  --green-l:   #4ade80;
-  --green-dim: rgba(22,163,74,.1);
-
-  --red:       #b91c1c;
-  --red-l:     #f87171;
-  --red-dim:   rgba(185,28,28,.1);
-
-  --amber:     #b45309;
-  --amber-l:   #fbbf24;
-  --amber-dim: rgba(180,83,9,.1);
-
-  --purple:    #7c3aed;
-  --purple-l:  #a78bfa;
-
-  --text:      #c8d8f0;
-  --text2:     #6b82a0;
-  --text3:     #3d5070;
-
-  --mono: 'IBM Plex Mono', monospace;
-  --sans: 'IBM Plex Sans', sans-serif;
-
-  --radius:    4px;
-  --radius-md: 6px;
-  --radius-lg: 8px;
+  --bg: #05080f;
+  --bg2: #05080f;
+  --surface: #0c1220;
+  --surface2: #101a2e;
+  --surface3: #152038;
+  --panel: #0c1220;
+  --panel2: #101a2e;
+  --panel3: #152038;
+  --border: #1b3a5e;
+  --line: #1b3a5e;
+  --line2: #1b3a5e;
+  --border2: #1b3a5e;
+  --accent: #1458a0;
+  --accent-b: #2589d0;
+  --accent-l: #2589d0;
+  --accent-glow: rgba(37,137,208,.22);
+  --accent-dim: rgba(37,137,208,.12);
+  --blue: #1458a0;
+  --blue-b: #2589d0;
+  --blue-l: #2589d0;
+  --blue-dim: rgba(37,137,208,.12);
+  --gold: #c9aa4d;
+  --gold-l: #c9aa4d;
+  --gold-dim: rgba(201,170,77,.15);
+  --text: #dce8f4;
+  --text2: #445e7a;
+  --text3: #2d4260;
+  --muted: #445e7a;
+  --danger: #c0392b;
+  --danger-l: #e74c3c;
+  --red: #c0392b;
+  --red-l: #e74c3c;
+  --red-dim: rgba(192,57,43,.12);
+  --success: #1e9e56;
+  --green: #1e9e56;
+  --green-l: #1e9e56;
+  --green-dim: rgba(30,158,86,.12);
+  --warning: #d68910;
+  --amber: #d68910;
+  --amber-l: #d68910;
+  --amber-dim: rgba(214,137,16,.12);
+  --purple: #7d3c98;
+  --purple-l: #bf7df0;
+  --mono: 'Share Tech Mono', monospace;
+  --sans: 'Rajdhani', sans-serif;
 }
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
 html,body{height:100%;}
@@ -55,7 +57,7 @@ body{font-family:'IBM Plex Sans',sans-serif;background:var(--bg);color:var(--tex
   <link rel="icon" type="image/png" href="https://r2.fivemanage.com/XEcvh0aBGRYhLzNNcRsQI/lspdnouveau.png">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>LSPD — Administration</title>
-  <link rel="stylesheet" href="style.css?v=10">
+  <link rel="stylesheet" href="style.css?v=11">
   <style>
     .user-card { background:var(--panel); border:1px solid var(--line); border-radius:10px; padding:16px; display:flex; align-items:center; gap:16px; transition:all .2s; animation:fadeIn .3s ease; }
     .user-card:hover { border-color:var(--blue); }
@@ -159,9 +161,9 @@ body{font-family:'IBM Plex Sans',sans-serif;background:var(--bg);color:var(--tex
               ✓ Remettre en ligne
             </button>
             <div style="width:1px;height:20px;background:var(--line);margin:0 4px"></div>
-            <button class="btn btn-sm" onclick="forceDisconnectAll()"
-              style="background:rgba(180,83,9,.1);border:1px solid rgba(180,83,9,.35);color:var(--amber-l);font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:2px;cursor:pointer">
-              ⚡ Déconnecter tous les officiers
+            <button class="btn btn-sm" onclick="openModal('modalMessage')"
+              style="background:rgba(59,130,246,.1);border:1px solid rgba(59,130,246,.35);color:var(--blue-l);font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:2px;cursor:pointer">
+              📢 Envoyer un message
             </button>
             <button class="btn btn-sm" onclick="confirmClearLogs()"
               style="background:rgba(185,28,28,.1);border:1px solid rgba(185,28,28,.3);color:var(--red-l);font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:2px;cursor:pointer">
@@ -245,6 +247,46 @@ body{font-family:'IBM Plex Sans',sans-serif;background:var(--bg);color:var(--tex
     <div class="modal-footer">
       <button class="btn btn-ghost" onclick="closeModal('modalGrade')">Annuler</button>
       <button class="btn btn-primary" onclick="saveGrade()">Confirmer</button>
+    </div>
+  </div>
+</div>
+
+
+<!-- MODAL MESSAGE AUX OFFICIERS -->
+<div class="modal-bg" id="modalMessage">
+  <div class="modal" style="max-width:500px">
+    <div class="modal-head">
+      <div class="modal-title">📢 Message aux officiers</div>
+      <button class="modal-close" onclick="closeModal('modalMessage')">×</button>
+    </div>
+    <div class="modal-body">
+      <p style="font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--text2);letter-spacing:1px;margin-bottom:14px">
+        Ce message s'affichera immédiatement à tous les officiers connectés sous forme de bannière.
+      </p>
+      <div class="fg" style="margin-bottom:12px">
+        <label>Type de message</label>
+        <select id="msgType">
+          <option value="warning">⚠ Avertissement (orange)</option>
+          <option value="info">ℹ Information (bleu)</option>
+          <option value="danger">🔴 Urgence (rouge)</option>
+        </select>
+      </div>
+      <div class="fg" style="margin-bottom:12px">
+        <label>Titre</label>
+        <input id="msgTitle" placeholder="ex: Maintenance prévue à 20h00">
+      </div>
+      <div class="fg">
+        <label>Message</label>
+        <textarea id="msgBody" style="min-height:90px" placeholder="ex: Le site sera inaccessible de 20h00 à 21h00 pour maintenance. Merci de votre compréhension."></textarea>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('modalMessage')">Annuler</button>
+      <button class="btn btn-sm" onclick="clearBroadcast()"
+        style="background:rgba(185,28,28,.1);border:1px solid rgba(185,28,28,.3);color:var(--red-l);font-family:'IBM Plex Mono',monospace;font-size:9px">
+        🗑 Effacer le message
+      </button>
+      <button class="btn btn-primary" onclick="sendBroadcast()">📢 Envoyer</button>
     </div>
   </div>
 </div>
@@ -445,21 +487,35 @@ body{font-family:'IBM Plex Sans',sans-serif;background:var(--bg);color:var(--tex
     } catch(e) { showToast('Erreur: ' + e.message, 'error'); }
   };
 
-  window.forceDisconnectAll = async function() {
-    if (!confirm('Déconnecter TOUS les officiers actuellement en ligne (sauf vous) ?')) return;
+  // ── BROADCAST MESSAGE ────────────────────────────────────
+  window.sendBroadcast = async function() {
+    const title = document.getElementById('msgTitle').value.trim();
+    const body  = document.getElementById('msgBody').value.trim();
+    const type  = document.getElementById('msgType').value;
+    if (!title && !body) { showToast('Saisissez un titre ou un message', 'error'); return; }
     try {
-      const myUidNow = auth.currentUser?.uid;
-      // Écrire forceLogout:true sur chaque user en ligne (sauf soi-même)
-      // utils.js détecte ce flag et appelle signOut() sur leur navigateur
-      const onlineSnap = await getDocs(collection(db, 'online'));
-      const targets = onlineSnap.docs.filter(d => d.id !== myUidNow);
-      if (targets.length === 0) { showToast('Aucun officier en ligne', 'info'); return; }
-      const updates = targets.map(d => updateDoc(doc(db,'users',d.id), { forceLogout: true }));
-      await Promise.all(updates);
-      await addLog(db, 'Déconnexion forcée', `${targets.length} officier(s) déconnecté(s)`);
-      showToast(`${targets.length} officier(s) déconnecté(s) ✓`, 'success');
+      await setDoc(doc(db, 'config', 'broadcast'), {
+        title,
+        body,
+        type,
+        active: true,
+        sentAt: new Date().toISOString(),
+        sentBy: document.getElementById('tbName')?.textContent || 'Admin'
+      });
+      await addLog(db, 'Message diffusé', title || body.substring(0, 50));
+      closeModal('modalMessage');
+      showToast('Message envoyé à tous les officiers ✓', 'success');
     } catch(e) { showToast('Erreur: ' + e.message, 'error'); }
   };
+
+  window.clearBroadcast = async function() {
+    try {
+      await setDoc(doc(db, 'config', 'broadcast'), { active: false });
+      closeModal('modalMessage');
+      showToast('Message effacé ✓', 'success');
+    } catch(e) { showToast('Erreur: ' + e.message, 'error'); }
+  };
+  // ─────────────────────────────────────────────────────────
 
   window.confirmClearLogs = async function() {
     if (!confirm('Supprimer DÉFINITIVEMENT tous les logs ? Cette action est irréversible.')) return;
