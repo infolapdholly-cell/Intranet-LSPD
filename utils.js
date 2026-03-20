@@ -115,6 +115,60 @@ export async function initPage(auth, db, onAuthStateChanged, pageName) {
         });
       } catch(e) { console.warn('[ForceLogout]', e); }
       // ────────────────────────────────────────────────────────
+
+      // ── WATCHER BROADCAST MESSAGE ────────────────────────────
+      const bcastBypass = ['admin.html','index.html','maintenance.html'];
+      const curPageBcast = window.location.pathname.split('/').pop() || '';
+      if (!bcastBypass.some(function(p){ return curPageBcast.endsWith(p); })) {
+        try {
+          // Créer la bannière dans le DOM
+          const bStyle = document.createElement('style');
+          bStyle.textContent = [
+            '.bc-banner{position:fixed;top:52px;left:0;right:0;z-index:190;',
+            'padding:10px 20px;display:none;align-items:center;gap:12px;',
+            'font-family:"JetBrains Mono",monospace;font-size:11px;letter-spacing:1px;',
+            'box-shadow:0 2px 12px rgba(0,0,0,.4)}',
+            '.bc-banner.warning{background:rgba(196,125,16,.95);color:#fff;border-bottom:1px solid #c47d10}',
+            '.bc-banner.info{background:rgba(20,88,160,.95);color:#fff;border-bottom:1px solid #2589d0}',
+            '.bc-banner.danger{background:rgba(184,48,48,.95);color:#fff;border-bottom:1px solid #b83030}',
+            '.bc-title{font-weight:700;margin-right:4px}',
+            '.bc-close{margin-left:auto;cursor:pointer;opacity:.7;font-size:18px;background:none;border:none;color:inherit;padding:0 4px}'
+          ].join('');
+          document.head.appendChild(bStyle);
+
+          const bBanner = document.createElement('div');
+          bBanner.id = 'bcBanner';
+          bBanner.className = 'bc-banner';
+          const bTitle = document.createElement('span');
+          bTitle.className = 'bc-title';
+          bTitle.id = 'bcTitle';
+          const bBody = document.createElement('span');
+          bBody.id = 'bcBody';
+          const bClose = document.createElement('button');
+          bClose.className = 'bc-close';
+          bClose.textContent = '×';
+          bClose.onclick = function(){ bBanner.style.display = 'none'; };
+          bBanner.appendChild(bTitle);
+          bBanner.appendChild(bBody);
+          bBanner.appendChild(bClose);
+          document.body.appendChild(bBanner);
+
+          // Écouter Firestore
+          const { doc: docBC, onSnapshot: onSnapBC } = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js");
+          onSnapBC(docBC(db, 'config', 'broadcast'), function(snap) {
+            if (snap.exists() && snap.data().active === true) {
+              const d = snap.data();
+              bBanner.className = 'bc-banner ' + (d.type || 'warning');
+              bTitle.textContent = d.title ? d.title + ' —' : '';
+              bBody.textContent = d.body || '';
+              bBanner.style.display = 'flex';
+            } else {
+              bBanner.style.display = 'none';
+            }
+          });
+        } catch(e) { console.warn('[Broadcast]', e); }
+      }
+      // ────────────────────────────────────────────────────────
     resolve({ user, grade, name, perms });
     });
   });
