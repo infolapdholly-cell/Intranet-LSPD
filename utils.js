@@ -58,7 +58,7 @@ export async function initPage(auth, db, onAuthStateChanged, pageName) {
           blue: 'color:var(--accent-b);background:rgba(37,137,208,.12);border:1px solid rgba(37,137,208,.25)',
           gray: 'color:var(--text2);background:rgba(61,88,120,.12);border:1px solid rgba(61,88,120,.25)',
         };
-        gradeEl.style.cssText = (map[perms.color]||map.gray) + ';font-family:"JetBrains Mono",monospace;font-size:9px;padding:3px 9px;border-radius:3px;letter-spacing:1px;text-transform:uppercase';
+        gradeEl.style.cssText = (map[perms.color]||map.gray) + ';font-family:"JetBrains Mono",monospace;font-size:9px;padding:3px 9px;border-radius:3px;letter-spacing:1px;text-transform:uppercase';font-family:"IBM Plex Mono",monospace;font-size:8px;font-weight:600;padding:2px 6px;border-radius:2px;letter-spacing:1.5px;text-transform:uppercase';
       }
       if (nameEl) nameEl.textContent = name;
 
