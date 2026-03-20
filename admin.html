@@ -323,6 +323,7 @@ body{font-family:'IBM Plex Sans',sans-serif;background:var(--bg);color:var(--tex
   startClock('tbClock');
   setupModalClose();
   window.closeModal = closeModal;
+  window.openModal  = openModal;
 
   initPage(auth, db, onAuthStateChanged, 'admin').then(async ({ user, grade, name, perms }) => {
     myUid = user.uid;
