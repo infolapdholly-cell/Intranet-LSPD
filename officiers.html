@@ -2,62 +2,11 @@
 <html lang="fr">
 <head>
   <meta charset="UTF-8">
-  <style>
-:root {
-  --bg: #05080f;
-  --bg2: #05080f;
-  --surface: #0c1220;
-  --surface2: #101a2e;
-  --surface3: #152038;
-  --panel: #0c1220;
-  --panel2: #101a2e;
-  --panel3: #152038;
-  --border: #1b3a5e;
-  --line: #1b3a5e;
-  --line2: #1b3a5e;
-  --border2: #1b3a5e;
-  --accent: #1458a0;
-  --accent-b: #2589d0;
-  --accent-l: #2589d0;
-  --accent-glow: rgba(37,137,208,.22);
-  --accent-dim: rgba(37,137,208,.12);
-  --blue: #1458a0;
-  --blue-b: #2589d0;
-  --blue-l: #2589d0;
-  --blue-dim: rgba(37,137,208,.12);
-  --gold: #c9aa4d;
-  --gold-l: #c9aa4d;
-  --gold-dim: rgba(201,170,77,.15);
-  --text: #dce8f4;
-  --text2: #445e7a;
-  --text3: #2d4260;
-  --muted: #445e7a;
-  --danger: #c0392b;
-  --danger-l: #e74c3c;
-  --red: #c0392b;
-  --red-l: #e74c3c;
-  --red-dim: rgba(192,57,43,.12);
-  --success: #1e9e56;
-  --green: #1e9e56;
-  --green-l: #1e9e56;
-  --green-dim: rgba(30,158,86,.12);
-  --warning: #d68910;
-  --amber: #d68910;
-  --amber-l: #d68910;
-  --amber-dim: rgba(214,137,16,.12);
-  --purple: #7d3c98;
-  --purple-l: #bf7df0;
-  --mono: 'Share Tech Mono', monospace;
-  --sans: 'Rajdhani', sans-serif;
-}
-*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
-html,body{height:100%;}
-body{font-family:'IBM Plex Sans',sans-serif;background:var(--bg);color:var(--text);font-size:13px;line-height:1.5;}
-</style>
   <link rel="icon" type="image/png" href="https://r2.fivemanage.com/XEcvh0aBGRYhLzNNcRsQI/lspdnouveau.png">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>LSPD — Officiers</title>
-  <link rel="stylesheet" href="style.css?v=14">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css?v=15">
   <style>
     .officers-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(260px,1fr)); gap:16px; }
     .officer-card { background:var(--panel); border:1px solid var(--line); border-radius:10px; overflow:hidden; transition:all .2s; animation:fadeIn .3s ease both; }
@@ -66,14 +15,14 @@ body{font-family:'IBM Plex Sans',sans-serif;background:var(--bg);color:var(--tex
     .oc-header { display:flex; gap:14px; align-items:center; padding:16px; }
     .oc-photo { width:60px; height:60px; border-radius:50%; border:2px solid var(--line); background:var(--panel2); display:flex; align-items:center; justify-content:center; font-size:26px; flex-shrink:0; overflow:hidden; }
     .oc-photo img { width:100%; height:100%; object-fit:cover; border-radius:50%; }
-    .oc-name { font-family:'IBM Plex Mono',monospace; font-size:13px; font-weight:700; letter-spacing:1px; margin-bottom:4px; }
-    .oc-grade { font-family:'IBM Plex Mono',monospace; font-size:10px; color:var(--blue-b); letter-spacing:1px; margin-bottom:4px; }
+    .oc-name { font-family:'JetBrains Mono',monospace; font-size:13px; font-weight:700; letter-spacing:1px; margin-bottom:4px; }
+    .oc-grade { font-family:'JetBrains Mono',monospace; font-size:10px; color:var(--blue-b); letter-spacing:1px; margin-bottom:4px; }
     .oc-body { padding:0 16px 14px; border-top:1px solid var(--line); padding-top:12px; }
     .oc-row { display:flex; justify-content:space-between; margin-bottom:6px; font-size:12px; }
-    .oc-lbl { color:var(--text2); font-family:'IBM Plex Mono',monospace; font-size:10px; letter-spacing:1px; }
+    .oc-lbl { color:var(--text2); font-family:'JetBrains Mono',monospace; font-size:10px; letter-spacing:1px; }
     .oc-actions { display:flex; gap:6px; padding:10px 16px; border-top:1px solid var(--line); }
     .oc-actions button { flex:1; }
-    .locked-overlay { position:absolute; inset:0; background:rgba(5,8,15,.7); display:flex; align-items:center; justify-content:center; border-radius:10px; font-family:'IBM Plex Mono',monospace; font-size:12px; color:var(--text2); letter-spacing:2px; }
+    .locked-overlay { position:absolute; inset:0; background:rgba(5,8,15,.7); display:flex; align-items:center; justify-content:center; border-radius:10px; font-family:'JetBrains Mono',monospace; font-size:12px; color:var(--text2); letter-spacing:2px; }
     @keyframes fadeIn { from{opacity:0;transform:translateY(-4px)} to{opacity:1;transform:none} }
 
     /* GRADE BADGE COLORS */
@@ -197,8 +146,8 @@ body{font-family:'IBM Plex Sans',sans-serif;background:var(--bg);color:var(--tex
         <div class="fg"><label>Spécialité</label>
           <select id="oSpec">
             <option>Patrouille</option><option>SWAT</option>
-            <option>Détective</option><option>K9</option><option>Académy</option>
-            <option>Police Maritime</option>
+            <option>Circulation</option><option>Détective</option>
+            <option>Sous-cover</option><option>K9</option><option>Autre</option>
           </select>
         </div>
         <div class="fg"><label>Statut</label>
@@ -208,11 +157,13 @@ body{font-family:'IBM Plex Sans',sans-serif;background:var(--bg);color:var(--tex
           </select>
         </div>
         <div class="fg"><label>Date d'entrée</label><input type="date" id="oDate"></div>
-        <div class="fg"><label>Email</label><input type="email" id="oEmail" placeholder="officier@lspd.gov"></div>
+        <div class="fg"><label>Téléphone</label><input id="oTel" placeholder="ex: +1 (555) 000-0000"></div>
+        <div class="fg"><label>Email (confidentiel)</label><input type="email" id="oEmail" placeholder="officier@lspd.gov"></div>
         <div class="fg"><label>Photo URL</label><input id="oPhoto" placeholder="https://..."></div>
         <div class="fg"><label>UID Firebase (optionnel)</label><input id="oUid" placeholder="ex: 7hMrwe..."></div>
       </div>
-      <div class="fg"><label>Notes (dossier complet)</label><textarea id="oNotes" style="min-height:80px" placeholder="Informations confidentielles — visible uniquement par les grades supérieurs..."></textarea></div>
+      <div class="fg" style="margin-bottom:12px"><label>Matériel attribué (confidentiel)</label><textarea id="oMateriel" style="min-height:70px" placeholder="ex: Glock 17 #4821, AR-15 #1092, Gilet pare-balles, Radio P25..."></textarea></div>
+      <div class="fg"><label>Notes (dossier complet — confidentiel)</label><textarea id="oNotes" style="min-height:70px" placeholder="Informations confidentielles — visible uniquement par les grades supérieurs..."></textarea></div>
     </div>
     <div class="modal-footer">
       <button class="btn btn-ghost" onclick="closeModal('modalOfficier')">Annuler</button>
@@ -239,7 +190,7 @@ body{font-family:'IBM Plex Sans',sans-serif;background:var(--bg);color:var(--tex
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
   import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
   import { getFirestore, collection, addDoc, getDocs, doc, updateDoc, deleteDoc, query, orderBy, onSnapshot } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
-  import { initPage, startClock, showToast, openModal, closeModal, setupModalClose, statusBadge, addLog, getPerms, captureModal } from './utils.js?v=4';
+  import { initPage, startClock, showToast, openModal, closeModal, setupModalClose, statusBadge, addLog, getPerms, captureModal } from './utils.js?v=5';
 
   const firebaseConfig = {
     apiKey: "AIzaSyA4GxYd32GNs5EDjjm2UI1a0d25YxigMVU",
@@ -339,15 +290,15 @@ body{font-family:'IBM Plex Sans',sans-serif;background:var(--bg);color:var(--tex
             <div class="oc-grade" style="color:${gradeColor(o.grade)}">${o.grade||'—'}</div>
             <div style="margin-top:4px">
               ${isOnline 
-                ? '<span style="display:flex;align-items:center;gap:4px;font-family:IBM Plex Mono,monospace;font-size:10px;color:var(--green)"><span style="width:8px;height:8px;border-radius:50%;background:var(--green);display:inline-block;animation:pulse 1.5s infinite"></span>En ligne</span>'
-                : '<span style="display:flex;align-items:center;gap:4px;font-family:IBM Plex Mono,monospace;font-size:10px;color:var(--text2)"><span style="width:8px;height:8px;border-radius:50%;background:var(--text2);display:inline-block"></span>Hors service</span>'}
+                ? '<span style="display:flex;align-items:center;gap:4px;font-family:JetBrains Mono,monospace;font-size:10px;color:var(--green)"><span style="width:8px;height:8px;border-radius:50%;background:var(--green);display:inline-block;animation:pulse 1.5s infinite"></span>En ligne</span>'
+                : '<span style="display:flex;align-items:center;gap:4px;font-family:JetBrains Mono,monospace;font-size:10px;color:var(--text2)"><span style="width:8px;height:8px;border-radius:50%;background:var(--text2);display:inline-block"></span>Hors service</span>'}
             </div>
           </div>
         </div>
         <div class="oc-body">
-          <div class="oc-row"><span class="oc-lbl">MATRICULE</span><span style="font-family:'IBM Plex Mono',monospace;font-size:12px">${o.matricule||'—'}</span></div>
+          <div class="oc-row"><span class="oc-lbl">MATRICULE</span><span style="font-family:'JetBrains Mono',monospace;font-size:12px">${o.matricule||'—'}</span></div>
           <div class="oc-row"><span class="oc-lbl">SPÉCIALITÉ</span><span style="font-size:12px">${o.specialite||'—'}</span></div>
-          <div class="oc-row"><span class="oc-lbl">ENTRÉE</span><span style="font-family:'IBM Plex Mono',monospace;font-size:11px">${o.dateEntree||'—'}</span></div>
+          <div class="oc-row"><span class="oc-lbl">ENTRÉE</span><span style="font-family:'JetBrains Mono',monospace;font-size:11px">${o.dateEntree||'—'}</span></div>
         </div>
         <div class="oc-actions">
           <button class="btn btn-ghost btn-sm" onclick="viewOfficier('${o.id}')">👁️ Voir</button>
@@ -367,13 +318,13 @@ body{font-family:'IBM Plex Sans',sans-serif;background:var(--bg);color:var(--tex
         <td>${o.photoUrl?`<img src="${o.photoUrl}" style="width:36px;height:36px;border-radius:50%;object-fit:cover" onerror="this.outerHTML='<span style=font-size:20px>👮</span>'">`:'<span style="font-size:20px">👮</span>'}</td>
         <td><strong>${o.nom||'—'}</strong></td>
         <td style="font-size:12px;font-weight:700;color:${gradeColor(o.grade)}">${o.grade||'—'}</td>
-        <td style="font-family:'IBM Plex Mono',monospace;font-size:12px">${o.matricule||'—'}</td>
+        <td style="font-family:'JetBrains Mono',monospace;font-size:12px">${o.matricule||'—'}</td>
         <td style="font-size:12px">${o.specialite||'—'}</td>
         <td>${statusBadge(o.statut)}</td>
         <td>${isOnline
-          ? '<span style="display:flex;align-items:center;gap:4px;font-family:IBM Plex Mono,monospace;font-size:10px;color:var(--green)"><span style="width:8px;height:8px;border-radius:50%;background:var(--green);display:inline-block"></span>En ligne</span>'
-          : '<span style="display:flex;align-items:center;gap:4px;font-family:IBM Plex Mono,monospace;font-size:10px;color:var(--text2)"><span style="width:8px;height:8px;border-radius:50%;background:var(--text2);display:inline-block"></span>Hors service</span>'}</td>
-        <td style="font-family:'IBM Plex Mono',monospace;font-size:11px">${o.dateEntree||'—'}</td>
+          ? '<span style="display:flex;align-items:center;gap:4px;font-family:JetBrains Mono,monospace;font-size:10px;color:var(--green)"><span style="width:8px;height:8px;border-radius:50%;background:var(--green);display:inline-block"></span>En ligne</span>'
+          : '<span style="display:flex;align-items:center;gap:4px;font-family:JetBrains Mono,monospace;font-size:10px;color:var(--text2)"><span style="width:8px;height:8px;border-radius:50%;background:var(--text2);display:inline-block"></span>Hors service</span>'}</td>
+        <td style="font-family:'JetBrains Mono',monospace;font-size:11px">${o.dateEntree||'—'}</td>
         <td style="display:flex;gap:4px">
           <button class="btn btn-ghost btn-sm" onclick="viewOfficier('${o.id}')">👁️</button>
           ${userPerms.canWrite && userPerms.canEditOfficiers !== false?`<button class="btn btn-ghost btn-sm" onclick="editOfficier('${o.id}')">✏️</button>`:''}
@@ -410,32 +361,34 @@ body{font-family:'IBM Plex Sans',sans-serif;background:var(--bg);color:var(--tex
           ${o.photoUrl?`<img src="${o.photoUrl}" style="width:100%;height:100%;object-fit:cover" onerror="this.parentNode.innerHTML='👮'">`:'👮'}
         </div>
         <div style="flex:1">
-          <div style="font-family:'IBM Plex Mono',monospace;font-size:17px;font-weight:700;margin-bottom:5px">${o.nom||'—'}</div>
-          <div style="font-family:'IBM Plex Mono',monospace;font-size:12px;font-weight:700;color:${gradeColor(o.grade)};margin-bottom:8px">${o.grade||'—'}</div>
+          <div style="font-family:'JetBrains Mono',monospace;font-size:17px;font-weight:700;margin-bottom:5px">${o.nom||'—'}</div>
+          <div style="font-family:'JetBrains Mono',monospace;font-size:12px;font-weight:700;color:${gradeColor(o.grade)};margin-bottom:8px">${o.grade||'—'}</div>
           <div style="display:flex;gap:6px">${statusBadge(o.statut)}</div>
         </div>
       </div>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px">
-        <div><div style="font-family:'IBM Plex Mono',monospace;font-size:9px;color:var(--text2);letter-spacing:2px;margin-bottom:3px">MATRICULE</div><div style="font-family:'IBM Plex Mono',monospace;font-size:13px">${o.matricule||'—'}</div></div>
-        <div><div style="font-family:'IBM Plex Mono',monospace;font-size:9px;color:var(--text2);letter-spacing:2px;margin-bottom:3px">SPÉCIALITÉ</div><div style="font-size:13px">${o.specialite||'—'}</div></div>
-        <div><div style="font-family:'IBM Plex Mono',monospace;font-size:9px;color:var(--text2);letter-spacing:2px;margin-bottom:3px">DATE D'ENTRÉE</div><div style="font-family:'IBM Plex Mono',monospace;font-size:13px">${o.dateEntree||'—'}</div></div>
+        <div><div style="font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--text2);letter-spacing:2px;margin-bottom:3px">MATRICULE</div><div style="font-family:'JetBrains Mono',monospace;font-size:13px">${o.matricule||'—'}</div></div>
+        <div><div style="font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--text2);letter-spacing:2px;margin-bottom:3px">SPÉCIALITÉ</div><div style="font-size:13px">${o.specialite||'—'}</div></div>
+        <div><div style="font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--text2);letter-spacing:2px;margin-bottom:3px">DATE D'ENTRÉE</div><div style="font-family:'JetBrains Mono',monospace;font-size:13px">${o.dateEntree||'—'}</div></div>
+        <div><div style="font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--text2);letter-spacing:2px;margin-bottom:3px">TÉLÉPHONE</div><div style="font-family:'JetBrains Mono',monospace;font-size:13px;color:var(--gold)">${o.telephone||'—'}</div></div>
       </div>`;
 
     // Dossier complet — visible seulement par les grades avec canViewOfficierDossier
     if (userPerms.canViewOfficierDossier) {
       html += `
         <div style="background:rgba(201,170,77,.06);border:1px solid rgba(201,170,77,.2);border-radius:8px;padding:14px;margin-top:8px">
-          <div style="font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--gold);letter-spacing:3px;margin-bottom:12px">🔒 DOSSIER CONFIDENTIEL</div>
-          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px">
-            <div><div style="font-family:'IBM Plex Mono',monospace;font-size:9px;color:var(--text2);letter-spacing:2px;margin-bottom:3px">EMAIL</div><div style="font-size:13px;color:var(--blue-b)">${o.email||'—'}</div></div>
+          <div style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--gold);letter-spacing:3px;margin-bottom:12px">🔒 DOSSIER CONFIDENTIEL</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px">
+            <div><div style="font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--gold);opacity:.7;letter-spacing:2px;margin-bottom:3px">EMAIL</div><div style="font-size:13px;color:var(--accent-b)">${o.email||'—'}</div></div>
           </div>
-          ${o.notes?`<div><div style="font-family:'IBM Plex Mono',monospace;font-size:9px;color:var(--text2);letter-spacing:2px;margin-bottom:6px">NOTES INTERNES</div><div style="font-size:13px;padding:10px;background:var(--panel2);border-radius:5px;line-height:1.6">${o.notes}</div></div>`:''}
+          ${o.materiel?`<div style="margin-bottom:12px"><div style="font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--gold);opacity:.7;letter-spacing:2px;margin-bottom:6px">MATÉRIEL ATTRIBUÉ</div><div style="font-size:12px;padding:10px;background:rgba(201,168,76,.04);border:1px solid rgba(201,168,76,.15);border-radius:5px;line-height:1.8;font-family:'JetBrains Mono',monospace;white-space:pre-wrap">${o.materiel}</div></div>`:''}
+          ${o.notes?`<div><div style="font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--gold);opacity:.7;letter-spacing:2px;margin-bottom:6px">NOTES INTERNES</div><div style="font-size:13px;padding:10px;background:var(--surface2);border-radius:5px;line-height:1.6">${o.notes}</div></div>`:''}
         </div>`;
     } else {
       html += `
         <div style="background:rgba(68,94,122,.08);border:1px solid var(--line);border-radius:8px;padding:14px;margin-top:8px;text-align:center">
           <div style="font-size:24px;margin-bottom:6px">🔒</div>
-          <div style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--text2);letter-spacing:2px">DOSSIER CONFIDENTIEL — ACCÈS RESTREINT</div>
+          <div style="font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--text2);letter-spacing:2px">DOSSIER CONFIDENTIEL — ACCÈS RESTREINT</div>
           <div style="font-size:11px;color:var(--text2);margin-top:4px">Grade insuffisant pour voir les informations complètes</div>
         </div>`;
     }
@@ -451,7 +404,7 @@ body{font-family:'IBM Plex Sans',sans-serif;background:var(--bg);color:var(--tex
   function newOfficier() {
     editingId = null;
     document.getElementById('modalTitle').textContent = 'AJOUTER UN OFFICIER';
-    ['oNom','oMatricule','oEmail','oPhoto','oNotes'].forEach(id => document.getElementById(id).value='');
+    ['oNom','oMatricule','oEmail','oPhoto','oNotes','oTel','oMateriel'].forEach(id => document.getElementById(id).value='');
     document.getElementById('oGrade').value = 'Officier';
     document.getElementById('oSpec').value = 'Patrouille';
     document.getElementById('oStatut').value = 'Actif';
@@ -469,7 +422,9 @@ body{font-family:'IBM Plex Sans',sans-serif;background:var(--bg);color:var(--tex
     document.getElementById('oSpec').value = o.specialite||'Patrouille';
     document.getElementById('oStatut').value = o.statut||'Actif';
     document.getElementById('oDate').value = o.dateEntree||'';
+    document.getElementById('oTel').value = o.telephone||'';
     document.getElementById('oEmail').value = o.email||'';
+    document.getElementById('oMateriel').value = o.materiel||'';
     document.getElementById('oPhoto').value = o.photoUrl||'';
     document.getElementById('oUid').value = o.uid||'';
     document.getElementById('oNotes').value = o.notes||'';
@@ -486,8 +441,10 @@ body{font-family:'IBM Plex Sans',sans-serif;background:var(--bg);color:var(--tex
       specialite: document.getElementById('oSpec').value,
       statut: document.getElementById('oStatut').value,
       dateEntree: document.getElementById('oDate').value,
+      telephone: document.getElementById('oTel').value,
       email: document.getElementById('oEmail').value,
       photoUrl: document.getElementById('oPhoto').value,
+      materiel: document.getElementById('oMateriel').value,
       notes: document.getElementById('oNotes').value,
       updatedAt: new Date().toISOString()
     };
