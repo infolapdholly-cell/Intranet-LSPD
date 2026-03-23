@@ -1,309 +1,524 @@
-// ============================================================
-// utils.js — LSPD Intranet v8 — Ops Center
-// ============================================================
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <link rel="icon" type="image/png" href="https://r2.fivemanage.com/XEcvh0aBGRYhLzNNcRsQI/lspdnouveau.png">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LSPD — Officiers</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css?v=16">
+  <style>
+    .officers-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(260px,1fr)); gap:16px; }
+    .officer-card { background:var(--panel); border:1px solid var(--line); border-radius:10px; overflow:hidden; transition:all .2s; animation:fadeIn .3s ease both; }
 
-export const GRADES = {
-  'chef de police': { label:'Chef de Police', color:'gold', canRead:true,canWrite:true,canDelete:true,canAdmin:true,canLogs:true,canManageOfficers:true,canManageWeapons:true,canManageVehicles:true,canEditOfficiers:true,canViewOfficierDossier:true,canEtatMajor:true },
-  'chef assistant': { label:'Chef Assistant', color:'gold', canRead:true,canWrite:true,canDelete:true,canAdmin:true,canLogs:true,canManageOfficers:true,canManageWeapons:true,canManageVehicles:true,canEditOfficiers:true,canViewOfficierDossier:true,canEtatMajor:true },
-  'chef adjoint':   { label:'Chef Adjoint',   color:'gold', canRead:true,canWrite:true,canDelete:true,canAdmin:true,canLogs:true,canManageOfficers:true,canManageWeapons:true,canManageVehicles:true,canEditOfficiers:true,canViewOfficierDossier:true,canEtatMajor:true },
-  'commandant':     { label:'Commandant',      color:'gold', canRead:true,canWrite:true,canDelete:true,canAdmin:true,canLogs:true,canManageOfficers:true,canManageWeapons:true,canManageVehicles:true,canEditOfficiers:true,canViewOfficierDossier:true,canEtatMajor:true },
-  'capitaine':      { label:'Capitaine',       color:'blue', canRead:true,canWrite:true,canDelete:true,canAdmin:false,canLogs:true,canManageOfficers:true,canManageWeapons:true,canManageVehicles:true,canEditOfficiers:true,canViewOfficierDossier:true,canEtatMajor:true },
-  'lieutenant':     { label:'Lieutenant',      color:'blue', canRead:true,canWrite:true,canDelete:false,canAdmin:false,canLogs:true,canManageOfficers:true,canManageWeapons:false,canManageVehicles:false,canEditOfficiers:false,canViewOfficierDossier:false,canEtatMajor:false },
-  'sergent':        { label:'Sergent',         color:'blue', canRead:true,canWrite:true,canDelete:false,canAdmin:false,canLogs:true,canManageOfficers:true,canManageWeapons:false,canManageVehicles:false,canEditOfficiers:false,canViewOfficierDossier:false,canEtatMajor:false },
-  'officier':       { label:'Officier',        color:'blue', canRead:true,canWrite:true,canDelete:false,canAdmin:false,canLogs:false,canManageOfficers:true,canManageWeapons:false,canManageVehicles:false,canEditOfficiers:false,canViewOfficierDossier:false,canEtatMajor:false },
-  'cadet':          { label:'Cadet',           color:'gray', canRead:true,canWrite:false,canDelete:false,canAdmin:false,canLogs:false,canManageOfficers:true,canManageWeapons:false,canManageVehicles:false,canEditOfficiers:false,canViewOfficierDossier:false,canEtatMajor:false },
-  'invite':         { label:'Invité',          color:'gold', canRead:true,canWrite:true,canDelete:true,canAdmin:true,canLogs:true,canManageOfficers:true,canManageWeapons:true,canManageVehicles:true,canEditOfficiers:true,canViewOfficierDossier:true,canEtatMajor:true },
-  'admin':          { label:'Admin',           color:'gold', canRead:true,canWrite:true,canDelete:true,canAdmin:true,canLogs:true,canManageOfficers:true,canManageWeapons:true,canManageVehicles:true,canEditOfficiers:true,canViewOfficierDossier:true,canEtatMajor:true },
-};
+    .officer-card:hover { border-color:var(--blue); box-shadow:0 0 16px rgba(59,130,246,.15); transform:translateY(-2px); }
+    .oc-header { display:flex; gap:14px; align-items:center; padding:16px; }
+    .oc-photo { width:60px; height:60px; border-radius:50%; border:2px solid var(--line); background:var(--panel2); display:flex; align-items:center; justify-content:center; font-size:26px; flex-shrink:0; overflow:hidden; }
+    .oc-photo img { width:100%; height:100%; object-fit:cover; border-radius:50%; }
+    .oc-name { font-family:'JetBrains Mono',monospace; font-size:13px; font-weight:700; letter-spacing:1px; margin-bottom:4px; }
+    .oc-grade { font-family:'JetBrains Mono',monospace; font-size:10px; color:var(--blue-b); letter-spacing:1px; margin-bottom:4px; }
+    .oc-body { padding:0 16px 14px; border-top:1px solid var(--line); padding-top:12px; }
+    .oc-row { display:flex; justify-content:space-between; margin-bottom:6px; font-size:12px; }
+    .oc-lbl { color:var(--text2); font-family:'JetBrains Mono',monospace; font-size:10px; letter-spacing:1px; }
+    .oc-actions { display:flex; gap:6px; padding:10px 16px; border-top:1px solid var(--line); }
+    .oc-actions button { flex:1; }
+    .locked-overlay { position:absolute; inset:0; background:rgba(5,8,15,.7); display:flex; align-items:center; justify-content:center; border-radius:10px; font-family:'JetBrains Mono',monospace; font-size:12px; color:var(--text2); letter-spacing:2px; }
+    @keyframes fadeIn { from{opacity:0;transform:translateY(-4px)} to{opacity:1;transform:none} }
 
-export function getPerms(grade) {
-  const g = (grade||'').toLowerCase();
-  return GRADES[g] || { label:g||'Inconnu', color:'gray', canRead:true,canWrite:false,canDelete:false,canAdmin:false,canLogs:false,canManageOfficers:true,canManageWeapons:false,canManageVehicles:false,canEditOfficiers:false,canViewOfficierDossier:false,canEtatMajor:false };
-}
-
-// ── AUTH ──────────────────────────────────────────────────
-export async function initPage(auth, db, onAuthStateChanged, pageName) {
-  return new Promise((resolve) => {
-    onAuthStateChanged(auth, async user => {
-      if (!user) { window.location.href = 'index.html'; return; }
-      let grade = 'cadet', name = user.email;
-      try {
-        const { doc, getDoc } = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js");
-        const snap = await getDoc(doc(db, 'users', user.uid));
-        if (snap.exists()) {
-          const data = snap.data();
-          grade = (data.grade||'cadet').toLowerCase();
-          name  = data.displayName || user.email;
-          if (data.suspended) {
-            // Déconnecter proprement pour éviter la boucle de reconnexion
-            try {
-              const { signOut } = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js");
-              await signOut(auth);
-            } catch(e) {}
-            window.location.replace('index.html');
-            return;
-          }
-        }
-      } catch(e) { console.warn('Grade load failed:', e); }
-
-      const perms = getPerms(grade);
-
-      // Topbar — grade badge
-      const gradeEl = document.getElementById('tbGrade');
-      const nameEl  = document.getElementById('tbName');
-      if (gradeEl) {
-        gradeEl.textContent = perms.label || grade;
-        const map = {
-          gold: 'color:var(--gold-b);background:rgba(201,168,76,.12);border:1px solid rgba(201,168,76,.3)',
-          blue: 'color:var(--accent-b);background:rgba(37,137,208,.12);border:1px solid rgba(37,137,208,.25)',
-          gray: 'color:var(--text2);background:rgba(61,88,120,.12);border:1px solid rgba(61,88,120,.25)',
-        };
-        gradeEl.style.cssText = (map[perms.color]||map.gray) +
-          ';font-family:"JetBrains Mono",monospace;font-size:9px;padding:3px 9px;border-radius:3px;letter-spacing:1px;text-transform:uppercase';
-      }
-      if (nameEl) nameEl.textContent = name;
-
-      buildSidebar('sidebar', pageName, grade);
-
-      // ── LOGOUT global (BUG FIX — défini ici pour toutes les pages) ──
-      window.logout = async function() {
-        try {
-          const { signOut } = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js");
-          try {
-            const { doc: docFn, deleteDoc } = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js");
-            await deleteDoc(docFn(db, 'online', user.uid));
-          } catch(e) {}
-          await signOut(auth);
-        } catch(e) { console.warn('Logout error:', e); }
-        sessionStorage.clear();
-        localStorage.removeItem('lspd_grade');
-        localStorage.removeItem('lspd_name');
-        window.location.href = 'index.html';
-      };
-
-      // ── SIDEBAR TOGGLE global (BUG FIX — manquait dans toutes les pages) ──
-      window.toggleSidebar = function() {
-        document.getElementById('sidebar')?.classList.toggle('open');
-        document.getElementById('sidebarOverlay')?.classList.toggle('show');
-      };
-
-
+    /* GRADE BADGE COLORS */
+    .grade-or { color:var(--gold); }
+    .grade-bleu { color:var(--blue-b); }
+    .grade-gris { color:var(--text2); }
+  </style>
   
-      // ── WATCHER MAINTENANCE ──────────────────────────────────
-      const mtnBypass = ['maintenance.html','admin.html','index.html','change-password.html'];
-      const curPageMtn = window.location.pathname.split('/').pop() || '';
-      if (!mtnBypass.some(function(p){ return curPageMtn.endsWith(p); })) {
-        try {
-          const { doc: docM, onSnapshot: onSnapM } = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js");
-          onSnapM(docM(db, 'config', 'maintenance'), function(snap) {
-            if (snap.exists() && snap.data().enabled === true && grade !== 'chef de police') {
-              const d = snap.data();
-              window.location.replace('maintenance.html?' + new URLSearchParams({ msg: d.message||'', eta: d.eta||'', reason: d.reason||'' }).toString());
-            }
-          });
-        } catch(e) { console.warn('[Maintenance]', e); }
-      }
-      // ── WATCHER DÉCONNEXION FORCÉE ───────────────────────────
-      try {
-        const { doc: docFL, onSnapshot: onSnapFL, updateDoc: updFL } = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js");
-        onSnapFL(docFL(db, 'users', user.uid), async function(snap) {
-          if (snap.exists() && snap.data().forceLogout === true) {
-            try { await updFL(docFL(db, 'users', user.uid), { forceLogout: false }); } catch(e2) {}
-            try { const { signOut: so } = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js"); await so(auth); } catch(e2) {}
-            window.location.replace('index.html');
-          }
-        });
-      } catch(e) { console.warn('[ForceLogout]', e); }
-      // ────────────────────────────────────────────────────────
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="LSPD">
+  <meta name="theme-color" content="#2563eb">
+  <link rel="apple-touch-icon" href="https://r2.fivemanage.com/XEcvh0aBGRYhLzNNcRsQI/lspdnouveau.png">
+</head>
+<body>
+<div class="app-shell">
+<div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
+<div class="topbar">
+  <div class="tb-left">
+    <button class="tb-menu-btn" onclick="toggleSidebar()">☰</button>
+    <div class="tb-brand">
+      <div class="tb-shield"></div>
+      <img class="tb-logo" src="https://r2.fivemanage.com/XEcvh0aBGRYhLzNNcRsQI/lspdnouveau.png" alt="LSPD" onerror="this.style.display='none'">
+      <div class="tb-title">L.S.P.D</div>
+    </div>
+    <div class="tb-page">Officiers</div>
+  </div>
+  <div class="tb-right">
+    <div class="tb-status"><div class="live-dot"></div>En ligne</div>
+    <div class="tb-time" id="tbClock">--:--:--</div>
+    <div class="tb-user">
+      <span class="tb-grade" id="tbGrade">—</span>
+      <span class="tb-name" id="tbName">Officier</span>
+    </div>
+    <button class="btn-out" onclick="logout()">Quitter</button>
+  </div>
+</div>
+<div class="shell">
+    <div class="sidebar" id="sidebar"></div>
+    <div class="main">
 
-      // ── WATCHER BROADCAST MESSAGE ────────────────────────────
-      const bcastBypass = ['admin.html','index.html','maintenance.html'];
-      const curPageBcast = window.location.pathname.split('/').pop() || '';
-      if (!bcastBypass.some(function(p){ return curPageBcast.endsWith(p); })) {
-        try {
-          // Créer la bannière dans le DOM
-          const bStyle = document.createElement('style');
-          bStyle.textContent = [
-            '.bc-banner{position:fixed;top:52px;left:0;right:0;z-index:190;',
-            'padding:10px 20px;display:none;align-items:center;gap:12px;',
-            'font-family:"JetBrains Mono",monospace;font-size:11px;letter-spacing:1px;',
-            'box-shadow:0 2px 12px rgba(0,0,0,.4)}',
-            '.bc-banner.warning{background:rgba(196,125,16,.95);color:#fff;border-bottom:1px solid #c47d10}',
-            '.bc-banner.info{background:rgba(20,88,160,.95);color:#fff;border-bottom:1px solid #2589d0}',
-            '.bc-banner.danger{background:rgba(184,48,48,.95);color:#fff;border-bottom:1px solid #b83030}',
-            '.bc-title{font-weight:700;margin-right:4px}',
-            '.bc-close{margin-left:auto;cursor:pointer;opacity:.7;font-size:18px;background:none;border:none;color:inherit;padding:0 4px}'
-          ].join('');
-          document.head.appendChild(bStyle);
+      <div class="page-head">
+        <div class="page-head-left">
+          <h2>GESTION DES OFFICIERS</h2>
+          <p>// PERSONNEL DU DÉPARTEMENT — LOS SANTOS POLICE DEPARTMENT</p>
+        </div>
+        <div style="display:flex;gap:8px">
+          <button class="btn btn-ghost btn-sm" onclick="captureModal('detailBody')">📸 Capturer</button>
+          <button class="btn btn-primary" id="btnNew" style="display:none">+ Ajouter officier</button>
+        </div>
+      </div>
 
-          const bBanner = document.createElement('div');
-          bBanner.id = 'bcBanner';
-          bBanner.className = 'bc-banner';
-          const bTitle = document.createElement('span');
-          bTitle.className = 'bc-title';
-          bTitle.id = 'bcTitle';
-          const bBody = document.createElement('span');
-          bBody.id = 'bcBody';
-          const bClose = document.createElement('button');
-          bClose.className = 'bc-close';
-          bClose.textContent = '×';
-          bClose.onclick = function(){ bBanner.style.display = 'none'; };
-          bBanner.appendChild(bTitle);
-          bBanner.appendChild(bBody);
-          bBanner.appendChild(bClose);
-          document.body.appendChild(bBanner);
+      <!-- STATS -->
+      <div class="stats-grid" style="grid-template-columns:repeat(2,1fr)">
+        <div class="stat-box blue"><div class="stat-lbl">TOTAL OFFICIERS</div><div class="stat-val" id="sTotal">—</div></div>
+        <div class="stat-box green"><div class="stat-lbl">EN LIGNE</div><div class="stat-val" id="sEnLigne">—</div></div>
+      </div>
 
-          // Écouter Firestore
-          const { doc: docBC, onSnapshot: onSnapBC } = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js");
-          onSnapBC(docBC(db, 'config', 'broadcast'), function(snap) {
-            if (snap.exists() && snap.data().active === true) {
-              const d = snap.data();
-              bBanner.className = 'bc-banner ' + (d.type || 'warning');
-              bTitle.textContent = d.title ? d.title + ' —' : '';
-              bBody.textContent = d.body || '';
-              bBanner.style.display = 'flex';
-            } else {
-              bBanner.style.display = 'none';
-            }
-          });
-        } catch(e) { console.warn('[Broadcast]', e); }
-      }
-      // ────────────────────────────────────────────────────────
-    resolve({ user, grade, name, perms });
-    });
-  });
-}
+      <!-- TABS + SEARCH -->
+      <div style="display:flex;gap:8px;margin-bottom:16px">
+        <button class="btn btn-primary btn-sm" id="tabGrid" onclick="setView('grid',this)">⊞ Cartes</button>
+        <button class="btn btn-ghost btn-sm" id="tabList" onclick="setView('list',this)">☰ Liste</button>
+      </div>
 
-// ── SIDEBAR ───────────────────────────────────────────────
-export function buildSidebar(elementId, activePage, grade) {
-  const el = document.getElementById(elementId);
-  if (!el) return;
-  const p = getPerms(grade);
-  let h = '';
+      <div class="search-bar">
+        <input type="text" id="searchInput" placeholder="Rechercher par nom, grade, matricule..." oninput="filterOfficiers()">
 
-  h += `<div class="sb-section">Principal</div>`;
-  h += nav('dashboard', activePage, '◈', 'Tableau de bord', 'dashboard.html');
+        <select id="filterGrade" onchange="filterOfficiers()">
+          <option value="">Tous les grades</option>
+          <option>Chef de Police</option><option>Chef Assistant</option>
+          <option>Chef Adjoint</option><option>Commandant</option>
+          <option>Capitaine</option><option>Lieutenant</option>
+          <option>Sergent</option><option>Officier</option><option>Cadet</option>
+        </select>
+      </div>
 
-  if (p.canRead) {
-    h += `<div class="sb-divider"></div><div class="sb-section">Opérations</div>`;
-    h += nav('casiers',      activePage, '▤', 'Casiers judiciaires', 'casiers.html');
-    h += nav('arrestations', activePage, '◎', 'Arrestations',        'arrestations.html');
-    h += nav('amendes',      activePage, '◇', 'Amendes / PV',        'amendes.html');
-    h += nav('rapports',     activePage, '▣', 'Rapports',            'rapports.html');
-    h += nav('saisies',      activePage, '▨', 'Saisies',             'saisies.html');
-  }
+      <!-- GRID -->
+      <div id="viewGrid">
+        <div class="officers-grid" id="officersGrid">
+          <div class="empty-state"><div class="ei">👮</div><p>CHARGEMENT...</p></div>
+        </div>
+      </div>
 
-  h += `<div class="sb-divider"></div><div class="sb-section">Personnel</div>`;
-  h += nav('officiers', activePage, '▦', 'Officiers', 'officiers.html');
+      <!-- LIST -->
+      <div id="viewList" style="display:none">
+        <div class="card">
+          <div class="card-body" style="padding:0">
+            <div class="table-wrap">
+              <table>
+                <thead><tr><th>PHOTO</th><th>NOM</th><th>GRADE</th><th>MATRICULE</th><th>SPÉCIALITÉ</th><th>STATUT</th><th>ENTRÉE</th><th>ACTIONS</th></tr></thead>
+                <tbody id="officersList"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
 
-  if (p.canEtatMajor) {
-    h += `<div class="sb-divider"></div><div class="sb-section">État major</div>`;
-    if (p.canManageVehicles) h += nav('vehicules',  activePage, '◉', 'Véhicules',      'vehicules.html');
-    if (p.canManageWeapons)  h += nav('armurerie',  activePage, '▲', 'Armurerie',       'armurerie.html');
-    if (p.canLogs)           h += nav('logs',        activePage, '≡', 'Historique',     'logs.html');
-    if (p.canAdmin)          h += nav('admin',       activePage, '⊞', 'Administration', 'admin.html');
-  }
+<!-- MODAL FORM -->
+<div class="modal-bg" id="modalOfficier">
+  <div class="modal" style="max-width:650px">
+    <div class="modal-head">
+      <div class="modal-title" id="modalTitle">AJOUTER UN OFFICIER</div>
+      <button class="modal-close" onclick="closeModal('modalOfficier')">×</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-grid g2" style="margin-bottom:12px">
+        <div class="fg"><label>Nom complet</label><input id="oNom" placeholder="Prénom NOM"></div>
+        <div class="fg"><label>Matricule</label><input id="oMatricule" placeholder="ex: LSPD-0042"></div>
+        <div class="fg"><label>Grade</label>
+          <select id="oGrade">
+            <option>Chef de Police</option><option>Chef Assistant</option>
+            <option>Chef Adjoint</option><option>Commandant</option>
+            <option>Capitaine</option><option>Lieutenant</option>
+            <option>Sergent</option><option>Officier</option><option>Cadet</option>
+          </select>
+        </div>
+        <div class="fg"><label>Spécialité</label>
+          <select id="oSpec">
+            <option>Patrouille</option><option>SWAT</option>
+            <option>Circulation</option><option>Détective</option>
+            <option>Sous-cover</option><option>K9</option><option>Autre</option>
+          </select>
+        </div>
+        <div class="fg"><label>Statut</label>
+          <select id="oStatut">
+            <option>Actif</option><option>Hors service</option>
+            <option>Congé</option><option>Suspendu</option>
+          </select>
+        </div>
+        <div class="fg"><label>Date d'entrée</label><input type="date" id="oDate"></div>
+        <div class="fg"><label>Téléphone</label><input id="oTel" placeholder="ex: +1 (555) 000-0000"></div>
+        <div class="fg"><label>Email (confidentiel)</label><input type="email" id="oEmail" placeholder="officier@lspd.gov"></div>
+        <div class="fg"><label>Photo URL</label><input id="oPhoto" placeholder="https://..."></div>
+        <div class="fg"><label>UID Firebase (optionnel)</label><input id="oUid" placeholder="ex: 7hMrwe..."></div>
+      </div>
+      <div class="fg" style="margin-bottom:12px">
+        <label>Matériel attribué (confidentiel)</label>
+        <div id="materielList" style="display:flex;flex-direction:column;gap:5px;margin-bottom:7px"></div>
+        <div style="display:flex;gap:7px">
+          <input id="materielInput" placeholder="ex: Glock 17 #4821" style="flex:1;padding:7px 10px;background:var(--surface2);border:1px solid var(--border);border-radius:4px;color:var(--text);font-family:'JetBrains Mono',monospace;font-size:12px;outline:none"
+            onkeydown="if(event.key==='Enter'){event.preventDefault();addMaterielItem();}">
+          <button type="button" onclick="addMaterielItem()" style="padding:7px 14px;background:var(--gold);color:#0a0c12;border:none;border-radius:4px;font-family:'Inter',sans-serif;font-weight:700;font-size:13px;cursor:pointer">+</button>
+        </div>
+      </div>
+      <div class="fg"><label>Notes (dossier complet — confidentiel)</label><textarea id="oNotes" style="min-height:70px" placeholder="Informations confidentielles — visible uniquement par les grades supérieurs..."></textarea></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('modalOfficier')">Annuler</button>
+      <button class="btn btn-primary" onclick="saveOfficier()">Enregistrer</button>
+    </div>
+  </div>
+</div>
 
-  h += `<div class="sb-divider"></div><div class="sb-section">Réseau</div>`;
-  h += nav('interpolice', activePage, '↗', 'Interpolice', 'interpolice.html');
-  h += `<div class="sb-divider"></div>`;
-  h += `<a class="sb-item" href="#" onclick="event.preventDefault();window.logout()"><span class="sb-icon">⊘</span>Déconnexion</a>`;
+<!-- MODAL DETAIL -->
+<div class="modal-bg" id="modalDetail">
+  <div class="modal" style="max-width:600px">
+    <div class="modal-head">
+      <div class="modal-title" id="detailTitle">FICHE OFFICIER</div>
+      <button class="modal-close" onclick="closeModal('modalDetail')">×</button>
+    </div>
+    <div class="modal-body" id="detailBody"></div>
+    <div class="modal-footer" id="detailFooter"></div>
+  </div>
+</div>
 
-  el.innerHTML = h;
-}
+<div class="toast" id="toast"></div>
 
-function nav(key, active, icon, label, href) {
-  return `<a class="sb-item ${key===active?'active':''}" href="${href}"><span class="sb-icon">${icon}</span>${label}</a>`;
-}
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+  import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+  import { getFirestore, collection, addDoc, getDocs, doc, updateDoc, deleteDoc, query, orderBy, onSnapshot } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+  import { initPage, startClock, showToast, openModal, closeModal, setupModalClose, statusBadge, addLog, getPerms, captureModal } from './utils.js';
 
-// ── UTILITIES ─────────────────────────────────────────────
-export function startClock(id) {
-  const fn = () => { const el=document.getElementById(id); if(el) el.textContent=new Date().toLocaleTimeString('fr-FR'); };
-  fn(); setInterval(fn, 1000);
-}
-
-export function showToast(msg, type='success') {
-  let t = document.getElementById('toast');
-  if (!t) { t=document.createElement('div'); t.id='toast'; t.className='toast'; document.body.appendChild(t); }
-  const icons = { success:'✓', error:'✕', info:'ℹ' };
-  t.textContent = (icons[type]||'') + ' ' + msg;
-  t.className = 'toast '+type+' show';
-  clearTimeout(t._t);
-  t._t = setTimeout(() => t.classList.remove('show'), 3200);
-}
-
-export function openModal(id)  { document.getElementById(id)?.classList.add('open'); }
-export function closeModal(id) { document.getElementById(id)?.classList.remove('open'); }
-
-export function setupModalClose() {
-  document.querySelectorAll('.modal-bg').forEach(m =>
-    m.addEventListener('click', e => { if(e.target===m) m.classList.remove('open'); })
-  );
-}
-
-export function generateRef(prefix='REF') {
-  const n = new Date();
-  return `${prefix}-${n.getFullYear().toString().slice(-2)}${String(n.getMonth()+1).padStart(2,'0')}${String(n.getDate()).padStart(2,'0')}-${Math.floor(Math.random()*9000+1000)}`;
-}
-
-export function statusBadge(s) {
-  const map = {
-    'En vie':'b-alive','Mort':'b-dead','LSPD':'b-lspd',
-    'Actif':'b-active','Inactif':'b-inactive','Congé':'b-repair',
-    'Disponible':'b-active','Maintenance':'b-repair','Hors service':'b-dead',
-    'Ouvert':'b-open','Fermé':'b-closed',
-    'Payée':'b-paid','Impayée':'b-unpaid',
-    'En garde à vue':'b-wanted','Libéré':'b-alive','Transféré':'b-repair',
+  const firebaseConfig = {
+    apiKey: "AIzaSyA4GxYd32GNs5EDjjm2UI1a0d25YxigMVU",
+    authDomain: "lspd-intranet-2aed9.firebaseapp.com",
+    projectId: "lspd-intranet-2aed9",
+    storageBucket: "lspd-intranet-2aed9.firebasestorage.app",
+    messagingSenderId: "780922925382",
+    appId: "1:780922925382:web:a32d5e89bcff75bd8b3547"
   };
-  return `<span class="badge ${map[s]||'b-inactive'}">${s||'—'}</span>`;
-}
 
-export async function addLog(db, action, details) {
-  try {
-    const name = document.getElementById('tbName')?.textContent || 'Inconnu';
-    const { addDoc, collection } = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js");
-    await addDoc(collection(db,'logs'), { user:name, action, details, timestamp:new Date().toISOString() });
-  } catch(e) { console.warn('Log failed:',e); }
-}
+  const app = initializeApp(firebaseConfig);
+  const auth = getAuth(app);
+  const db = getFirestore(app);
+  let allOfficiers = [];
+  let onlineUsers = [];
+  let editingId = null;
+  let userGrade = 'cadet';
+  let userPerms = {};
 
-export function formatDate(d) {
-  if (!d) return '—';
-  try { return new Date(d).toLocaleDateString('fr-FR'); } catch(e) { return d; }
-}
-export function formatDateTime(d) {
-  if (!d) return '—';
-  try { return new Date(d).toLocaleString('fr-FR',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'}); } catch(e) { return d; }
-}
+  startClock('tbClock');
+  setupModalClose();
+  window.closeModal = closeModal;
+  window.captureModal = captureModal;
 
-// Legacy compat
-export function initTopbar() { return {}; }
-export function getSessionInfo() { return {}; }
-export function checkAuth(auth, fn) { return new Promise(r => fn(auth, u => { if(!u) window.location.href='index.html'; else r({user:u}); })); }
-export async function refreshGradeFromFirebase() {}
+  initPage(auth, db, onAuthStateChanged, 'officiers').then(async ({ grade, name, perms }) => {
+    userGrade = grade;
+    userPerms = perms;
 
-// ── SCREENSHOT ────────────────────────────────────────────
-export async function captureModal(modalBodyId) {
-  const el = document.getElementById(modalBodyId);
-  if (!el) { showToast('Élément introuvable','error'); return; }
-  if (!window.html2canvas) {
-    await new Promise((res,rej) => {
-      const s=document.createElement('script');
-      s.src='https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js';
-      s.onload=res; s.onerror=rej; document.head.appendChild(s);
+    // Bouton ajouter — seulement Capitaine et plus
+    if (perms.canWrite && perms.canManageOfficers && perms.canEditOfficiers !== false) {
+      document.getElementById('btnNew').style.display = '';
+      document.getElementById('btnNew').addEventListener('click', () => newOfficier());
+    }
+
+    document.getElementById('oDate').value = new Date().toISOString().split('T')[0];
+    await loadOfficiers();
+    listenOnline();
+  });
+
+  // Écoute en temps réel qui est connecté
+  function listenOnline() {
+    onSnapshot(collection(db, 'online'), snap => {
+      const now = new Date();
+      onlineUsers = snap.docs
+        .map(d => ({ id: d.id, ...d.data() }))
+        .filter(u => {
+          if (!u.lastSeen) return true;
+          return (now - new Date(u.lastSeen)) < 10 * 60 * 1000;
+        });
+      const enLigneEl = document.getElementById('sEnLigne');
+      if (enLigneEl) enLigneEl.textContent = onlineUsers.length;
+      renderAll(allOfficiers);
     });
   }
-  try {
-    showToast('Capture en cours...','info');
-    const canvas = await window.html2canvas(el, { backgroundColor:'#0e1420', scale:2, useCORS:true, logging:false });
-    canvas.toBlob(async blob => {
-      try {
-        await navigator.clipboard.write([new ClipboardItem({'image/png':blob})]);
-        showToast('Capture copiée — Ctrl+V sur Discord','success');
-      } catch(e) {
-        const a=document.createElement('a'); a.href=canvas.toDataURL('image/png');
-        a.download=`lspd-${Date.now()}.png`; a.click();
-        showToast('Image téléchargée','success');
+
+  async function loadOfficiers() {
+    try {
+      const snap = await getDocs(query(collection(db, 'officiers'), orderBy('nom')));
+      allOfficiers = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+      document.getElementById('sTotal').textContent = allOfficiers.length;
+      renderAll(allOfficiers);
+    } catch(e) { console.error(e); }
+  }
+
+  function gradeColor(g) {
+    const hauts = ['chef de police','chef assistant','chef adjoint','commandant','capitaine'];
+    const moyens = ['lieutenant','sergent','officier'];
+    const gl = (g||'').toLowerCase();
+    if (hauts.includes(gl)) return 'var(--gold)';
+    if (moyens.includes(gl)) return 'var(--blue-b)';
+    return 'var(--text2)';
+  }
+
+  function statutClass(s) {
+    if (s==='Actif') return 'actif';
+    if (s==='Congé') return 'conge';
+    if (s==='Suspendu') return 'suspendu';
+    return 'inactif';
+  }
+
+  function renderAll(list) {
+    renderGrid(list);
+    renderList(list);
+  }
+
+  function renderGrid(list) {
+    const grid = document.getElementById('officersGrid');
+    if (!list.length) { grid.innerHTML = '<div class="empty-state" style="grid-column:1/-1"><div class="ei">👮</div><p>AUCUN OFFICIER</p></div>'; return; }
+    grid.innerHTML = list.map(o => { const isOnline = onlineUsers.some(u => (u.displayName||'').toLowerCase().trim() === (o.nom||'').toLowerCase().trim()); return `
+      <div class="officer-card" style="border-color:${isOnline ? 'var(--green)' : 'var(--line)'}; box-shadow:${isOnline ? '0 0 16px rgba(30,158,86,.3)' : 'none'}">
+        <div class="oc-header">
+          <div class="oc-photo">
+            ${o.photoUrl?`<img src="${o.photoUrl}" onerror="this.parentNode.innerHTML='👮'">`:'👮'}
+          </div>
+          <div style="flex:1;min-width:0">
+            <div class="oc-name">${o.nom||'—'}</div>
+            <div class="oc-grade" style="color:${gradeColor(o.grade)}">${o.grade||'—'}</div>
+            <div style="margin-top:4px">
+              ${isOnline 
+                ? '<span style="display:flex;align-items:center;gap:4px;font-family:JetBrains Mono,monospace;font-size:10px;color:var(--green)"><span style="width:8px;height:8px;border-radius:50%;background:var(--green);display:inline-block;animation:pulse 1.5s infinite"></span>En ligne</span>'
+                : '<span style="display:flex;align-items:center;gap:4px;font-family:JetBrains Mono,monospace;font-size:10px;color:var(--text2)"><span style="width:8px;height:8px;border-radius:50%;background:var(--text2);display:inline-block"></span>Hors service</span>'}
+            </div>
+          </div>
+        </div>
+        <div class="oc-body">
+          <div class="oc-row"><span class="oc-lbl">MATRICULE</span><span style="font-family:'JetBrains Mono',monospace;font-size:12px">${o.matricule||'—'}</span></div>
+          <div class="oc-row"><span class="oc-lbl">SPÉCIALITÉ</span><span style="font-size:12px">${o.specialite||'—'}</span></div>
+          <div class="oc-row"><span class="oc-lbl">ENTRÉE</span><span style="font-family:'JetBrains Mono',monospace;font-size:11px">${o.dateEntree||'—'}</span></div>
+        </div>
+        <div class="oc-actions">
+          <button class="btn btn-ghost btn-sm" onclick="viewOfficier('${o.id}')">👁️ Voir</button>
+          ${userPerms.canWrite && userPerms.canEditOfficiers !== false?`<button class="btn btn-ghost btn-sm" onclick="editOfficier('${o.id}')">✏️</button>`:''}
+          ${userPerms.canDelete?`<button class="btn btn-danger btn-sm" onclick="deleteOfficier('${o.id}')">🗑️</button>`:''}
+        </div>
+      </div>`; }).join('');
+  }
+
+  function renderList(list) {
+    const tb = document.getElementById('officersList');
+    if (!list.length) { tb.innerHTML = '<tr><td colspan="8"><div class="empty-state"><div class="ei">👮</div><p>AUCUN OFFICIER</p></div></td></tr>'; return; }
+    tb.innerHTML = list.map(o => {
+      const isOnline = onlineUsers.some(u => (u.displayName||'').toLowerCase().trim() === (o.nom||'').toLowerCase().trim() || (o.uid && u.uid === o.uid));
+      return `
+      <tr>
+        <td>${o.photoUrl?`<img src="${o.photoUrl}" style="width:36px;height:36px;border-radius:50%;object-fit:cover" onerror="this.outerHTML='<span style=font-size:20px>👮</span>'">`:'<span style="font-size:20px">👮</span>'}</td>
+        <td><strong>${o.nom||'—'}</strong></td>
+        <td style="font-size:12px;font-weight:700;color:${gradeColor(o.grade)}">${o.grade||'—'}</td>
+        <td style="font-family:'JetBrains Mono',monospace;font-size:12px">${o.matricule||'—'}</td>
+        <td style="font-size:12px">${o.specialite||'—'}</td>
+        <td>${statusBadge(o.statut)}</td>
+        <td>${isOnline
+          ? '<span style="display:flex;align-items:center;gap:4px;font-family:JetBrains Mono,monospace;font-size:10px;color:var(--green)"><span style="width:8px;height:8px;border-radius:50%;background:var(--green);display:inline-block"></span>En ligne</span>'
+          : '<span style="display:flex;align-items:center;gap:4px;font-family:JetBrains Mono,monospace;font-size:10px;color:var(--text2)"><span style="width:8px;height:8px;border-radius:50%;background:var(--text2);display:inline-block"></span>Hors service</span>'}</td>
+        <td style="font-family:'JetBrains Mono',monospace;font-size:11px">${o.dateEntree||'—'}</td>
+        <td style="display:flex;gap:4px">
+          <button class="btn btn-ghost btn-sm" onclick="viewOfficier('${o.id}')">👁️</button>
+          ${userPerms.canWrite && userPerms.canEditOfficiers !== false?`<button class="btn btn-ghost btn-sm" onclick="editOfficier('${o.id}')">✏️</button>`:''}
+          ${userPerms.canDelete?`<button class="btn btn-danger btn-sm" onclick="deleteOfficier('${o.id}')">🗑️</button>`:''}
+        </td>
+      </tr>`;}).join('');
+  }
+
+  window.filterOfficiers = function() {
+    const q = document.getElementById('searchInput').value.toLowerCase();
+    const g = document.getElementById('filterGrade').value;
+    renderAll(allOfficiers.filter(o =>
+      (o.nom+' '+o.grade+' '+o.matricule).toLowerCase().includes(q) &&
+(!g||o.grade===g)
+    ));
+  };
+
+  window.setView = function(v, btn) {
+    document.getElementById('viewGrid').style.display = v==='grid'?'block':'none';
+    document.getElementById('viewList').style.display = v==='list'?'block':'none';
+    document.getElementById('tabGrid').className = v==='grid'?'btn btn-primary btn-sm':'btn btn-ghost btn-sm';
+    document.getElementById('tabList').className = v==='list'?'btn btn-primary btn-sm':'btn btn-ghost btn-sm';
+  };
+
+  window.viewOfficier = function(id) {
+    const o = allOfficiers.find(x=>x.id===id);
+    if (!o) return;
+    document.getElementById('detailTitle').textContent = o.nom||'OFFICIER';
+
+    // Infos de base — visibles par TOUS
+    let html = `
+      <div style="display:flex;gap:20px;align-items:flex-start;margin-bottom:20px">
+        <div style="width:88px;height:88px;border-radius:50%;overflow:hidden;border:3px solid var(--line);flex-shrink:0;background:var(--panel2);display:flex;align-items:center;justify-content:center;font-size:36px">
+          ${o.photoUrl?`<img src="${o.photoUrl}" style="width:100%;height:100%;object-fit:cover" onerror="this.parentNode.innerHTML='👮'">`:'👮'}
+        </div>
+        <div style="flex:1">
+          <div style="font-family:'JetBrains Mono',monospace;font-size:17px;font-weight:700;margin-bottom:5px">${o.nom||'—'}</div>
+          <div style="font-family:'JetBrains Mono',monospace;font-size:12px;font-weight:700;color:${gradeColor(o.grade)};margin-bottom:8px">${o.grade||'—'}</div>
+          <div style="display:flex;gap:6px">${statusBadge(o.statut)}</div>
+        </div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px">
+        <div><div style="font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--text2);letter-spacing:2px;margin-bottom:3px">MATRICULE</div><div style="font-family:'JetBrains Mono',monospace;font-size:13px">${o.matricule||'—'}</div></div>
+        <div><div style="font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--text2);letter-spacing:2px;margin-bottom:3px">SPÉCIALITÉ</div><div style="font-size:13px">${o.specialite||'—'}</div></div>
+        <div><div style="font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--text2);letter-spacing:2px;margin-bottom:3px">DATE D'ENTRÉE</div><div style="font-family:'JetBrains Mono',monospace;font-size:13px">${o.dateEntree||'—'}</div></div>
+        <div><div style="font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--text2);letter-spacing:2px;margin-bottom:3px">TÉLÉPHONE</div><div style="font-family:'JetBrains Mono',monospace;font-size:13px;color:var(--gold)">${o.telephone||'—'}</div></div>
+      </div>`;
+
+    // Dossier complet — visible seulement par les grades avec canViewOfficierDossier
+    if (userPerms.canViewOfficierDossier) {
+      html += `
+        <div style="background:rgba(201,170,77,.06);border:1px solid rgba(201,170,77,.2);border-radius:8px;padding:14px;margin-top:8px">
+          <div style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--gold);letter-spacing:3px;margin-bottom:12px">🔒 DOSSIER CONFIDENTIEL</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px">
+            <div><div style="font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--gold);opacity:.7;letter-spacing:2px;margin-bottom:3px">EMAIL</div><div style="font-size:13px;color:var(--accent-b)">${o.email||'—'}</div></div>
+          </div>
+          ${(o.materiel && o.materiel.length > 0)?`<div style="margin-bottom:12px"><div style="font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--gold);opacity:.7;letter-spacing:2px;margin-bottom:8px">MATÉRIEL ATTRIBUÉ</div><div style="display:flex;flex-direction:column;gap:4px">${o.materiel.map(function(item){ return '<div style="display:flex;align-items:center;gap:8px;padding:6px 10px;background:rgba(201,168,76,.04);border:1px solid rgba(201,168,76,.12);border-radius:4px;font-family:JetBrains Mono,monospace;font-size:11px"><span style=\"color:var(--gold);margin-right:2px\">▸</span>'+item+'</div>'; }).join('')}</div></div>`:''}
+          ${o.notes?`<div><div style="font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--gold);opacity:.7;letter-spacing:2px;margin-bottom:6px">NOTES INTERNES</div><div style="font-size:13px;padding:10px;background:var(--surface2);border-radius:5px;line-height:1.6">${o.notes}</div></div>`:''}
+        </div>`;
+    } else {
+      html += `
+        <div style="background:rgba(68,94,122,.08);border:1px solid var(--line);border-radius:8px;padding:14px;margin-top:8px;text-align:center">
+          <div style="font-size:24px;margin-bottom:6px">🔒</div>
+          <div style="font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--text2);letter-spacing:2px">DOSSIER CONFIDENTIEL — ACCÈS RESTREINT</div>
+          <div style="font-size:11px;color:var(--text2);margin-top:4px">Grade insuffisant pour voir les informations complètes</div>
+        </div>`;
+    }
+
+    document.getElementById('detailBody').innerHTML = html;
+    document.getElementById('detailFooter').innerHTML = `
+      <button class="btn btn-ghost" onclick="closeModal('modalDetail')">Fermer</button>
+      ${userPerms.canWrite && userPerms.canEditOfficiers !== false?`<button class="btn btn-primary" onclick="closeModal('modalDetail');editOfficier('${o.id}')">✏️ Modifier</button>`:''}
+    `;
+    openModal('modalDetail');
+  };
+
+  function newOfficier() {
+    editingId = null;
+    document.getElementById('modalTitle').textContent = 'AJOUTER UN OFFICIER';
+    ['oNom','oMatricule','oEmail','oPhoto','oNotes','oTel'].forEach(id => document.getElementById(id).value='');
+    document.getElementById('materielList').innerHTML = '';
+    document.getElementById('materielInput').value = '';
+    document.getElementById('oGrade').value = 'Officier';
+    document.getElementById('oSpec').value = 'Patrouille';
+    document.getElementById('oStatut').value = 'Actif';
+    openModal('modalOfficier');
+  }
+
+  window.editOfficier = function(id) {
+    const o = allOfficiers.find(x=>x.id===id);
+    if (!o) return;
+    editingId = id;
+    document.getElementById('modalTitle').textContent = 'MODIFIER OFFICIER';
+    document.getElementById('oNom').value = o.nom||'';
+    document.getElementById('oMatricule').value = o.matricule||'';
+    document.getElementById('oGrade').value = o.grade||'Officier';
+    document.getElementById('oSpec').value = o.specialite||'Patrouille';
+    document.getElementById('oStatut').value = o.statut||'Actif';
+    document.getElementById('oDate').value = o.dateEntree||'';
+    document.getElementById('oTel').value = o.telephone||'';
+    document.getElementById('oEmail').value = o.email||'';
+    // Charger la liste matériel
+    const ml = document.getElementById('materielList');
+    ml.innerHTML = '';
+    document.getElementById('materielInput').value = '';
+    (o.materiel || []).forEach(function(item){ addMaterielItemToList(item); });
+    document.getElementById('oPhoto').value = o.photoUrl||'';
+    document.getElementById('oUid').value = o.uid||'';
+    document.getElementById('oNotes').value = o.notes||'';
+    openModal('modalOfficier');
+  };
+
+  window.saveOfficier = async function() {
+    const nom = document.getElementById('oNom').value.trim();
+    if (!nom) { showToast('Le nom est obligatoire','error'); return; }
+    const payload = {
+      nom, uid: document.getElementById('oUid').value,
+      matricule: document.getElementById('oMatricule').value,
+      grade: document.getElementById('oGrade').value,
+      specialite: document.getElementById('oSpec').value,
+      statut: document.getElementById('oStatut').value,
+      dateEntree: document.getElementById('oDate').value,
+      telephone: document.getElementById('oTel').value,
+      email: document.getElementById('oEmail').value,
+      photoUrl: document.getElementById('oPhoto').value,
+      materiel: Array.from(document.getElementById('materielList').querySelectorAll('.mat-item-text')).map(function(el){ return el.textContent; }),
+      notes: document.getElementById('oNotes').value,
+      updatedAt: new Date().toISOString()
+    };
+    try {
+      if (editingId) {
+        await updateDoc(doc(db,'officiers',editingId), payload);
+        await addLog(db,'Officier modifié',nom);
+        showToast('Officier mis à jour','success');
+      } else {
+        payload.createdAt = new Date().toISOString();
+        await addDoc(collection(db,'officiers'), payload);
+        await addLog(db,'Officier ajouté',nom);
+        showToast('Officier ajouté','success');
       }
-    },'image/png');
-  } catch(e) { showToast('Erreur: '+e.message,'error'); }
-}
+      closeModal('modalOfficier'); editingId = null;
+      await loadOfficiers();
+    } catch(e) { showToast('Erreur: '+e.message,'error'); }
+  };
+
+  window.deleteOfficier = async function(id) {
+    if (!confirm('Supprimer cet officier ?')) return;
+    const o = allOfficiers.find(x=>x.id===id);
+    await deleteDoc(doc(db,'officiers',id));
+    await addLog(db,'Officier supprimé',o?.nom||'');
+    await loadOfficiers();
+    showToast('Officier supprimé','success');
+  };
+
+
+  // ── GESTION MATÉRIEL ────────────────────────────────────
+  window.addMaterielItem = function() {
+    const input = document.getElementById('materielInput');
+    const val = input.value.trim();
+    if (!val) return;
+    addMaterielItemToList(val);
+    input.value = '';
+    input.focus();
+  };
+
+  function addMaterielItemToList(text) {
+    const list = document.getElementById('materielList');
+    const item = document.createElement('div');
+    item.style.cssText = 'display:flex;align-items:center;gap:8px;padding:6px 10px;background:rgba(201,168,76,.05);border:1px solid rgba(201,168,76,.15);border-radius:4px;';
+    item.innerHTML = '<span style="color:var(--gold);font-family:JetBrains Mono,monospace;font-size:11px;flex:1" class="mat-item-text">' + text + '</span>'
+      + '<button type="button" onclick="this.parentElement.remove()" style="background:none;border:none;color:var(--danger-l);cursor:pointer;font-size:15px;padding:0;line-height:1;flex-shrink:0">×</button>';
+    list.appendChild(item);
+  }
+  // ────────────────────────────────────────────────────────
+  window.logout = async function() {
+    try {
+      const user = auth.currentUser;
+      if (user) {
+        await deleteDoc(doc(db, 'online', user.uid));
+      }
+    } catch(e) { console.warn('Logout online removal failed:', e); }
+    await signOut(auth);
+    sessionStorage.clear();
+    window.location.href = 'index.html';
+  };
+</script>
+
+</body>
+</html>
