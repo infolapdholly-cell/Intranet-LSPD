@@ -188,7 +188,7 @@
     await loadPDF();
   });
 
-  const DEFAULT_PDF_URL = 'https://drive.google.com/file/d/1hQ-woXGFjbv_rA8TIWaJBVUycLuoJ6FQ/preview';
+  const DEFAULT_PDF_URL = 'https://drive.google.com/uc?export=download&id=1hQ-woXGFjbv_rA8TIWaJBVUycLuoJ6FQ';
 
   async function loadPDF() {
     // Afficher le PDF par défaut immédiatement
@@ -204,8 +204,11 @@
 
   function showPDF(url, updatedAt) {
     const viewer = document.getElementById('pdfViewer');
-    // Afficher directement le lien Google Drive /preview en iframe
-    viewer.innerHTML = '<iframe src="' + url + '" class="pdf-viewer" allowfullscreen></iframe>';
+    // Utiliser Google Docs Viewer pour contourner les restrictions CSP de Drive
+    const fileId = url.includes('id=') ? url.split('id=')[1] : '1hQ-woXGFjbv_rA8TIWaJBVUycLuoJ6FQ';
+    const directUrl = 'https://drive.google.com/uc?export=download&id=' + fileId;
+    const viewerUrl = 'https://docs.google.com/viewer?url=' + encodeURIComponent(directUrl) + '&embedded=true';
+    viewer.innerHTML = '<iframe src="' + viewerUrl + '" class="pdf-viewer" allowfullscreen></iframe>';
 
     if (updatedAt) {
       const d = new Date(updatedAt);
