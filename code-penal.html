@@ -137,7 +137,7 @@
     </div>
     <div style="padding:20px">
       <p style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--text2);letter-spacing:1px;margin-bottom:14px;line-height:1.7">
-       https://drive.google.com/file/d/1hQ-woXGFjbv_rA8TIWaJBVUycLuoJ6FQ/view?usp=sharing.<br>
+        Colle ici le lien Google Drive de ton PDF.<br>
         Le lien doit être au format :<br>
         <span style="color:var(--gold)">https://drive.google.com/file/d/<strong>ID</strong>/preview</span>
       </p>
@@ -174,7 +174,6 @@
   const app     = initializeApp(FC);
   const auth    = getAuth(app);
   const db      = getFirestore(app);
-  const storage = getStorage(app);
 
   startClock('tbClock');
 
@@ -189,27 +188,18 @@
     await loadPDF();
   });
 
-  // URL par défaut du PDF
   const DEFAULT_PDF_URL = 'https://drive.google.com/file/d/1hQ-woXGFjbv_rA8TIWaJBVUycLuoJ6FQ/preview';
 
   async function loadPDF() {
+    // Afficher le PDF par défaut immédiatement
+    showPDF(DEFAULT_PDF_URL, null);
+    // Vérifier si une URL différente est dans Firestore
     try {
       const snap = await getDoc(doc(db, 'config', 'codePenal'));
       if (snap.exists() && snap.data().url) {
         showPDF(snap.data().url, snap.data().updatedAt);
-      } else {
-        // Utiliser l'URL par défaut et la sauvegarder dans Firestore
-        await setDoc(doc(db, 'config', 'codePenal'), {
-          url: DEFAULT_PDF_URL,
-          updatedAt: new Date().toISOString(),
-          updatedBy: 'Système'
-        });
-        showPDF(DEFAULT_PDF_URL, null);
       }
-    } catch(e) {
-      // En cas d'erreur, afficher quand même le PDF par défaut
-      showPDF(DEFAULT_PDF_URL, null);
-    }
+    } catch(e) { /* continuer avec l'URL par défaut */ }
   }
 
   function showPDF(url, updatedAt) {
