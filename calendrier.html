@@ -30,7 +30,10 @@
     .cal-event.type-briefing   { background:rgba(201,168,76,.2); color:var(--gold-b); border-left:2px solid var(--gold); }
     .cal-event.type-formation  { background:rgba(26,158,86,.2);  color:#4ade80; border-left:2px solid var(--success); }
     .cal-event.type-operation  { background:rgba(184,48,48,.2);  color:#f87070; border-left:2px solid var(--danger); }
-    .cal-event.type-autre      { background:rgba(61,88,120,.2);  color:var(--text2); border-left:2px solid var(--border2); }
+    .cal-event.type-autre          { background:rgba(61,88,120,.2);  color:var(--text2); border-left:2px solid var(--border2); }
+    .cal-event.type-interrogatoire { background:rgba(125,60,152,.2);  color:#bf7df0; border-left:2px solid #7d3c98; }
+    .cal-event.type-plainte        { background:rgba(180,83,9,.2);    color:var(--gold-b); border-left:2px solid var(--warning); }
+    .cal-event.type-convocation    { background:rgba(184,48,48,.15);  color:#ff9090; border-left:2px solid #c05050; }
     .cal-nav { display:flex; align-items:center; gap:12px; }
     .cal-nav button { background:transparent; border:1px solid var(--border2); border-radius:4px; color:var(--text2); width:30px; height:30px; cursor:pointer; font-size:14px; transition:all .15s; }
     .cal-nav button:hover { border-color:var(--gold); color:var(--gold); }
@@ -96,6 +99,9 @@
             <div class="legend-item"><div class="legend-dot" style="background:var(--success)"></div>Formation</div>
             <div class="legend-item"><div class="legend-dot" style="background:var(--danger)"></div>Opération</div>
             <div class="legend-item"><div class="legend-dot" style="background:var(--border2)"></div>Autre</div>
+            <div class="legend-item"><div class="legend-dot" style="background:#7d3c98"></div>Interrogatoire</div>
+            <div class="legend-item"><div class="legend-dot" style="background:var(--warning)"></div>Plainte</div>
+            <div class="legend-item"><div class="legend-dot" style="background:#c05050"></div>Convocation</div>
           </div>
         </div>
       </div>
@@ -141,8 +147,15 @@
           <option value="briefing">📋 Briefing</option>
           <option value="formation">🎓 Formation</option>
           <option value="operation">⚡ Opération</option>
+          <option value="interrogatoire">🔍 Interrogatoire</option>
+          <option value="plainte">📝 Dépôt de plainte</option>
+          <option value="convocation">⚖️ Convocation à comparaître</option>
           <option value="autre">📌 Autre</option>
         </select>
+      </div>
+      <div class="fg">
+        <label>Agent responsable</label>
+        <input id="evAgent" placeholder="Nom de l'agent...">
       </div>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
         <div class="fg">
@@ -265,7 +278,7 @@
       });
 
       const evHtml = dayEvents.slice(0,3).map(function(e) {
-        return '<div class="cal-event type-' + (e.type||'autre') + '" onclick="event.stopPropagation();openEditEvent(\'' + e.id + '\')" title="' + (e.title||'') + '">' + (e.title||'') + '</div>';
+        var agentStr = e.agent ? ' — ' + e.agent : ''; return '<div class="cal-event type-' + (e.type||'autre') + '" onclick="event.stopPropagation();openEditEvent(\'' + e.id + '\')" title="' + (e.title||'') + agentStr + '">' + (e.title||'') + '</div>';
       }).join('') + (dayEvents.length > 3 ? '<div style="font-size:9px;color:var(--text3);font-family:JetBrains Mono,monospace;padding:1px 4px">+' + (dayEvents.length-3) + ' autres</div>' : '');
 
       html += '<div class="cal-cell' + (isToday?' today':'') + (otherMonth?' other-month':'') + '" onclick="openNewEventOnDate(\'' + dateStr + '\')">'
@@ -301,6 +314,7 @@
     document.getElementById('modalEventTitle').textContent = '📅 Nouvel événement';
     document.getElementById('btnDeleteEvent').style.display = 'none';
     document.getElementById('evTitle').value = '';
+    document.getElementById('evAgent').value = document.getElementById('tbName')?.textContent || '';
     document.getElementById('evType').value  = 'patrouille';
     document.getElementById('evDesc').value  = '';
     const now = new Date(); now.setMinutes(0,0,0);
@@ -314,6 +328,7 @@
 
   window.openNewEventOnDate = function(dateStr) {
     window.openNewEvent();
+    document.getElementById('evAgent').value = document.getElementById('tbName')?.textContent || '';
     document.getElementById('evStart').value = dateStr + 'T08:00';
     document.getElementById('evEnd').value   = dateStr + 'T09:00';
   };
@@ -326,6 +341,7 @@
     document.getElementById('btnDeleteEvent').style.display = userPerms.canDelete ? 'block' : 'none';
     document.getElementById('evTitle').value = e.title || '';
     document.getElementById('evType').value  = e.type  || 'autre';
+    document.getElementById('evAgent').value = e.agent || '';
     document.getElementById('evDesc').value  = e.description || '';
     document.getElementById('evStart').value = e.start ? e.start.slice(0,16) : '';
     document.getElementById('evEnd').value   = e.end   ? e.end.slice(0,16)   : '';
@@ -349,6 +365,7 @@
       start:       start,
       end:         document.getElementById('evEnd').value,
       description: document.getElementById('evDesc').value.trim(),
+      agent:       document.getElementById('evAgent').value.trim(),
       createdBy:   document.getElementById('tbName')?.textContent || 'Officier',
       updatedAt:   new Date().toISOString()
     };
