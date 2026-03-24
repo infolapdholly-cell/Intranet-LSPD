@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="icon" type="image/png" href="https://r2.fivemanage.com/XEcvh0aBGRYhLzNNcRsQI/lspdnouveau.png">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LSPD — Calendrier</title>
+  <link rel="stylesheet" href="style.css?v=15">
+  <style>
+    .cal-container {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      overflow: hidden;
+      position: relative;
+    }
+    .cal-container::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 2px;
+      background: linear-gradient(90deg, transparent, var(--gold), transparent);
+    }
+    .cal-iframe {
+      width: 100%;
+      height: calc(100vh - 200px);
+      min-height: 500px;
+      border: none;
+      display: block;
+    }
+    .cal-placeholder {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: calc(100vh - 200px);
+      min-height: 500px;
+      gap: 16px;
+      color: var(--text2);
+    }
+    .cal-placeholder .icon { font-size: 48px; opacity: .3; }
+    .cal-placeholder p {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--text3);
+    }
+    .cal-placeholder code {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      color: var(--gold);
+      background: rgba(201,168,76,.08);
+      border: 1px solid rgba(201,168,76,.2);
+      border-radius: 4px;
+      padding: 4px 10px;
+    }
+  </style>
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="theme-color" content="#05080f">
+</head>
+<body>
+<div class="app-shell">
+<div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
+<div class="topbar">
+  <div class="tb-left">
+    <button class="tb-menu-btn" onclick="toggleSidebar()">☰</button>
+    <div class="tb-brand">
+      <div class="tb-shield"></div>
+      <img class="tb-logo" src="https://r2.fivemanage.com/XEcvh0aBGRYhLzNNcRsQI/lspdnouveau.png" alt="LSPD" onerror="this.style.display='none'">
+      <div class="tb-title">L.S.P.D</div>
+    </div>
+    <div class="tb-page">Calendrier</div>
+  </div>
+  <div class="tb-right">
+    <div class="tb-status"><div class="live-dot"></div>En ligne</div>
+    <div class="tb-time" id="tbClock">--:--:--</div>
+    <div class="tb-user">
+      <span class="tb-grade" id="tbGrade">—</span>
+      <span class="tb-name" id="tbName">Officier</span>
+    </div>
+    <button class="btn-out" onclick="logout()">Quitter</button>
+  </div>
+</div>
+<div class="shell">
+  <div class="sidebar" id="sidebar"></div>
+  <div class="main">
+
+    <div class="page-head">
+      <div class="page-head-left">
+        <h2>Calendrier</h2>
+        <p>// Planning & événements — Los Santos Police Department</p>
+      </div>
+    </div>
+
+    <div class="cal-container">
+      <!-- ══════════════════════════════════════════════════════
+           COLLE TON LIEN GOOGLE CALENDAR ICI
+           Remplace VOTRE_LIEN_ICI par ton URL d'intégration
+           Format : https://calendar.google.com/calendar/embed?src=...
+      ══════════════════════════════════════════════════════ -->
+      <div id="calContent">
+        <div class="cal-placeholder">
+          <div class="icon">📅</div>
+          <p>Calendrier non configuré</p>
+          <p>Remplace l'URL dans calendrier.html</p>
+          <code>VOTRE_LIEN_ICI</code>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+</div>
+<div class="toast" id="toast"></div>
+
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+  import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+  import { getFirestore } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+  import { initPage, startClock } from './utils.js';
+
+  const FC = {
+    apiKey:"AIzaSyA4GxYd32GNs5EDjjm2UI1a0d25YxigMVU",
+    authDomain:"lspd-intranet-2aed9.firebaseapp.com",
+    projectId:"lspd-intranet-2aed9",
+    storageBucket:"lspd-intranet-2aed9.firebasestorage.app",
+    messagingSenderId:"780922925382",
+    appId:"1:780922925382:web:a32d5e89bcff75bd8b3547"
+  };
+
+  const app  = initializeApp(FC);
+  const auth = getAuth(app);
+  const db   = getFirestore(app);
+
+  startClock('tbClock');
+  initPage(auth, db, onAuthStateChanged, 'calendrier').then(() => {
+
+    // ══════════════════════════════════════════════════════════
+    // COLLE ICI TON LIEN GOOGLE CALENDAR
+    // Exemple : 'https://calendar.google.com/calendar/embed?src=ton_id%40group.calendar.google.com&ctz=America%2FToronto'
+    const CALENDAR_URL = 'VOTRE_LIEN_ICI';
+    // ══════════════════════════════════════════════════════════
+
+    if (CALENDAR_URL !== 'VOTRE_LIEN_ICI') {
+      const container = document.getElementById('calContent');
+      const iframe = document.createElement('iframe');
+      iframe.src = CALENDAR_URL + '&color=%23C9A84C&showTitle=0&showNav=1&showDate=1&showPrint=0&showTabs=1&showCalendars=0';
+      iframe.className = 'cal-iframe';
+      iframe.setAttribute('frameborder', '0');
+      iframe.setAttribute('scrolling', 'no');
+      container.innerHTML = '';
+      container.appendChild(iframe);
+    }
+  });
+</script>
+</body>
+</html>

@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="icon" type="image/png" href="https://r2.fivemanage.com/XEcvh0aBGRYhLzNNcRsQI/lspdnouveau.png">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LSPD — Code Pénal</title>
+  <link rel="stylesheet" href="style.css?v=15">
+  <style>
+    .pdf-container {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      overflow: hidden;
+      position: relative;
+    }
+    .pdf-container::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 2px;
+      background: linear-gradient(90deg, transparent, var(--gold), transparent);
+      z-index: 1;
+    }
+    .pdf-viewer {
+      width: 100%;
+      height: calc(100vh - 200px);
+      min-height: 600px;
+      border: none;
+      display: block;
+    }
+    .pdf-empty {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: calc(100vh - 200px);
+      min-height: 400px;
+      gap: 14px;
+    }
+    .pdf-empty .icon { font-size: 52px; opacity: .25; }
+    .pdf-empty p {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--text3);
+    }
+    .pdf-toolbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 16px;
+      border-bottom: 1px solid var(--border);
+      background: var(--surface2);
+    }
+    .pdf-title {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      color: var(--gold);
+      letter-spacing: 2px;
+      text-transform: uppercase;
+    }
+  </style>
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="theme-color" content="#05080f">
+</head>
+<body>
+<div class="app-shell">
+<div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
+<div class="topbar">
+  <div class="tb-left">
+    <button class="tb-menu-btn" onclick="toggleSidebar()">☰</button>
+    <div class="tb-brand">
+      <div class="tb-shield"></div>
+      <img class="tb-logo" src="https://r2.fivemanage.com/XEcvh0aBGRYhLzNNcRsQI/lspdnouveau.png" alt="LSPD" onerror="this.style.display='none'">
+      <div class="tb-title">L.S.P.D</div>
+    </div>
+    <div class="tb-page">Code Pénal</div>
+  </div>
+  <div class="tb-right">
+    <div class="tb-status"><div class="live-dot"></div>En ligne</div>
+    <div class="tb-time" id="tbClock">--:--:--</div>
+    <div class="tb-user">
+      <span class="tb-grade" id="tbGrade">—</span>
+      <span class="tb-name" id="tbName">Officier</span>
+    </div>
+    <button class="btn-out" onclick="logout()">Quitter</button>
+  </div>
+</div>
+<div class="shell">
+  <div class="sidebar" id="sidebar"></div>
+  <div class="main">
+
+    <div class="page-head">
+      <div class="page-head-left">
+        <h2>Code Pénal</h2>
+        <p>// Législation — Los Santos Police Department</p>
+      </div>
+      <div style="display:flex;gap:8px;align-items:center">
+
+        <div id="adminUpload" style="display:none">
+          <button onclick="openUrlModal()" style="padding:7px 14px;background:var(--gold-dim);border:1px solid rgba(201,168,76,.3);border-radius:5px;color:var(--gold);font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:1px;cursor:pointer;text-transform:uppercase">
+            🔗 Modifier l'URL du PDF
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div class="pdf-container">
+      <div class="pdf-toolbar">
+        <span class="pdf-title" id="pdfTitle">Code Pénal — Los Santos</span>
+        <span id="pdfMeta" style="font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--text3)"></span>
+      </div>
+      <div id="pdfViewer">
+        <div class="pdf-empty" id="pdfEmpty">
+          <div class="icon">📄</div>
+          <p>Aucun document disponible</p>
+          <p id="emptySubtext">En attente de l'upload par un administrateur</p>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+</div>
+
+<!-- MODAL URL PDF -->
+<div class="modal-bg" id="modalUrl" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:500;align-items:center;justify-content:center;backdrop-filter:blur(2px)">
+  <div style="background:var(--surface);border:1px solid var(--border2);border-radius:10px;width:100%;max-width:520px;padding:0;position:relative;overflow:hidden">
+    <div style="height:2px;background:linear-gradient(90deg,transparent,var(--gold),transparent)"></div>
+    <div style="padding:18px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between">
+      <span style="font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:600;letter-spacing:2px;color:var(--gold);text-transform:uppercase">🔗 URL du Code Pénal</span>
+      <button onclick="closeUrlModal()" style="background:none;border:none;color:var(--text2);font-size:20px;cursor:pointer">×</button>
+    </div>
+    <div style="padding:20px">
+      <p style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--text2);letter-spacing:1px;margin-bottom:14px;line-height:1.7">
+        Colle ici le lien Google Drive de ton PDF.<br>
+        Le lien doit être au format :<br>
+        <span style="color:var(--gold)">https://drive.google.com/file/d/<strong>ID</strong>/preview</span>
+      </p>
+      <div style="display:flex;flex-direction:column;gap:5px;margin-bottom:16px">
+        <label style="font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--gold);opacity:.7;letter-spacing:2px;text-transform:uppercase">URL du PDF</label>
+        <input id="pdfUrlInput" placeholder="https://drive.google.com/file/d/.../preview"
+          style="padding:9px 11px;background:var(--surface2);border:1px solid var(--border);border-radius:5px;color:var(--text);font-family:'JetBrains Mono',monospace;font-size:12px;outline:none;width:100%">
+      </div>
+      <div style="display:flex;justify-content:flex-end;gap:8px">
+        <button onclick="closeUrlModal()" style="padding:8px 16px;background:transparent;border:1px solid var(--border2);border-radius:5px;color:var(--text2);font-family:'Inter',sans-serif;font-size:12px;cursor:pointer">Annuler</button>
+        <button onclick="saveUrl()" style="padding:8px 16px;background:var(--gold);color:#0a0c12;border:none;border-radius:5px;font-family:'Inter',sans-serif;font-size:12px;font-weight:600;cursor:pointer">Enregistrer</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+  import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+  import { getFirestore, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+  import { initPage, startClock, showToast } from './utils.js';
+
+  const FC = {
+    apiKey:"AIzaSyA4GxYd32GNs5EDjjm2UI1a0d25YxigMVU",
+    authDomain:"lspd-intranet-2aed9.firebaseapp.com",
+    projectId:"lspd-intranet-2aed9",
+    storageBucket:"lspd-intranet-2aed9.firebasestorage.app",
+    messagingSenderId:"780922925382",
+    appId:"1:780922925382:web:a32d5e89bcff75bd8b3547"
+  };
+
+  const app     = initializeApp(FC);
+  const auth    = getAuth(app);
+  const db      = getFirestore(app);
+  const storage = getStorage(app);
+
+  startClock('tbClock');
+
+  initPage(auth, db, onAuthStateChanged, 'code-penal').then(async ({ grade, perms }) => {
+
+    // Afficher le bouton upload seulement pour les admins
+    if (perms.canAdmin) {
+      document.getElementById('adminUpload').style.display = 'block';
+    }
+
+    // Charger l'URL du PDF depuis Firestore
+    await loadPDF();
+  });
+
+  async function loadPDF() {
+    try {
+      const snap = await getDoc(doc(db, 'config', 'codePenal'));
+      if (snap.exists() && snap.data().url) {
+        showPDF(snap.data().url, snap.data().updatedAt);
+      }
+    } catch(e) {
+      console.warn('Erreur chargement code pénal:', e);
+    }
+  }
+
+  function showPDF(url, updatedAt) {
+    const viewer = document.getElementById('pdfViewer');
+    // Utiliser Google Docs Viewer pour afficher le PDF
+    const viewerUrl = 'https://docs.google.com/viewer?url=' + encodeURIComponent(url) + '&embedded=true';
+    viewer.innerHTML = '<iframe src="' + viewerUrl + '" class="pdf-viewer" allow="autoplay"></iframe>';
+
+    if (updatedAt) {
+      const d = new Date(updatedAt);
+      document.getElementById('pdfMeta').textContent =
+        'Mis à jour le ' + d.toLocaleDateString('fr-FR') + ' à ' + d.toLocaleTimeString('fr-FR', {hour:'2-digit',minute:'2-digit'});
+    }
+  }
+
+  window.openUrlModal = function() {
+    // Pré-remplir avec l'URL actuelle si disponible
+    getDoc(doc(db, 'config', 'codePenal')).then(snap => {
+      if (snap.exists() && snap.data().url) {
+        document.getElementById('pdfUrlInput').value = snap.data().url;
+      }
+    }).catch(() => {});
+    const m = document.getElementById('modalUrl');
+    m.style.display = 'flex';
+  };
+
+  window.closeUrlModal = function() {
+    document.getElementById('modalUrl').style.display = 'none';
+  };
+
+  window.saveUrl = async function() {
+    const url = document.getElementById('pdfUrlInput').value.trim();
+    if (!url) { showToast('Entre une URL', 'error'); return; }
+    if (!url.startsWith('http')) { showToast('URL invalide', 'error'); return; }
+    try {
+      const now = new Date().toISOString();
+      await setDoc(doc(db, 'config', 'codePenal'), {
+        url:       url,
+        updatedAt: now,
+        updatedBy: document.getElementById('tbName')?.textContent || 'Admin'
+      });
+      closeUrlModal();
+      showPDF(url, now);
+      showToast('Code pénal mis à jour ✓', 'success');
+    } catch(e) {
+      showToast('Erreur : ' + e.message, 'error');
+    }
+  };
+
+  // Fermer modal en cliquant dehors
+  document.getElementById('modalUrl').addEventListener('click', function(e) {
+    if (e.target === this) closeUrlModal();
+  });
+</script>
+</body>
+</html>

@@ -205,7 +205,9 @@ export function buildSidebar(elementId, activePage, grade) {
   }
 
   h += `<div class="sb-divider"></div><div class="sb-section">Réseau</div>`;
-  h += nav('interpolice', activePage, '↗', 'Interpolice', 'interpolice.html');
+  h += nav('interpolice', activePage, '↗', 'Interpolice',  'interpolice.html');
+  h += nav('calendrier',  activePage, '📅', 'Calendrier',    'calendrier.html');
+  h += nav('code-penal',  activePage, '📋', 'Code Pénal',     'code-penal.html');
   h += `<div class="sb-divider"></div>`;
   h += `<a class="sb-item" href="#" onclick="event.preventDefault();window.logout()"><span class="sb-icon">⊘</span>Déconnexion</a>`;
 
