@@ -96,19 +96,8 @@
     </div>
 
     <div class="cal-container">
-      <!-- ══════════════════════════════════════════════════════
-           COLLE TON LIEN GOOGLE CALENDAR ICI
-           Remplace VOTRE_LIEN_ICI par ton URL d'intégration
-           Format : https://calendar.google.com/calendar/embed?src=...
-      ══════════════════════════════════════════════════════ -->
-      <div id="calContent">
-        <div class="cal-placeholder">
-          <div class="icon">📅</div>
-          <p>Calendrier non configuré</p>
-          <p>Remplace l'URL dans calendrier.html</p>
-          <code>https://calendar.google.com/calendar/u/1/r?cid=NTEwMzc4NWY4Y2EzZTFiZDNjNTJiNmU1YjY3MGQ3MTcxNjg5MDAyMDY4NDBhMGY1MTY0NTY3ODE1N2YxYWI1OEBncm91cC5jYWxlbmRhci5nb29nbGUuY29t&pli=1</code>
-        </div>
-      </div>
+
+      <div id="calContent"></div>
     </div>
 
   </div>
@@ -141,10 +130,10 @@
     // ══════════════════════════════════════════════════════════
     // COLLE ICI TON LIEN GOOGLE CALENDAR
     // Exemple : 'https://calendar.google.com/calendar/embed?src=ton_id%40group.calendar.google.com&ctz=America%2FToronto'
-    const CALENDAR_URL = 'https://calendar.google.com/calendar/u/1/r?cid=NTEwMzc4NWY4Y2EzZTFiZDNjNTJiNmU1YjY3MGQ3MTcxNjg5MDAyMDY4NDBhMGY1MTY0NTY3ODE1N2YxYWI1OEBncm91cC5jYWxlbmRhci5nb29nbGUuY29t&pli=1';
+    const CALENDAR_URL = 'https://calendar.google.com/calendar/embed?src=5103785f8ca3e1bd3c52b6e5b670d717168900206840a0f51645678157f1ab58%40group.calendar.google.com&ctz=America%2FToronto&bgcolor=%23050810&color=%23C9A84C&showTitle=0&showNav=1&showDate=1&showPrint=0&showTabs=1&showCalendars=0&showTz=0&hl=fr';
     // ══════════════════════════════════════════════════════════
 
-    if (CALENDAR_URL !== 'VOTRE_LIEN_ICI') {
+    if (CALENDAR_URL) {
       const container = document.getElementById('calContent');
       const iframe = document.createElement('iframe');
       iframe.src = CALENDAR_URL + '&color=%23C9A84C&showTitle=0&showNav=1&showDate=1&showPrint=0&showTabs=1&showCalendars=0';
