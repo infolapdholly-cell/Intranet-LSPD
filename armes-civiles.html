@@ -445,8 +445,7 @@
       date:      document.getElementById('wDate').value,
       photoUrl:  document.getElementById('wPhoto').value.trim(),
       notes:     document.getElementById('wNotes').value.trim(),
-      updatedAt: new Date().toISOString(),
-      createdBy: editingId ? undefined : (document.getElementById('tbName')?.textContent || 'Officier')
+      updatedAt: new Date().toISOString()
     };
 
     try {
@@ -463,6 +462,7 @@
         showToast('Arme mise à jour ✓', 'success');
       } else {
         payload.createdAt = new Date().toISOString();
+        payload.createdBy = document.getElementById('tbName')?.textContent || 'Officier';
         await addDoc(collection(db, 'armes-civiles'), payload);
         await addLog(db, 'Arme civile enregistrée', `${payload.modele||payload.type} — ${proprietaire}`);
         await sendDiscordLog(payload, document.getElementById('tbName')?.textContent || 'Officier');
