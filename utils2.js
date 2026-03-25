@@ -30,12 +30,12 @@ export async function initPage(auth, db, onAuthStateChanged, pageName) {
       try {
         const { doc, getDoc } = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js");
         const snap = await getDoc(doc(db, 'users', user.uid));
+        const curPage = window.location.pathname.split('/').pop() || '';
         if (snap.exists()) {
           const data = snap.data();
           grade = (data.grade||'cadet').toLowerCase();
           name  = data.displayName || user.email;
           if (data.suspended) {
-            // Déconnecter proprement pour éviter la boucle de reconnexion
             try {
               const { signOut } = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js");
               await signOut(auth);
@@ -43,22 +43,22 @@ export async function initPage(auth, db, onAuthStateChanged, pageName) {
             window.location.replace('index.html');
             return;
           }
-          // Forcer le changement de mot de passe si nécessaire
-          const curPage = window.location.pathname.split('/').pop() || '';
+          // Forcer le changement de mot de passe si flag actif
           if (data.forcePasswordChange === true && !curPage.endsWith('change-password.html')) {
             window.location.replace('change-password.html');
             return;
           }
-          // Vérifier silencieusement si le MDP est encore 123456
-          if (!curPage.endsWith('change-password.html')) {
-            try {
-              const { EmailAuthProvider, reauthenticateWithCredential } = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js");
-              const testCred = EmailAuthProvider.credential(user.email, '123456');
-              await reauthenticateWithCredential(user, testCred);
-              // Re-auth réussie = MDP est encore 123456 → forcer le changement
+        } else {
+          // Document pas encore créé → peut-être première connexion
+          // Vérifier via metadata Firebase : si creationTime = lastSignInTime → première connexion
+          const meta = user.metadata;
+          if (meta && meta.creationTime && meta.lastSignInTime) {
+            const created = new Date(meta.creationTime).getTime();
+            const lastIn  = new Date(meta.lastSignInTime).getTime();
+            if (Math.abs(created - lastIn) < 5000 && !curPage.endsWith('change-password.html')) {
               window.location.replace('change-password.html');
               return;
-            } catch(e) { /* MDP != 123456 → OK */ }
+            }
           }
         }
       } catch(e) { console.warn('Grade load failed:', e); }
