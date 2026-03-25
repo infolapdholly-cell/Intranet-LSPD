@@ -14,7 +14,6 @@
       display:flex; flex-direction:column;
     }
     .arme-card:hover { border-color:var(--gold); box-shadow:0 0 12px rgba(201,168,76,.1); }
-    .arme-card.statut-illegal { border-color:rgba(184,48,48,.4); }
     .arme-card.statut-vole    { border-color:rgba(184,48,48,.6); animation:blink-border 2s ease infinite; }
     @keyframes blink-border { 0%,100%{border-color:rgba(184,48,48,.6)} 50%{border-color:rgba(184,48,48,.2)} }
     .arme-photo {
@@ -30,7 +29,6 @@
       letter-spacing:1px; text-transform:uppercase;
     }
     .badge-legal   { background:rgba(26,158,86,.2);  color:#4ade80; border:1px solid rgba(26,158,86,.4); }
-    .badge-illegal { background:rgba(184,48,48,.2);  color:#f87070; border:1px solid rgba(184,48,48,.4); }
     .badge-vole    { background:rgba(184,48,48,.35); color:#fff;    border:1px solid var(--danger); }
     .arme-body { padding:12px; flex:1; }
     .arme-nom  { font-size:13px; font-weight:700; margin-bottom:4px; color:var(--text); }
@@ -78,7 +76,7 @@
       <button class="btn btn-primary" id="btnNew">+ Enregistrer une arme</button>
     </div>
 
-    <div class="stats-grid" style="grid-template-columns:repeat(4,1fr)">
+    <div class="stats-grid" style="grid-template-columns:repeat(3,1fr)">
       <div class="stat-box blue"><div class="stat-lbl">TOTAL ENREGISTRÉES</div><div class="stat-val" id="sTotal">—</div></div>
       <div class="stat-box green"><div class="stat-lbl">LÉGALES</div><div class="stat-val" id="sLegal">—</div></div>
       <div class="stat-box gold"><div class="stat-lbl">VOLÉES</div><div class="stat-val" id="sVole">—</div></div>
@@ -89,7 +87,6 @@
       <select id="filterStatut" onchange="filterArmes()">
         <option value="">Tous les statuts</option>
         <option value="Légale">Légale</option>
-        <option value="Illégale">Illégale</option>
         <option value="Volée">Volée</option>
       </select>
       <select id="filterType" onchange="filterArmes()">
@@ -142,14 +139,14 @@
         <div class="fg"><label>Propriétaire (civil)</label><input id="wProprietaire" placeholder="Nom Prénom"></div>
         <div class="fg"><label>Type d'arme</label>
           <select id="wType">
-            <option value="Pistolet">Pistolet</option>
-            <option value="Revolver">Revolver</option>
-            <option value="Fusil">Fusil</option>
-            <option value="Fusil d'assaut">Fusil d'assaut</option>
-            <option value="Fusil à pompe">Fusil à pompe</option>
-            <option value="Sniper">Sniper</option>
-            <option value="Mitraillette">Mitraillette</option>
-            <option value="Autre">Autre</option>
+            <option value="Pistolet">🔫 Pistolet</option>
+            <option value="Revolver">🔫 Revolver</option>
+            <option value="Fusil">🎯 Fusil</option>
+            <option value="Fusil d'assaut">⚡ Fusil d'assaut</option>
+            <option value="Fusil à pompe">💥 Fusil à pompe</option>
+            <option value="Sniper">🎯 Sniper</option>
+            <option value="Mitraillette">⚡ Mitraillette</option>
+            <option value="Autre">📌 Autre</option>
           </select>
         </div>
         <div class="fg"><label>Marque / Modèle</label><input id="wModele" placeholder="ex: Glock 17, AK-47..."></div>
@@ -184,7 +181,7 @@
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
   import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
-  import { getFirestore, collection, addDoc, getDocs, doc, updateDoc, deleteDoc, orderBy, query } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+  import { getFirestore, collection, addDoc, getDocs, doc, updateDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
   import { initPage, startClock, showToast, openModal, closeModal, setupModalClose, addLog, getPerms } from './utils2.js';
 
   const FC = {
@@ -228,8 +225,8 @@
 
   async function loadArmes() {
     try {
-      const snap = await getDocs(query(collection(db, 'armes-civiles'), orderBy('createdAt', 'desc')));
-      allArmes = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+      const snap = await getDocs(collection(db, 'armes-civiles'));
+      allArmes = snap.docs.map(d => ({ id: d.id, ...d.data() })).sort((a,b) => (b.createdAt||'').localeCompare(a.createdAt||''));
       updateStats();
       renderArmes(allArmes);
     } catch(e) { console.error(e); }
@@ -238,7 +235,6 @@
   function updateStats() {
     document.getElementById('sTotal').textContent   = allArmes.length;
     document.getElementById('sLegal').textContent   = allArmes.filter(a => a.statut === 'Légale').length;
-    document.getElementById('sIllegal').textContent = allArmes.filter(a => a.statut === 'Illégale').length;
     document.getElementById('sVole').textContent    = allArmes.filter(a => a.statut === 'Volée').length;
   }
 
@@ -248,8 +244,8 @@
     if (!list.length) { grid.innerHTML = ''; empty.style.display = 'block'; return; }
     empty.style.display = 'none';
 
-    const statutClass = { 'Légale':'legal', 'Illégale':'illegal', 'Volée':'vole' };
-    const badgeClass  = { 'Légale':'badge-legal', 'Illégale':'badge-illegal', 'Volée':'badge-vole' };
+    const statutClass = { 'Légale':'legal', 'Volée':'vole' };
+    const badgeClass  = { 'Légale':'badge-legal', 'Volée':'badge-vole' };
 
     grid.innerHTML = list.map(a => `
       <div class="arme-card statut-${statutClass[a.statut]||'legal'}">
@@ -294,7 +290,6 @@
 
     const statutColors = {
       'Légale':   { bg:'rgba(26,158,86,.12)',  color:'#4ade80', border:'rgba(26,158,86,.3)' },
-      'Illégale': { bg:'rgba(184,48,48,.12)',  color:'#f87070', border:'rgba(184,48,48,.3)' },
       'Volée':    { bg:'rgba(184,48,48,.25)',  color:'#fff',    border:'rgba(184,48,48,.5)' }
     };
     const sc = statutColors[a.statut] || statutColors['Légale'];
@@ -366,7 +361,7 @@
 
   async function sendDiscordAlertVolee(arme, officier, ancienStatut) {
     const body = JSON.stringify({
-      content: '@LSPD ',
+      content: '@everyone',
       embeds: [{
         title: '🚨 AVERTISSEMENT — ARME VOLÉE',
         description: "Changement de statut critique enregistré sur le registre des armes.",
@@ -402,7 +397,7 @@
   }
 
   async function sendDiscordLog(arme, officier) {
-    const statutColors = { 'Légale': 3066993, 'Illégale': 15158332, 'Volée': 10038562 };
+    const statutColors = { 'Légale': 3066993, 'Volée': 10038562 };
     const embed = {
       embeds: [{
         title: '✅ Nouvelle arme enregistrée',
@@ -448,7 +443,7 @@
 
     try {
       if (editingId) {
-        // Détecter changement vers statut "Volée" ou "Illégale"
+        // Détecter changement vers statut "Volée"
         const ancienneArme = allArmes.find(x => x.id === editingId);
         const ancienStatut = ancienneArme ? ancienneArme.statut : '';
         await updateDoc(doc(db, 'armes-civiles', editingId), payload);
