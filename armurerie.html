@@ -52,7 +52,7 @@
 }
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
 html,body{height:100%;}
-body{font-family:'IBM Plex Sans',sans-serif;background:var(--bg);color:var(--text);font-size:13px;line-height:1.5;}
+body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);font-size:13px;line-height:1.5;}
 </style>
   <link rel="icon" type="image/png" href="https://r2.fivemanage.com/XEcvh0aBGRYhLzNNcRsQI/lspdnouveau.png">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -60,21 +60,21 @@ body{font-family:'IBM Plex Sans',sans-serif;background:var(--bg);color:var(--tex
   <link rel="stylesheet" href="style.css?v=15">
   <style>
     .arme-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:16px;}
-    .arme-card{background:var(--panel);border:1px solid var(--line);border-radius:10px;overflow:hidden;transition:all .2s;animation:fadeIn .3s ease both;}
+    .arme-card{background:var(--surface);border:1px solid var(--border);border-radius:10px;overflow:hidden;transition:all .2s;animation:fadeIn .3s ease both;}
     .arme-card::before{content:'';display:block;height:3px;}
     .arme-card.stock::before{background:var(--green);}
     .arme-card.assignee::before{background:var(--blue-b);}
     .arme-card.maint::before{background:var(--amber-l);}
     .arme-card.perdue::before{background:var(--red);}
-    .arme-card:hover{border-color:var(--blue);box-shadow:0 0 16px rgba(59,130,246,.15);transform:translateY(-2px);}
+    .arme-card:hover{border-color:var(--gold);box-shadow:0 0 12px rgba(201,168,76,.12);transform:translateY(-2px);}
     .arme-icon{font-size:44px;text-align:center;padding:18px 0 8px;}
-    .arme-serie{font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--text2);text-align:center;letter-spacing:2px;margin-bottom:4px;}
-    .arme-modele{font-family:'IBM Plex Mono',monospace;font-size:13px;font-weight:700;text-align:center;margin-bottom:12px;}
-    .arme-row{display:flex;justify-content:space-between;margin-bottom:6px;font-size:12px;padding-bottom:6px;border-bottom:1px solid rgba(27,58,94,.3);}
+    .arme-serie{font-family:'JetBrains Mono',monospace;font-size:12px;font-weight:600;color:var(--text);text-align:center;letter-spacing:3px;margin-bottom:8px;padding:4px 10px;background:rgba(201,168,76,.07);border:1px solid rgba(201,168,76,.18);border-radius:4px;display:inline-block;}
+    .arme-modele{font-family:'Inter',sans-serif;font-size:14px;font-weight:700;text-align:center;margin-bottom:10px;color:var(--text);}
+    .arme-row{display:flex;justify-content:space-between;margin-bottom:6px;font-size:12px;padding-bottom:6px;border-bottom:1px solid var(--border);}
     .arme-row:last-child{border-bottom:none;}
-    .arme-lbl{color:var(--text2);font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:1px;}
+    .arme-lbl{color:var(--gold);opacity:.6;font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:1.5px;text-transform:uppercase;}
     .arme-body{padding:0 16px 14px;}
-    .arme-actions{display:flex;gap:6px;padding:10px 16px;border-top:1px solid var(--line);}
+    .arme-actions{display:flex;gap:6px;padding:10px 16px;border-top:1px solid var(--border);}
     .arme-actions button{flex:1;}
     @keyframes fadeIn{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:none}}
   </style>
@@ -241,7 +241,7 @@ body{font-family:'IBM Plex Sans',sans-serif;background:var(--bg);color:var(--tex
           <div class="ei">🔒</div>
           <p>ACCÈS RESTREINT — GRADE INSUFFISANT</p>
           <p style="margin-top:8px;font-size:11px">Réservé au grade Capitaine et supérieur</p>
-          <a href="dashboard.html" style="display:inline-block;margin-top:20px;padding:10px 24px;background:var(--blue);color:#fff;border-radius:6px;font-family:'IBM Plex Sans',sans-serif;font-size:13px;font-weight:700;text-decoration:none">← RETOUR</a>
+          <a href="dashboard.html" style="display:inline-block;margin-top:20px;padding:10px 24px;background:var(--blue);color:#fff;border-radius:6px;font-family:'Inter',sans-serif;font-size:13px;font-weight:700;text-decoration:none">← RETOUR</a>
         </div>`;
       return;
     }
@@ -275,23 +275,23 @@ body{font-family:'IBM Plex Sans',sans-serif;background:var(--bg);color:var(--tex
       <div class="arme-card ${STATUT_CLASS[a.statut]||'perdue'}">
         <div style="display:flex;align-items:center;justify-content:center;padding:16px 0 8px;min-height:90px">
           ${a.photoUrl
-            ? `<img src="${a.photoUrl}" style="max-width:140px;max-height:80px;object-fit:contain;border-radius:8px;border:1px solid var(--line);display:block;margin:0 auto" onerror="this.outerHTML='<span style=font-size:44px>${TYPE_ICONS[a.type]||chr(39)+'🔫'+chr(39)}</span>'">`
+            ? `<img src="${a.photoUrl}" style="max-width:140px;max-height:80px;object-fit:contain;border-radius:8px;border:1px solid var(--border);display:block;margin:0 auto" onerror="this.outerHTML='<span style=font-size:44px>${TYPE_ICONS[a.type]||chr(39)+'🔫'+chr(39)}</span>'">`
             : `<span style="font-size:44px">${TYPE_ICONS[a.type]||'🔫'}</span>`}
         </div>
         <div class="arme-body">
-          <div class="arme-serie">N° ${a.serie||'—'}</div>
+          <div style="text-align:center;margin-bottom:8px"><div class="arme-serie">N° ${a.serie||'—'}</div></div>
           <div class="arme-modele">${a.modele||'—'}</div>
           <div class="arme-row"><span class="arme-lbl">TYPE</span><span style="font-size:12px">${a.type||'—'}</span></div>
           <div class="arme-row"><span class="arme-lbl">STATUT</span>${statusBadge(a.statut)}</div>
           <div class="arme-row"><span class="arme-lbl">ASSIGNÉE</span><span style="font-size:12px">${a.assigne||'—'}</span></div>
-          <div class="arme-row"><span class="arme-lbl">DATE</span><span style="font-family:'IBM Plex Mono',monospace;font-size:11px">${a.dateEntree||'—'}</span></div>
-          ${a.notes?`<div style="font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--text2);margin-top:6px">${a.notes}</div>`:''}
+          <div class="arme-row"><span class="arme-lbl">DATE</span><span style="font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--text)">${a.dateEntree||'—'}</span></div>
+          ${a.notes?`<div style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--text2);margin-top:6px">${a.notes}</div>`:''}
         </div>
         <div class="arme-actions">
           ${userPerms.canWrite ? `
-            <button class="btn btn-ghost btn-sm" onclick="editArme('${a.id}')">✏️ Modifier</button>
-            <button class="btn btn-danger btn-sm" onclick="deleteArme('${a.id}')">🗑️</button>
-          ` : `<div style="flex:1;text-align:center;font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--text2)">LECTURE SEULE</div>`}
+            <button onclick="editArme('${a.id}')" style="flex:1;padding:6px;background:rgba(201,168,76,.08);border:1px solid rgba(201,168,76,.2);border-radius:4px;color:var(--gold);font-size:11px;font-family:Inter,sans-serif;font-weight:600;cursor:pointer">✏️ Modifier</button>
+            <button onclick="deleteArme('${a.id}')" style="padding:6px 10px;background:rgba(184,48,48,.08);border:1px solid rgba(184,48,48,.2);border-radius:4px;color:var(--danger-l);font-size:13px;cursor:pointer">🗑</button>
+          ` : `<div style="flex:1;text-align:center;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--text2)">LECTURE SEULE</div>`}
         </div>
       </div>`).join('');
   }
@@ -302,16 +302,16 @@ body{font-family:'IBM Plex Sans',sans-serif;background:var(--bg);color:var(--tex
     tb.innerHTML = list.map(a => `
       <tr>
         <td style="font-size:18px">${TYPE_ICONS[a.type]||'🔫'}</td>
-        <td style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--text2)">${a.serie||'—'}</td>
+        <td style="font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--text2)">${a.serie||'—'}</td>
         <td style="font-size:13px;font-weight:600">${a.modele||'—'}</td>
         <td style="font-size:12px">${a.assigne||'—'}</td>
         <td>${statusBadge(a.statut)}</td>
-        <td style="font-family:'IBM Plex Mono',monospace;font-size:11px">${a.dateEntree||'—'}</td>
-        <td style="font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--text2)">${a.notes||'—'}</td>
+        <td style="font-family:'JetBrains Mono',monospace;font-size:11px">${a.dateEntree||'—'}</td>
+        <td style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--text2)">${a.notes||'—'}</td>
         <td style="display:flex;gap:4px">
           ${userPerms.canWrite ? `
             <button class="btn btn-ghost btn-sm" onclick="editArme('${a.id}')">✏️</button>
-            <button class="btn btn-danger btn-sm" onclick="deleteArme('${a.id}')">🗑️</button>
+            <button onclick="deleteArme('${a.id}')" style="padding:6px 10px;background:rgba(184,48,48,.08);border:1px solid rgba(184,48,48,.2);border-radius:4px;color:var(--danger-l);font-size:13px;cursor:pointer">🗑</button>
           ` : '—'}
         </td>
       </tr>`).join('');
