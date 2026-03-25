@@ -79,7 +79,7 @@
       </div>
       <div style="display:flex;gap:8px">
         <button id="btnDemande" class="btn btn-ghost" onclick="openDemandeModal()" style="display:none">📋 Faire une demande</button>
-        <button id="btnAttribution" class="btn btn-primary" onclick="openAttributionModal()" style="display:none">⭐ Attribuer un grade</button>
+        <button id="btnAttribution" class="btn btn-primary" onclick="openAttributionModal()" style="display:none">◈ Attribuer un grade</button>
       </div>
     </div>
 
@@ -147,7 +147,7 @@
 <div class="modal-bg" id="modalAttribution">
   <div class="modal" style="max-width:500px">
     <div class="modal-head">
-      <div class="modal-title">⭐ ATTRIBUTION DE GRADE</div>
+      <div class="modal-title">◈ ATTRIBUTION DE GRADE</div>
       <button class="modal-close" onclick="closeModal('modalAttribution')">×</button>
     </div>
     <div class="modal-body">
@@ -310,7 +310,7 @@
       pending:  ['⏳ En attente', 'var(--warning)',  'rgba(214,137,16,.15)'],
       approved: ['✓ Approuvée',   'var(--success)',  'rgba(26,158,86,.15)'],
       refused:  ['✗ Refusée',     'var(--danger)',   'rgba(184,48,48,.15)'],
-      direct:   ['⭐ Attribution', 'var(--gold)',     'rgba(201,168,76,.15)']
+      direct:   ['◈ Attribution', 'var(--gold)',     'rgba(201,168,76,.15)']
     };
     const [label, color, bg] = map[s] || map.pending;
     return `<span style="font-family:'JetBrains Mono',monospace;font-size:9px;font-weight:700;letter-spacing:1px;padding:2px 8px;border-radius:3px;color:${color};background:${bg};border:1px solid ${color}44">${label}</span>`;

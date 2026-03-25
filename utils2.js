@@ -203,8 +203,9 @@ export function buildSidebar(elementId, activePage, grade) {
     if (p.canManageWeapons)  h += nav('armurerie',  activePage, '▲', 'Armurerie',       'armurerie.html');
     if (p.canLogs)           h += nav('logs',        activePage, '≡', 'Historique',     'logs.html');
     if (p.canAdmin)          h += nav('admin',       activePage, '⊞', 'Administration', 'admin.html');
-    h += nav('promotions', activePage, '⭐', 'Grades & Promotions', 'promotions.html');
   }
+
+  h += nav('promotions', activePage, '◈', 'Grades & Promotions', 'promotions.html');
 
   h += `<div class="sb-divider"></div><div class="sb-section">Réseau</div>`;
   h += nav('interpolice', activePage, '↗', 'Interpolice',  'interpolice.html');
