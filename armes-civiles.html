@@ -6,7 +6,7 @@
   <link rel="icon" type="image/png" href="https://r2.fivemanage.com/XEcvh0aBGRYhLzNNcRsQI/lspdnouveau.png">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>LSPD — Registre des armes civiles</title>
-  <link rel="stylesheet" href="style.css?v=15">
+  <link rel="stylesheet" href="style.css?v=16">
   <style>
     .arme-card {
       background:var(--surface); border:1px solid var(--border); border-radius:8px;
@@ -371,7 +371,7 @@
       content: '@everyone',
       embeds: [{
         title: '🚨 AVERTISSEMENT — ARME VOLÉE',
-        description: '> Un changement de statut critique a été enregistré sur le registre des armes.',
+        description: "Changement de statut critique enregistré sur le registre des armes.",
         color: 15158332,
         fields: [
           { name: '⚠️ Statut',            value: ancienStatut + ' → 🚨 **Volée**', inline: false },
@@ -408,7 +408,7 @@
     const embed = {
       embeds: [{
         title: '✅ Nouvelle arme enregistrée',
-        description: 'Une nouvelle arme vient d'être ajoutée au registre des armes civiles.',
+        description: "Une nouvelle arme vient d'être ajoutée au registre des armes civiles.",
         color: statutColors[arme.statut] || 3066993,
         fields: [
           { name: '👤 Propriétaire',    value: arme.proprietaire || '—', inline: true },
