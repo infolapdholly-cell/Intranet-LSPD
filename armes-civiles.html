@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="icon" type="image/png" href="https://r2.fivemanage.com/XEcvh0aBGRYhLzNNcRsQI/lspdnouveau.png">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LSPD — Registre des armes civiles</title>
+  <link rel="stylesheet" href="style.css?v=15">
+  <style>
+    .arme-card {
+      background:var(--surface); border:1px solid var(--border); border-radius:8px;
+      overflow:hidden; transition:all .15s; animation:fadeIn .2s ease both;
+      display:flex; flex-direction:column;
+    }
+    .arme-card:hover { border-color:var(--gold); box-shadow:0 0 12px rgba(201,168,76,.1); }
+    .arme-card.statut-illegal { border-color:rgba(184,48,48,.4); }
+    .arme-card.statut-vole    { border-color:rgba(184,48,48,.6); animation:blink-border 2s ease infinite; }
+    @keyframes blink-border { 0%,100%{border-color:rgba(184,48,48,.6)} 50%{border-color:rgba(184,48,48,.2)} }
+    .arme-photo {
+      width:100%; height:140px; background:var(--surface2);
+      display:flex; align-items:center; justify-content:center;
+      font-size:40px; color:var(--text3); overflow:hidden; position:relative;
+    }
+    .arme-photo img { width:100%; height:100%; object-fit:cover; }
+    .arme-statut-badge {
+      position:absolute; top:8px; right:8px;
+      font-family:'JetBrains Mono',monospace; font-size:8px;
+      padding:2px 8px; border-radius:2px; font-weight:700;
+      letter-spacing:1px; text-transform:uppercase;
+    }
+    .badge-legal   { background:rgba(26,158,86,.2);  color:#4ade80; border:1px solid rgba(26,158,86,.4); }
+    .badge-illegal { background:rgba(184,48,48,.2);  color:#f87070; border:1px solid rgba(184,48,48,.4); }
+    .badge-vole    { background:rgba(184,48,48,.35); color:#fff;    border:1px solid var(--danger); }
+    .arme-body { padding:12px; flex:1; }
+    .arme-nom  { font-size:13px; font-weight:700; margin-bottom:4px; color:var(--text); }
+    .arme-type { font-family:'JetBrains Mono',monospace; font-size:10px; color:var(--gold); opacity:.8; margin-bottom:8px; letter-spacing:1px; }
+    .arme-meta { font-family:'JetBrains Mono',monospace; font-size:9px; color:var(--text2); margin-bottom:2px; }
+    .arme-meta span { color:var(--text); }
+    .arme-actions { display:flex; gap:6px; padding:10px 12px; border-top:1px solid var(--border); }
+    .arme-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(220px,1fr)); gap:12px; }
+  </style>
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="theme-color" content="#05080f">
+</head>
+<body>
+<div class="app-shell">
+<div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
+<div class="topbar">
+  <div class="tb-left">
+    <button class="tb-menu-btn" onclick="toggleSidebar()">☰</button>
+    <div class="tb-brand">
+      <div class="tb-shield"></div>
+      <img class="tb-logo" src="https://r2.fivemanage.com/XEcvh0aBGRYhLzNNcRsQI/lspdnouveau.png" alt="LSPD" onerror="this.style.display='none'">
+      <div class="tb-title">L.S.P.D</div>
+    </div>
+    <div class="tb-page">Registre armes civiles</div>
+  </div>
+  <div class="tb-right">
+    <div class="tb-status"><div class="live-dot"></div>En ligne</div>
+    <div class="tb-time" id="tbClock">--:--:--</div>
+    <div class="tb-user">
+      <span class="tb-grade" id="tbGrade">—</span>
+      <span class="tb-name" id="tbName">Officier</span>
+    </div>
+    <button class="btn-out" onclick="logout()">Quitter</button>
+  </div>
+</div>
+<div class="shell">
+  <div class="sidebar" id="sidebar"></div>
+  <div class="main">
+
+    <div class="page-head">
+      <div class="page-head-left">
+        <h2>Registre des armes civiles</h2>
+        <p>// Base de données des armes en circulation — Los Santos</p>
+      </div>
+      <button class="btn btn-primary" id="btnNew">+ Enregistrer une arme</button>
+    </div>
+
+    <div class="stats-grid" style="grid-template-columns:repeat(4,1fr)">
+      <div class="stat-box blue"><div class="stat-lbl">TOTAL ENREGISTRÉES</div><div class="stat-val" id="sTotal">—</div></div>
+      <div class="stat-box green"><div class="stat-lbl">LÉGALES</div><div class="stat-val" id="sLegal">—</div></div>
+      <div class="stat-box red"><div class="stat-lbl">ILLÉGALES</div><div class="stat-val" id="sIllegal">—</div></div>
+      <div class="stat-box gold"><div class="stat-lbl">VOLÉES</div><div class="stat-val" id="sVole">—</div></div>
+    </div>
+
+    <div class="search-bar">
+      <input type="text" id="searchInput" placeholder="Rechercher par propriétaire, type, numéro de série..." oninput="filterArmes()">
+      <select id="filterStatut" onchange="filterArmes()">
+        <option value="">Tous les statuts</option>
+        <option value="Légale">Légale</option>
+        <option value="Illégale">Illégale</option>
+        <option value="Volée">Volée</option>
+      </select>
+      <select id="filterType" onchange="filterArmes()">
+        <option value="">Tous les types</option>
+        <option value="Pistolet">Pistolet</option>
+        <option value="Revolver">Revolver</option>
+        <option value="Fusil">Fusil</option>
+        <option value="Fusil d'assaut">Fusil d'assaut</option>
+        <option value="Fusil à pompe">Fusil à pompe</option>
+        <option value="Sniper">Sniper</option>
+        <option value="Mitraillette">Mitraillette</option>
+        <option value="Autre">Autre</option>
+      </select>
+    </div>
+
+    <div class="arme-grid" id="armeGrid"></div>
+    <div id="armeEmpty" style="display:none" class="empty-state">
+      <div class="ei">🔫</div>
+      <p>Aucune arme enregistrée</p>
+    </div>
+
+  </div>
+</div>
+</div>
+
+<!-- MODAL ARME -->
+<div class="modal-bg" id="modalArme">
+  <div class="modal" style="max-width:600px">
+    <div class="modal-head">
+      <div class="modal-title" id="modalArmeTitle">ENREGISTRER UNE ARME</div>
+      <button class="modal-close" onclick="closeModal('modalArme')">×</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-grid g2" style="margin-bottom:12px">
+        <div class="fg"><label>Propriétaire (civil)</label><input id="wProprietaire" placeholder="Nom Prénom"></div>
+        <div class="fg"><label>Type d'arme</label>
+          <select id="wType">
+            <option value="Pistolet">🔫 Pistolet</option>
+            <option value="Revolver">🔫 Revolver</option>
+            <option value="Fusil">🎯 Fusil</option>
+            <option value="Fusil d'assaut">⚡ Fusil d'assaut</option>
+            <option value="Fusil à pompe">💥 Fusil à pompe</option>
+            <option value="Sniper">🎯 Sniper</option>
+            <option value="Mitraillette">⚡ Mitraillette</option>
+            <option value="Autre">📌 Autre</option>
+          </select>
+        </div>
+        <div class="fg"><label>Marque / Modèle</label><input id="wModele" placeholder="ex: Glock 17, AK-47..."></div>
+        <div class="fg"><label>Numéro de série</label><input id="wSerie" placeholder="ex: GL17-2024-4821"></div>
+        <div class="fg"><label>Statut</label>
+          <select id="wStatut">
+            <option value="Légale">✅ Légale</option>
+            <option value="Illégale">❌ Illégale</option>
+            <option value="Volée">🚨 Volée</option>
+          </select>
+        </div>
+        <div class="fg"><label>Date d'enregistrement</label><input type="date" id="wDate"></div>
+      </div>
+      <div class="fg" style="margin-bottom:12px">
+        <label>Photo de l'arme (URL)</label>
+        <input id="wPhoto" placeholder="https://... (lien vers une image)">
+      </div>
+      <div class="fg">
+        <label>Notes / Historique</label>
+        <textarea id="wNotes" placeholder="Circonstances de la saisie, historique, remarques..."></textarea>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button id="btnDeleteArme" style="display:none;margin-right:auto" class="btn btn-danger btn-sm" onclick="deleteArme()">🗑 Supprimer</button>
+      <button class="btn btn-ghost" onclick="closeModal('modalArme')">Annuler</button>
+      <button class="btn btn-primary" onclick="saveArme()">Enregistrer</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+  import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+  import { getFirestore, collection, addDoc, getDocs, doc, updateDoc, deleteDoc, orderBy, query } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+  import { initPage, startClock, showToast, openModal, closeModal, setupModalClose, addLog, getPerms } from './utils2.js';
+
+  const FC = {
+    apiKey:"AIzaSyA4GxYd32GNs5EDjjm2UI1a0d25YxigMVU",
+    authDomain:"lspd-intranet-2aed9.firebaseapp.com",
+    projectId:"lspd-intranet-2aed9",
+    storageBucket:"lspd-intranet-2aed9.firebasestorage.app",
+    messagingSenderId:"780922925382",
+    appId:"1:780922925342:web:a32d5e89bcff75bd8b3547"
+  };
+
+  const app = initializeApp(FC);
+  const auth = getAuth(app);
+  const db   = getFirestore(app);
+
+  let allArmes = [], editingId = null, userPerms = {};
+
+  startClock('tbClock');
+  setupModalClose();
+  window.closeModal = closeModal;
+  window.openModal  = openModal;
+
+  initPage(auth, db, onAuthStateChanged, 'armes-civiles').then(async ({ grade, name, perms }) => {
+    userPerms = perms;
+
+    if (perms.canWrite) {
+      document.getElementById('btnNew').addEventListener('click', () => {
+        editingId = null;
+        resetForm();
+        document.getElementById('modalArmeTitle').textContent = 'ENREGISTRER UNE ARME';
+        document.getElementById('btnDeleteArme').style.display = 'none';
+        document.getElementById('wDate').value = new Date().toISOString().split('T')[0];
+        openModal('modalArme');
+      });
+    } else {
+      document.getElementById('btnNew').style.display = 'none';
+    }
+
+    await loadArmes();
+  });
+
+  async function loadArmes() {
+    try {
+      const snap = await getDocs(query(collection(db, 'armes-civiles'), orderBy('createdAt', 'desc')));
+      allArmes = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+      updateStats();
+      renderArmes(allArmes);
+    } catch(e) { console.error(e); }
+  }
+
+  function updateStats() {
+    document.getElementById('sTotal').textContent   = allArmes.length;
+    document.getElementById('sLegal').textContent   = allArmes.filter(a => a.statut === 'Légale').length;
+    document.getElementById('sIllegal').textContent = allArmes.filter(a => a.statut === 'Illégale').length;
+    document.getElementById('sVole').textContent    = allArmes.filter(a => a.statut === 'Volée').length;
+  }
+
+  function renderArmes(list) {
+    const grid  = document.getElementById('armeGrid');
+    const empty = document.getElementById('armeEmpty');
+    if (!list.length) { grid.innerHTML = ''; empty.style.display = 'block'; return; }
+    empty.style.display = 'none';
+
+    const statutClass = { 'Légale':'legal', 'Illégale':'illegal', 'Volée':'vole' };
+    const badgeClass  = { 'Légale':'badge-legal', 'Illégale':'badge-illegal', 'Volée':'badge-vole' };
+
+    grid.innerHTML = list.map(a => `
+      <div class="arme-card statut-${statutClass[a.statut]||'legal'}">
+        <div class="arme-photo">
+          ${a.photoUrl ? `<img src="${a.photoUrl}" onerror="this.parentNode.innerHTML='🔫'">` : '🔫'}
+          <span class="arme-statut-badge ${badgeClass[a.statut]||'badge-legal'}">${a.statut||'—'}</span>
+        </div>
+        <div class="arme-body">
+          <div class="arme-nom">${a.modele || a.type || '—'}</div>
+          <div class="arme-type">${a.type||'—'}</div>
+          <div class="arme-meta">Propriétaire : <span>${a.proprietaire||'—'}</span></div>
+          <div class="arme-meta">N° série : <span>${a.serie||'—'}</span></div>
+          ${a.date ? `<div class="arme-meta">Enregistrée le : <span>${new Date(a.date).toLocaleDateString('fr-FR')}</span></div>` : ''}
+        </div>
+        <div class="arme-actions">
+          <button onclick="viewArme('${a.id}')" style="flex:1;padding:6px;background:rgba(201,168,76,.08);border:1px solid rgba(201,168,76,.2);border-radius:4px;color:var(--gold);font-size:11px;font-family:'Inter',sans-serif;font-weight:600;cursor:pointer">👁 Voir</button>
+          ${userPerms.canWrite ? `<button onclick="editArme('${a.id}')" style="padding:6px 10px;background:rgba(61,88,120,.15);border:1px solid rgba(61,88,120,.3);border-radius:4px;color:var(--text2);font-size:13px;cursor:pointer">✏️</button>` : ''}
+        </div>
+      </div>`).join('');
+  }
+
+  window.filterArmes = function() {
+    const q = document.getElementById('searchInput').value.toLowerCase();
+    const s = document.getElementById('filterStatut').value;
+    const t = document.getElementById('filterType').value;
+    renderArmes(allArmes.filter(a =>
+      (a.proprietaire+' '+a.modele+' '+a.serie+' '+a.type).toLowerCase().includes(q) &&
+      (!s || a.statut === s) &&
+      (!t || a.type === t)
+    ));
+  };
+
+  window.viewArme = function(id) {
+    const a = allArmes.find(x => x.id === id);
+    if (!a) return;
+    editArme(id);
+  };
+
+  window.editArme = function(id) {
+    const a = allArmes.find(x => x.id === id);
+    if (!a) return;
+    editingId = id;
+    document.getElementById('modalArmeTitle').textContent = 'FICHE ARME';
+    document.getElementById('btnDeleteArme').style.display = userPerms.canDelete ? 'inline-flex' : 'none';
+    document.getElementById('wProprietaire').value = a.proprietaire || '';
+    document.getElementById('wType').value         = a.type         || 'Pistolet';
+    document.getElementById('wModele').value       = a.modele       || '';
+    document.getElementById('wSerie').value        = a.serie        || '';
+    document.getElementById('wStatut').value       = a.statut       || 'Légale';
+    document.getElementById('wDate').value         = a.date         || '';
+    document.getElementById('wPhoto').value        = a.photoUrl     || '';
+    document.getElementById('wNotes').value        = a.notes        || '';
+    openModal('modalArme');
+  };
+
+  window.saveArme = async function() {
+    const proprietaire = document.getElementById('wProprietaire').value.trim();
+    if (!proprietaire) { showToast('Le propriétaire est obligatoire', 'error'); return; }
+
+    const payload = {
+      proprietaire,
+      type:      document.getElementById('wType').value,
+      modele:    document.getElementById('wModele').value.trim(),
+      serie:     document.getElementById('wSerie').value.trim(),
+      statut:    document.getElementById('wStatut').value,
+      date:      document.getElementById('wDate').value,
+      photoUrl:  document.getElementById('wPhoto').value.trim(),
+      notes:     document.getElementById('wNotes').value.trim(),
+      updatedAt: new Date().toISOString()
+    };
+
+    try {
+      if (editingId) {
+        await updateDoc(doc(db, 'armes-civiles', editingId), payload);
+        await addLog(db, 'Arme civile modifiée', `${payload.modele||payload.type} — ${proprietaire}`);
+        showToast('Arme mise à jour ✓', 'success');
+      } else {
+        payload.createdAt = new Date().toISOString();
+        await addDoc(collection(db, 'armes-civiles'), payload);
+        await addLog(db, 'Arme civile enregistrée', `${payload.modele||payload.type} — ${proprietaire}`);
+        showToast('Arme enregistrée ✓', 'success');
+      }
+      closeModal('modalArme');
+      editingId = null;
+      await loadArmes();
+    } catch(e) { showToast('Erreur : ' + e.message, 'error'); }
+  };
+
+  window.deleteArme = async function() {
+    if (!editingId || !confirm('Supprimer cette arme du registre ?')) return;
+    const a = allArmes.find(x => x.id === editingId);
+    try {
+      await deleteDoc(doc(db, 'armes-civiles', editingId));
+      await addLog(db, 'Arme civile supprimée', a?.modele || '');
+      showToast('Arme supprimée', 'success');
+      closeModal('modalArme');
+      editingId = null;
+      await loadArmes();
+    } catch(e) { showToast('Erreur : ' + e.message, 'error'); }
+  };
+
+  function resetForm() {
+    ['wProprietaire','wModele','wSerie','wDate','wPhoto','wNotes'].forEach(id => {
+      document.getElementById(id).value = '';
+    });
+    document.getElementById('wType').value   = 'Pistolet';
+    document.getElementById('wStatut').value = 'Légale';
+  }
+</script>
+</body>
+</html>
