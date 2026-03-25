@@ -152,41 +152,99 @@ body{font-family:'IBM Plex Sans',sans-serif;background:var(--bg);color:var(--tex
 
 <!-- MODAL NOUVELLE AMENDE -->
 <div class="modal-bg" id="modalAmende">
-  <div class="modal">
+  <div class="modal" style="max-width:640px">
     <div class="modal-head">
       <div class="modal-title" id="modalTitle">NOUVELLE AMENDE / PV</div>
       <button class="modal-close" onclick="closeModal('modalAmende')">×</button>
     </div>
     <div class="modal-body">
+
+      <!-- ONGLETS -->
+      <div style="display:flex;gap:0;margin-bottom:18px;border-bottom:1px solid var(--border)">
+        <button id="tabRoutiere" onclick="switchTab('routiere')"
+          style="padding:8px 18px;background:transparent;border:none;border-bottom:2px solid var(--gold);color:var(--gold);font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:2px;text-transform:uppercase;cursor:pointer;font-weight:600;margin-bottom:-1px">
+          🚗 Infraction routière
+        </button>
+        <button id="tabPenale" onclick="switchTab('penale')"
+          style="padding:8px 18px;background:transparent;border:none;border-bottom:2px solid transparent;color:var(--text2);font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:2px;text-transform:uppercase;cursor:pointer;font-weight:600;margin-bottom:-1px">
+          ⚖️ Infraction pénale
+        </button>
+      </div>
+
+      <!-- CHAMPS COMMUNS -->
       <div class="form-grid g2" style="margin-bottom:12px">
         <div class="fg"><label>Nom du contrevenant</label><input id="aNom" placeholder="Nom Prénom"></div>
-        <div class="fg"><label>Plaque d'immatriculation</label><input id="aPlaque" placeholder="ex: ABC-123"></div>
-        <div class="fg"><label>Motif</label>
-          <select id="aMotif">
-            <option value="Excès de vitesse">Excès de vitesse</option>
-            <option value="Grillage de feu rouge">Grillage de feu rouge</option>
-            <option value="Stationnement interdit">Stationnement interdit</option>
-            <option value="Conduite sans permis">Conduite sans permis</option>
-            <option value="Conduite en état d'ivresse">Conduite en état d'ivresse</option>
-            <option value="Usage du téléphone au volant">Usage du téléphone au volant</option>
-            <option value="Défaut d'assurance">Défaut d'assurance</option>
-            <option value="Véhicule non conforme">Véhicule non conforme</option>
-            <option value="Fuite après accident">Fuite après accident</option>
-            <option value="Conduite dangereuse">Conduite dangereuse</option>
-            <option value="Autre infraction routière">Autre infraction routière</option>
-          </select>
-        </div>
-        <div class="fg"><label>Montant ($)</label><input type="number" id="aMontant" placeholder="ex: 500" min="0"></div>
         <div class="fg"><label>Officier verbalisateur</label><input id="aOfficier"></div>
         <div class="fg"><label>Date de l'infraction</label><input type="date" id="aDate"></div>
         <div class="fg"><label>Lieu</label><input id="aLieu" placeholder="ex: Vinewood Blvd"></div>
-        <div class="fg"><label>Statut</label>
-          <select id="aStatut">
-            <option value="Impayée">Impayée</option>
-            <option value="Payée">Payée</option>
-          </select>
+      </div>
+
+      <!-- ONGLET ROUTIÈRE -->
+      <div id="panelRoutiere">
+        <div class="form-grid g2" style="margin-bottom:12px">
+          <div class="fg"><label>Plaque d'immatriculation</label><input id="aPlaque" placeholder="ex: ABC-123"></div>
+          <div class="fg"><label>Montant ($)</label><input type="number" id="aMontant" placeholder="ex: 500" min="0"></div>
+          <div class="fg"><label>Motif</label>
+            <select id="aMotif">
+              <option value="Excès de vitesse">Excès de vitesse</option>
+              <option value="Grillage de feu rouge">Grillage de feu rouge</option>
+              <option value="Stationnement interdit">Stationnement interdit</option>
+              <option value="Conduite sans permis">Conduite sans permis</option>
+              <option value="Conduite en état d'ivresse">Conduite en état d'ivresse</option>
+              <option value="Usage du téléphone au volant">Usage du téléphone au volant</option>
+              <option value="Défaut d'assurance">Défaut d'assurance</option>
+              <option value="Véhicule non conforme">Véhicule non conforme</option>
+              <option value="Fuite après accident">Fuite après accident</option>
+              <option value="Conduite dangereuse">Conduite dangereuse</option>
+              <option value="Autre infraction routière">Autre infraction routière</option>
+            </select>
+          </div>
+          <div class="fg"><label>Statut</label>
+            <select id="aStatut">
+              <option value="Impayée">Impayée</option>
+              <option value="Payée">Payée</option>
+            </select>
+          </div>
         </div>
       </div>
+
+      <!-- ONGLET PÉNALE -->
+      <div id="panelPenale" style="display:none">
+        <div class="form-grid g2" style="margin-bottom:12px">
+          <div class="fg"><label>Chef d'accusation</label>
+            <select id="aChef">
+              <option value="Agression simple">Agression simple</option>
+              <option value="Agression avec arme">Agression avec arme</option>
+              <option value="Voies de fait graves">Voies de fait graves</option>
+              <option value="Tentative de meurtre">Tentative de meurtre</option>
+              <option value="Meurtre">Meurtre</option>
+              <option value="Vol simple">Vol simple</option>
+              <option value="Vol à main armée">Vol à main armée</option>
+              <option value="Braquage">Braquage</option>
+              <option value="Trafic de stupéfiants">Trafic de stupéfiants</option>
+              <option value="Port illégal d'arme">Port illégal d'arme</option>
+              <option value="Recel">Recel</option>
+              <option value="Évasion">Évasion</option>
+              <option value="Résistance à arrestation">Résistance à arrestation</option>
+              <option value="Menaces">Menaces</option>
+              <option value="Destruction de biens">Destruction de biens</option>
+              <option value="Intrusion">Intrusion</option>
+              <option value="Corruption">Corruption</option>
+              <option value="Autre infraction pénale">Autre infraction pénale</option>
+            </select>
+          </div>
+          <div class="fg"><label>Amende ($)</label><input type="number" id="aMontantPenal" placeholder="ex: 1500" min="0"></div>
+          <div class="fg"><label>Peine de prison</label><input id="aPrison" placeholder="ex: 5 ans, 18 mois..."></div>
+          <div class="fg"><label>Statut</label>
+            <select id="aStatutPenal">
+              <option value="Impayée">En attente</option>
+              <option value="Payée">Réglée</option>
+              <option value="En cours">En cours</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
       <div class="fg"><label>Notes supplémentaires</label><textarea id="aNotes" placeholder="Détails de l'infraction..."></textarea></div>
     </div>
     <div class="modal-footer">
@@ -231,7 +289,7 @@ body{font-family:'IBM Plex Sans',sans-serif;background:var(--bg);color:var(--tex
     userGrade = grade;
     const p = perms;
     if (!p.canWrite) document.getElementById('btnNew').style.display = 'none';
-    else document.getElementById('btnNew').addEventListener('click', () => { editingId = null; document.getElementById('modalTitle').textContent = 'NOUVELLE AMENDE / PV'; openModal('modalAmende'); });
+    else document.getElementById('btnNew').addEventListener('click', () => { editingId = null; document.getElementById('modalTitle').textContent = 'NOUVELLE AMENDE / PV'; window.switchTab('routiere'); openModal('modalAmende'); });
     document.getElementById('aOfficier').value = name;
     document.getElementById('aDate').value = new Date().toISOString().split('T')[0];
     await loadAmendes();
@@ -301,6 +359,25 @@ body{font-family:'IBM Plex Sans',sans-serif;background:var(--bg);color:var(--tex
     ));
   };
 
+
+  let currentTab = 'routiere';
+
+  window.switchTab = function(tab) {
+    currentTab = tab;
+    document.getElementById('panelRoutiere').style.display = tab === 'routiere' ? 'block' : 'none';
+    document.getElementById('panelPenale').style.display   = tab === 'penale'   ? 'block' : 'none';
+    // Style onglets
+    var tR = document.getElementById('tabRoutiere');
+    var tP = document.getElementById('tabPenale');
+    if (tab === 'routiere') {
+      tR.style.borderBottomColor = 'var(--gold)'; tR.style.color = 'var(--gold)';
+      tP.style.borderBottomColor = 'transparent'; tP.style.color = 'var(--text2)';
+    } else {
+      tP.style.borderBottomColor = 'var(--gold)'; tP.style.color = 'var(--gold)';
+      tR.style.borderBottomColor = 'transparent'; tR.style.color = 'var(--text2)';
+    }
+  };
+
   window.saveAmende = async function() {
     const payload = {
       reference: editingId ? (allAmendes.find(a=>a.id===editingId)?.reference || generateRef('PV')) : generateRef('PV'),
@@ -346,7 +423,19 @@ body{font-family:'IBM Plex Sans',sans-serif;background:var(--bg);color:var(--tex
     document.getElementById('modalTitle').textContent = 'MODIFIER AMENDE';
     document.getElementById('aNom').value = a.nom || '';
     document.getElementById('aPlaque').value = a.plaque || '';
-    document.getElementById('aMotif').value = a.motif || '';
+    if (a.type === 'penale') {
+      window.switchTab('penale');
+      document.getElementById('aChef').value = a.motif || '';
+      document.getElementById('aMontantPenal').value = a.montant || '';
+      document.getElementById('aPrison').value = a.prison || '';
+      document.getElementById('aStatutPenal').value = a.statut || 'Impayée';
+    } else {
+      window.switchTab('routiere');
+      document.getElementById('aMotif').value = a.motif || '';
+      document.getElementById('aMontant').value = a.montant || '';
+      document.getElementById('aPlaque').value = a.plaque || '';
+      document.getElementById('aStatut').value = a.statut || 'Impayée';
+    }
     document.getElementById('aMontant').value = a.montant || '';
     document.getElementById('aOfficier').value = a.officier || '';
     document.getElementById('aDate').value = a.date || '';
