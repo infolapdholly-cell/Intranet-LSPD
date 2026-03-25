@@ -191,7 +191,7 @@ export function buildSidebar(elementId, activePage, grade) {
     h += nav('amendes',      activePage, '◇', 'Amendes / PV',        'amendes.html');
     h += nav('rapports',     activePage, '▣', 'Rapports',            'rapports.html');
     h += nav('saisies',        activePage, '▨', 'Saisies',            'saisies.html');
-    h += nav('armes-civiles', activePage, '🔫', 'Armes civiles',    'armes-civiles.html');
+    h += nav('armes-civiles', activePage, '▤', 'Armes civiles',    'armes-civiles.html');
   }
 
   h += `<div class="sb-divider"></div><div class="sb-section">Personnel</div>`;
