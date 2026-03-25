@@ -43,6 +43,12 @@ export async function initPage(auth, db, onAuthStateChanged, pageName) {
             window.location.replace('index.html');
             return;
           }
+          // Forcer le changement de mot de passe si nécessaire
+          const curPage = window.location.pathname.split('/').pop() || '';
+          if (data.forcePasswordChange === true && !curPage.endsWith('change-password.html')) {
+            window.location.replace('change-password.html');
+            return;
+          }
         }
       } catch(e) { console.warn('Grade load failed:', e); }
 
