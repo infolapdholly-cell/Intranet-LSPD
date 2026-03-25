@@ -367,29 +367,38 @@
 
 
   async function sendDiscordAlertVolee(arme, officier, ancienStatut) {
-    const embed = {
+    const body = JSON.stringify({
+      content: '@everyone',
       embeds: [{
         title: '🚨 AVERTISSEMENT — ARME VOLÉE',
-        description: 'Un changement de statut critique vient d'être enregistré.',
+        description: '> Un changement de statut critique a été enregistré sur le registre des armes.',
         color: 15158332,
         fields: [
-          { name: '⚠️ Changement de statut', value: `${ancienStatut} → **Volée**`, inline: false },
-          { name: '🔫 Modèle',            value: arme.modele || '—',       inline: true },
-          { name: '📋 Type',              value: arme.type   || '—',       inline: true },
-          { name: '🔢 Numéro de série',   value: arme.serie  || '—',       inline: false },
-          { name: '👤 Propriétaire',      value: arme.proprietaire || '—', inline: true },
-          { name: '👮 Officier',          value: officier || '—',          inline: true },
+          { name: '⚠️ Statut',            value: ancienStatut + ' → 🚨 **Volée**', inline: false },
+          { name: '🔫 Modèle',            value: '`' + (arme.modele || '—') + '`', inline: true },
+          { name: '📋 Type',              value: arme.type || '—',                  inline: true },
+          { name: '🔢 Numéro de série',   value: '`' + (arme.serie || '—') + '`',  inline: false },
+          { name: '👤 Propriétaire',      value: arme.proprietaire || '—',          inline: true },
+          { name: '👮 Officier',          value: officier || '—',                   inline: true },
         ],
         footer: { text: 'LSPD Intranet — Registre armes civiles' },
         timestamp: new Date().toISOString()
       }]
-    };
-    if (arme.photoUrl) embed.embeds[0].thumbnail = { url: arme.photoUrl };
+    });
+    if (arme.photoUrl) {
+      const parsed = JSON.parse(body);
+      parsed.embeds[0].thumbnail = { url: arme.photoUrl };
+      try {
+        await fetch('https://discord.com/api/webhooks/1486446545820844204/verNhNhIwslVCklxcXJ_PG5nfBLXbpbHh3jzqLl6Owre5blR5d9Iqv5fKAJ4N73zbV5L', {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(parsed)
+        });
+      } catch(e) { console.warn('Discord alert:', e); }
+      return;
+    }
     try {
-      await fetch('https://discordapp.com/api/webhooks/1486446545820844204/verNhNhIwslVCklxcXJ_PG5nfBLXbpbHh3jzqLl6Owre5blR5d9Iqv5fKAJ4N73zbV5L', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(embed)
+      await fetch('https://discord.com/api/webhooks/1486446545820844204/verNhNhIwslVCklxcXJ_PG5nfBLXbpbHh3jzqLl6Owre5blR5d9Iqv5fKAJ4N73zbV5L', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' }, body
       });
     } catch(e) { console.warn('Discord alert:', e); }
   }
@@ -398,15 +407,16 @@
     const statutColors = { 'Légale': 3066993, 'Illégale': 15158332, 'Volée': 10038562 };
     const embed = {
       embeds: [{
-        title: '🔫 Nouvelle arme enregistrée',
+        title: '✅ Nouvelle arme enregistrée',
+        description: 'Une nouvelle arme vient d'être ajoutée au registre des armes civiles.',
         color: statutColors[arme.statut] || 3066993,
         fields: [
-          { name: 'Propriétaire',    value: arme.proprietaire || '—', inline: true },
-          { name: 'Type',            value: arme.type || '—',         inline: true },
-          { name: 'Modèle',          value: arme.modele || '—',       inline: true },
-          { name: 'Numéro de série', value: arme.serie || '—',        inline: true },
-          { name: 'Statut',          value: arme.statut || '—',       inline: true },
-          { name: 'Officier',        value: officier || '—',          inline: true },
+          { name: '👤 Propriétaire',    value: arme.proprietaire || '—', inline: true },
+          { name: '🔫 Type',            value: arme.type || '—',          inline: true },
+          { name: '📌 Modèle',          value: '`' + (arme.modele || '—') + '`', inline: true },
+          { name: '🔢 Numéro de série', value: '`' + (arme.serie || '—') + '`',  inline: true },
+          { name: '📊 Statut',          value: arme.statut || '—',        inline: true },
+          { name: '👮 Officier',        value: officier || '—',            inline: true },
         ],
         footer: { text: 'LSPD Intranet — Registre armes civiles' },
         timestamp: new Date().toISOString()
@@ -414,12 +424,12 @@
     };
     if (arme.photoUrl) embed.embeds[0].thumbnail = { url: arme.photoUrl };
     try {
-      await fetch('https://discordapp.com/api/webhooks/1486446545820844204/verNhNhIwslVCklxcXJ_PG5nfBLXbpbHh3jzqLl6Owre5blR5d9Iqv5fKAJ4N73zbV5L', {
+      await fetch('https://discord.com/api/webhooks/1486446545820844204/verNhNhIwslVCklxcXJ_PG5nfBLXbpbHh3jzqLl6Owre5blR5d9Iqv5fKAJ4N73zbV5L', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(embed)
       });
-    } catch(e) { console.warn('Discord webhook:', e); }
+    } catch(e) { console.warn('Discord log:', e); }
   }
 
   window.saveArme = async function() {
