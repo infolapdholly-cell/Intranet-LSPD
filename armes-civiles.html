@@ -263,7 +263,10 @@
           <div class="arme-nom">${a.modele || a.type || '—'}</div>
           <div class="arme-type">${a.type||'—'}</div>
           <div class="arme-meta">Propriétaire : <span>${a.proprietaire||'—'}</span></div>
-          <div class="arme-meta">N° série : <span>${a.serie||'—'}</span></div>
+          <div style="margin-top:8px;padding:5px 8px;background:rgba(201,168,76,.06);border:1px solid rgba(201,168,76,.15);border-radius:4px;display:inline-block">
+            <span style="font-family:'JetBrains Mono',monospace;font-size:8px;color:var(--gold);opacity:.6;letter-spacing:1px;display:block;margin-bottom:1px">N° SÉRIE</span>
+            <span style="font-family:'JetBrains Mono',monospace;font-size:12px;font-weight:600;color:var(--text);letter-spacing:2px">${a.serie||'—'}</span>
+          </div>
           ${a.date ? `<div class="arme-meta">Enregistrée le : <span>${new Date(a.date).toLocaleDateString('fr-FR')}</span></div>` : ''}
         </div>
         <div class="arme-actions">
@@ -319,7 +322,7 @@
         </div>
         <div>
           <div style="font-family:'JetBrains Mono',monospace;font-size:8px;color:var(--gold);opacity:.6;letter-spacing:2px;text-transform:uppercase;margin-bottom:3px">Numéro de série</div>
-          <div style="font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--text)">${a.serie || '—'}</div>
+          <div style="font-family:'JetBrains Mono',monospace;font-size:14px;font-weight:600;color:var(--text);letter-spacing:3px;background:rgba(201,168,76,.06);border:1px solid rgba(201,168,76,.15);border-radius:4px;padding:4px 10px;display:inline-block">${a.serie || '—'}</div>
         </div>
         <div>
           <div style="font-family:'JetBrains Mono',monospace;font-size:8px;color:var(--gold);opacity:.6;letter-spacing:2px;text-transform:uppercase;margin-bottom:3px">Date d'enregistrement</div>
