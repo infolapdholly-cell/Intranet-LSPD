@@ -201,7 +201,6 @@ export function buildSidebar(elementId, activePage, grade) {
     h += `<div class="sb-divider"></div><div class="sb-section">État major</div>`;
     if (p.canManageVehicles) h += nav('vehicules',  activePage, '◉', 'Véhicules',      'vehicules.html');
     if (p.canManageWeapons)  h += nav('armurerie',  activePage, '▲', 'Armurerie',       'armurerie.html');
-    if (p.canLogs)           h += nav('logs',        activePage, '≡', 'Historique',     'logs.html');
     if (p.canAdmin)          h += nav('admin',       activePage, '⊞', 'Administration', 'admin.html');
   }
 
