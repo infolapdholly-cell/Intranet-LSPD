@@ -116,6 +116,21 @@
 </div>
 </div>
 
+<!-- MODAL DÉTAIL ARME (lecture seule) -->
+<div class="modal-bg" id="modalArmeDetail">
+  <div class="modal" style="max-width:560px">
+    <div class="modal-head">
+      <div class="modal-title" id="detailArmeTitle">FICHE ARME</div>
+      <button class="modal-close" onclick="closeModal('modalArmeDetail')">×</button>
+    </div>
+    <div class="modal-body" id="detailArmeBody"></div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('modalArmeDetail')">Fermer</button>
+      <button id="btnEditFromDetail" class="btn btn-primary" style="display:none" onclick="editFromDetail()">✏️ Modifier</button>
+    </div>
+  </div>
+</div>
+
 <!-- MODAL ARME -->
 <div class="modal-bg" id="modalArme">
   <div class="modal" style="max-width:600px">
@@ -128,14 +143,14 @@
         <div class="fg"><label>Propriétaire (civil)</label><input id="wProprietaire" placeholder="Nom Prénom"></div>
         <div class="fg"><label>Type d'arme</label>
           <select id="wType">
-            <option value="Pistolet">Pistolet</option>
-            <option value="Revolver">Revolver</option>
-            <option value="Fusil">Fusil</option>
-            <option value="Fusil d'assaut">Fusil d'assaut</option>
-            <option value="Fusil à pompe">Fusil à pompe</option>
-            <option value="Sniper">Sniper</option>
-            <option value="Mitraillette">Mitraillette</option>
-            <option value="Autre">Autre</option>
+            <option value="Pistolet">🔫 Pistolet</option>
+            <option value="Revolver">🔫 Revolver</option>
+            <option value="Fusil">🎯 Fusil</option>
+            <option value="Fusil d'assaut">⚡ Fusil d'assaut</option>
+            <option value="Fusil à pompe">💥 Fusil à pompe</option>
+            <option value="Sniper">🎯 Sniper</option>
+            <option value="Mitraillette">⚡ Mitraillette</option>
+            <option value="Autre">📌 Autre</option>
           </select>
         </div>
         <div class="fg"><label>Marque / Modèle</label><input id="wModele" placeholder="ex: Glock 17, AK-47..."></div>
@@ -143,6 +158,7 @@
         <div class="fg"><label>Statut</label>
           <select id="wStatut">
             <option value="Légale">✅ Légale</option>
+            <option value="Illégale">❌ Illégale</option>
             <option value="Volée">🚨 Volée</option>
           </select>
         </div>
@@ -268,10 +284,64 @@
     ));
   };
 
+  let viewingId = null;
+
   window.viewArme = function(id) {
     const a = allArmes.find(x => x.id === id);
     if (!a) return;
-    editArme(id);
+    viewingId = id;
+
+    const statutColors = {
+      'Légale':   { bg:'rgba(26,158,86,.12)',  color:'#4ade80', border:'rgba(26,158,86,.3)' },
+      'Illégale': { bg:'rgba(184,48,48,.12)',  color:'#f87070', border:'rgba(184,48,48,.3)' },
+      'Volée':    { bg:'rgba(184,48,48,.25)',  color:'#fff',    border:'rgba(184,48,48,.5)' }
+    };
+    const sc = statutColors[a.statut] || statutColors['Légale'];
+
+    document.getElementById('detailArmeTitle').textContent = (a.modele || a.type || 'ARME').toUpperCase();
+    document.getElementById('btnEditFromDetail').style.display = userPerms.canWrite ? 'inline-flex' : 'none';
+
+    document.getElementById('detailArmeBody').innerHTML = `
+      <div style="display:flex;gap:16px;align-items:flex-start;margin-bottom:18px">
+        <div style="width:140px;height:120px;background:var(--surface2);border:1px solid var(--border);border-radius:6px;overflow:hidden;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:36px;color:var(--text3)">
+          ${a.photoUrl ? `<img src="${a.photoUrl}" style="width:100%;height:100%;object-fit:cover" onerror="this.parentNode.innerHTML='🔫'">` : '🔫'}
+        </div>
+        <div style="flex:1">
+          <div style="font-size:16px;font-weight:700;margin-bottom:4px;color:var(--text)">${a.modele || '—'}</div>
+          <div style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--gold);opacity:.8;letter-spacing:1px;margin-bottom:10px">${a.type || '—'}</div>
+          <span style="font-family:'JetBrains Mono',monospace;font-size:9px;padding:3px 10px;border-radius:3px;font-weight:700;letter-spacing:1px;text-transform:uppercase;background:${sc.bg};color:${sc.color};border:1px solid ${sc.border}">${a.statut || '—'}</span>
+        </div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px">
+        <div>
+          <div style="font-family:'JetBrains Mono',monospace;font-size:8px;color:var(--gold);opacity:.6;letter-spacing:2px;text-transform:uppercase;margin-bottom:3px">Propriétaire</div>
+          <div style="font-size:13px;font-weight:600;color:var(--text)">${a.proprietaire || '—'}</div>
+        </div>
+        <div>
+          <div style="font-family:'JetBrains Mono',monospace;font-size:8px;color:var(--gold);opacity:.6;letter-spacing:2px;text-transform:uppercase;margin-bottom:3px">Numéro de série</div>
+          <div style="font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--text)">${a.serie || '—'}</div>
+        </div>
+        <div>
+          <div style="font-family:'JetBrains Mono',monospace;font-size:8px;color:var(--gold);opacity:.6;letter-spacing:2px;text-transform:uppercase;margin-bottom:3px">Date d'enregistrement</div>
+          <div style="font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--text)">${a.date ? new Date(a.date).toLocaleDateString('fr-FR') : '—'}</div>
+        </div>
+        <div>
+          <div style="font-family:'JetBrains Mono',monospace;font-size:8px;color:var(--gold);opacity:.6;letter-spacing:2px;text-transform:uppercase;margin-bottom:3px">Enregistré par</div>
+          <div style="font-size:12px;color:var(--text2)">${a.createdBy || '—'}</div>
+        </div>
+      </div>
+      ${a.notes ? `<div>
+        <div style="font-family:'JetBrains Mono',monospace;font-size:8px;color:var(--gold);opacity:.6;letter-spacing:2px;text-transform:uppercase;margin-bottom:6px">Notes / Historique</div>
+        <div style="font-size:13px;padding:10px 12px;background:var(--surface2);border:1px solid var(--border);border-radius:5px;line-height:1.6;color:var(--text)">${a.notes}</div>
+      </div>` : ''}
+    `;
+
+    openModal('modalArmeDetail');
+  };
+
+  window.editFromDetail = function() {
+    closeModal('modalArmeDetail');
+    if (viewingId) editArme(viewingId);
   };
 
   window.editArme = function(id) {
@@ -304,7 +374,8 @@
       date:      document.getElementById('wDate').value,
       photoUrl:  document.getElementById('wPhoto').value.trim(),
       notes:     document.getElementById('wNotes').value.trim(),
-      updatedAt: new Date().toISOString()
+      updatedAt: new Date().toISOString(),
+      createdBy: editingId ? undefined : (document.getElementById('tbName')?.textContent || 'Officier')
     };
 
     try {
