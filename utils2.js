@@ -49,6 +49,17 @@ export async function initPage(auth, db, onAuthStateChanged, pageName) {
             window.location.replace('change-password.html');
             return;
           }
+          // Vérifier silencieusement si le MDP est encore 123456
+          if (!curPage.endsWith('change-password.html')) {
+            try {
+              const { EmailAuthProvider, reauthenticateWithCredential } = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js");
+              const testCred = EmailAuthProvider.credential(user.email, '123456');
+              await reauthenticateWithCredential(user, testCred);
+              // Re-auth réussie = MDP est encore 123456 → forcer le changement
+              window.location.replace('change-password.html');
+              return;
+            } catch(e) { /* MDP != 123456 → OK */ }
+          }
         }
       } catch(e) { console.warn('Grade load failed:', e); }
 
