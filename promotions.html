@@ -83,24 +83,43 @@
       </div>
     </div>
 
-    <!-- Stats -->
-    <div class="stats-grid" style="grid-template-columns:repeat(4,1fr);margin-bottom:20px">
-      <div class="stat-box gold"><div class="stat-lbl">MON GRADE</div><div class="stat-val" id="sMonGrade" style="font-size:13px">—</div></div>
-      <div class="stat-box blue"><div class="stat-lbl">EN ATTENTE</div><div class="stat-val" id="sEnAttente">—</div></div>
-      <div class="stat-box green"><div class="stat-lbl">APPROUVÉES</div><div class="stat-val" id="sApprouvees">—</div></div>
-      <div class="stat-box red"><div class="stat-lbl">REFUSÉES</div><div class="stat-val" id="sRefusees">—</div></div>
+    <!-- Stats — visibles seulement pour les grades supérieurs -->
+    <div id="statsBlock" style="display:none">
+      <div class="stats-grid" style="grid-template-columns:repeat(4,1fr);margin-bottom:20px">
+        <div class="stat-box gold"><div class="stat-lbl">MON GRADE</div><div class="stat-val" id="sMonGrade" style="font-size:13px">—</div></div>
+        <div class="stat-box blue"><div class="stat-lbl">EN ATTENTE</div><div class="stat-val" id="sEnAttente">—</div></div>
+        <div class="stat-box green"><div class="stat-lbl">APPROUVÉES</div><div class="stat-val" id="sApprouvees">—</div></div>
+        <div class="stat-box red"><div class="stat-lbl">REFUSÉES</div><div class="stat-val" id="sRefusees">—</div></div>
+      </div>
+      <!-- Onglets -->
+      <div class="tabs">
+        <button class="tab-btn active" id="tabPending" onclick="switchTab('pending')">⏳ En attente</button>
+        <button class="tab-btn" id="tabAll"     onclick="switchTab('all')">📋 Toutes les demandes</button>
+        <button class="tab-btn" id="tabHist"    onclick="switchTab('hist')">📜 Historique</button>
+      </div>
+      <div id="panelPending"></div>
+      <div id="panelAll"     style="display:none"></div>
+      <div id="panelHist"    style="display:none"></div>
     </div>
 
-    <!-- Onglets -->
-    <div class="tabs">
-      <button class="tab-btn active" id="tabPending" onclick="switchTab('pending')">⏳ En attente</button>
-      <button class="tab-btn" id="tabAll"     onclick="switchTab('all')">📋 Toutes les demandes</button>
-      <button class="tab-btn" id="tabHist"    onclick="switchTab('hist')">📜 Historique</button>
+    <!-- Vue simplifiée pour officier → capitaine -->
+    <div id="simpleBlock" style="display:none">
+      <div class="card">
+        <div class="card-body" style="padding:20px">
+          <div style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--gold);letter-spacing:2px;margin-bottom:12px">MON GRADE ACTUEL</div>
+          <div id="simpleGrade" style="font-size:18px;font-weight:700;color:var(--text);margin-bottom:20px">—</div>
+          <div style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--text2);letter-spacing:1px;line-height:1.8">
+            Pour demander une promotion, clique sur le bouton <span style="color:var(--gold)">📋 Faire une demande</span> en haut à droite.<br>
+            Ta demande sera examinée par un grade supérieur.
+          </div>
+        </div>
+      </div>
+      <!-- Mes demandes personnelles -->
+      <div style="margin-top:16px">
+        <div style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--gold);letter-spacing:2px;margin-bottom:10px">MES DEMANDES</div>
+        <div id="mesDemandes"></div>
+      </div>
     </div>
-
-    <div id="panelPending"></div>
-    <div id="panelAll"     style="display:none"></div>
-    <div id="panelHist"    style="display:none"></div>
 
   </div>
 </div>
@@ -250,13 +269,26 @@
 
     document.getElementById('sMonGrade').textContent = grade || '—';
 
+    const gradesSup = ['Chef de Police','Chef Assistant','Chef Adjoint','Commandant','Capitaine'];
+    const isSuperieur = gradesSup.includes(grade);
+
     // Bouton demande — tous sauf Chef de Police
     if (grade !== 'Chef de Police') {
       document.getElementById('btnDemande').style.display = 'inline-flex';
     }
-    // Bouton attribution — grades supérieurs
+    // Bouton attribution — Commandant et +
     if (perms.canAdmin || ['Chef de Police','Chef Assistant','Chef Adjoint','Commandant'].includes(grade)) {
       document.getElementById('btnAttribution').style.display = 'inline-flex';
+    }
+
+    if (isSuperieur) {
+      // Grades supérieurs → voir tout
+      document.getElementById('statsBlock').style.display = 'block';
+      document.getElementById('sMonGrade').textContent = grade;
+    } else {
+      // Grades inférieurs → vue simplifiée
+      document.getElementById('simpleBlock').style.display = 'block';
+      document.getElementById('simpleGrade').textContent = grade;
     }
 
     await Promise.all([loadDemandes(), loadOfficiers()]);
@@ -363,6 +395,15 @@
     document.getElementById('panelAll').innerHTML = all.length
       ? all.map(cardHTML).join('')
       : '<div class="empty-state"><div class="ei">📋</div><p>Aucune demande</p></div>';
+
+    // Vue simplifiée — mes demandes personnelles
+    const mesDem = allDemandes.filter(d => d.officierNom === userName);
+    const mesDemEl = document.getElementById('mesDemandes');
+    if (mesDemEl) {
+      mesDemEl.innerHTML = mesDem.length
+        ? mesDem.map(cardHTML).join('')
+        : '<div style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--text3);padding:14px;text-align:center;letter-spacing:1px">AUCUNE DEMANDE EN COURS</div>';
+    }
 
     // Historique en timeline
     document.getElementById('panelHist').innerHTML = hist.length
