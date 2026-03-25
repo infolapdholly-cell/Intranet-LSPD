@@ -1,0 +1,510 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="icon" type="image/png" href="https://r2.fivemanage.com/XEcvh0aBGRYhLzNNcRsQI/lspdnouveau.png">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LSPD — Grades & Promotions</title>
+  <link rel="stylesheet" href="style.css?v=15">
+  <style>
+    .promo-card {
+      background:var(--surface); border:1px solid var(--border); border-radius:8px;
+      padding:16px; transition:all .15s; animation:fadeIn .2s ease both;
+    }
+    .promo-card.pending  { border-left:3px solid var(--warning); }
+    .promo-card.approved { border-left:3px solid var(--success); }
+    .promo-card.refused  { border-left:3px solid var(--danger); }
+    .grade-badge {
+      display:inline-flex; align-items:center; gap:6px;
+      padding:3px 10px; border-radius:4px;
+      font-family:'JetBrains Mono',monospace; font-size:10px;
+      font-weight:700; letter-spacing:1px; text-transform:uppercase;
+    }
+    .grade-arrow {
+      display:flex; align-items:center; gap:8px; flex-wrap:wrap; margin:10px 0;
+    }
+    .hist-item {
+      display:flex; align-items:flex-start; gap:12px;
+      padding:10px 0; border-bottom:1px solid var(--border);
+    }
+    .hist-item:last-child { border-bottom:none; }
+    .hist-dot {
+      width:10px; height:10px; border-radius:50%; flex-shrink:0; margin-top:4px;
+    }
+    .tabs { display:flex; gap:0; border-bottom:1px solid var(--border); margin-bottom:20px; }
+    .tab-btn {
+      padding:9px 20px; background:transparent; border:none;
+      border-bottom:2px solid transparent; color:var(--text2);
+      font-family:'JetBrains Mono',monospace; font-size:10px;
+      letter-spacing:2px; text-transform:uppercase; cursor:pointer;
+      font-weight:600; margin-bottom:-1px; transition:all .15s;
+    }
+    .tab-btn.active { border-bottom-color:var(--gold); color:var(--gold); }
+  </style>
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="theme-color" content="#05080f">
+</head>
+<body>
+<div class="app-shell">
+<div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
+<div class="topbar">
+  <div class="tb-left">
+    <button class="tb-menu-btn" onclick="toggleSidebar()">☰</button>
+    <div class="tb-brand">
+      <div class="tb-shield"></div>
+      <img class="tb-logo" src="https://r2.fivemanage.com/XEcvh0aBGRYhLzNNcRsQI/lspdnouveau.png" alt="LSPD" onerror="this.style.display='none'">
+      <div class="tb-title">L.S.P.D</div>
+    </div>
+    <div class="tb-page">Grades & Promotions</div>
+  </div>
+  <div class="tb-right">
+    <div class="tb-status"><div class="live-dot"></div>En ligne</div>
+    <div class="tb-time" id="tbClock">--:--:--</div>
+    <div class="tb-user">
+      <span class="tb-grade" id="tbGrade">—</span>
+      <span class="tb-name" id="tbName">Officier</span>
+    </div>
+    <button class="btn-out" onclick="logout()">Quitter</button>
+  </div>
+</div>
+<div class="shell">
+  <div class="sidebar" id="sidebar"></div>
+  <div class="main">
+
+    <div class="page-head">
+      <div class="page-head-left">
+        <h2>Grades & Promotions</h2>
+        <p>// Gestion des avancements — Los Santos Police Department</p>
+      </div>
+      <div style="display:flex;gap:8px">
+        <button id="btnDemande" class="btn btn-ghost" onclick="openDemandeModal()" style="display:none">📋 Faire une demande</button>
+        <button id="btnAttribution" class="btn btn-primary" onclick="openAttributionModal()" style="display:none">⭐ Attribuer un grade</button>
+      </div>
+    </div>
+
+    <!-- Stats -->
+    <div class="stats-grid" style="grid-template-columns:repeat(4,1fr);margin-bottom:20px">
+      <div class="stat-box gold"><div class="stat-lbl">MON GRADE</div><div class="stat-val" id="sMonGrade" style="font-size:13px">—</div></div>
+      <div class="stat-box blue"><div class="stat-lbl">EN ATTENTE</div><div class="stat-val" id="sEnAttente">—</div></div>
+      <div class="stat-box green"><div class="stat-lbl">APPROUVÉES</div><div class="stat-val" id="sApprouvees">—</div></div>
+      <div class="stat-box red"><div class="stat-lbl">REFUSÉES</div><div class="stat-val" id="sRefusees">—</div></div>
+    </div>
+
+    <!-- Onglets -->
+    <div class="tabs">
+      <button class="tab-btn active" id="tabPending" onclick="switchTab('pending')">⏳ En attente</button>
+      <button class="tab-btn" id="tabAll"     onclick="switchTab('all')">📋 Toutes les demandes</button>
+      <button class="tab-btn" id="tabHist"    onclick="switchTab('hist')">📜 Historique</button>
+    </div>
+
+    <div id="panelPending"></div>
+    <div id="panelAll"     style="display:none"></div>
+    <div id="panelHist"    style="display:none"></div>
+
+  </div>
+</div>
+</div>
+
+<!-- MODAL DEMANDE DE PROMOTION -->
+<div class="modal-bg" id="modalDemande">
+  <div class="modal" style="max-width:500px">
+    <div class="modal-head">
+      <div class="modal-title">📋 DEMANDE DE PROMOTION</div>
+      <button class="modal-close" onclick="closeModal('modalDemande')">×</button>
+    </div>
+    <div class="modal-body">
+      <div class="fg" style="margin-bottom:12px">
+        <label>Grade actuel</label>
+        <input id="dGradeActuel" readonly style="opacity:.6;cursor:not-allowed">
+      </div>
+      <div class="fg" style="margin-bottom:12px">
+        <label>Grade demandé</label>
+        <select id="dGradeDemande">
+          <option value="Chef Assistant">Chef Assistant</option>
+          <option value="Chef Adjoint">Chef Adjoint</option>
+          <option value="Commandant">Commandant</option>
+          <option value="Capitaine">Capitaine</option>
+          <option value="Lieutenant">Lieutenant</option>
+          <option value="Sergent">Sergent</option>
+          <option value="Officier">Officier</option>
+          <option value="Cadet">Cadet</option>
+        </select>
+      </div>
+      <div class="fg">
+        <label>Justification / Mérites</label>
+        <textarea id="dJustification" placeholder="Décris tes actions, ton expérience, pourquoi tu mérites cette promotion..." style="min-height:100px"></textarea>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('modalDemande')">Annuler</button>
+      <button class="btn btn-primary" onclick="saveDemande()">Envoyer la demande</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL ATTRIBUTION DIRECTE -->
+<div class="modal-bg" id="modalAttribution">
+  <div class="modal" style="max-width:500px">
+    <div class="modal-head">
+      <div class="modal-title">⭐ ATTRIBUTION DE GRADE</div>
+      <button class="modal-close" onclick="closeModal('modalAttribution')">×</button>
+    </div>
+    <div class="modal-body">
+      <div class="fg" style="margin-bottom:12px">
+        <label>Officier</label>
+        <select id="aOfficier"></select>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px">
+        <div class="fg">
+          <label>Grade actuel</label>
+          <input id="aGradeActuel" readonly style="opacity:.6;cursor:not-allowed">
+        </div>
+        <div class="fg">
+          <label>Nouveau grade</label>
+          <select id="aGradeNouv">
+            <option value="Chef de Police">Chef de Police</option>
+            <option value="Chef Assistant">Chef Assistant</option>
+            <option value="Chef Adjoint">Chef Adjoint</option>
+            <option value="Commandant">Commandant</option>
+            <option value="Capitaine">Capitaine</option>
+            <option value="Lieutenant">Lieutenant</option>
+            <option value="Sergent">Sergent</option>
+            <option value="Officier">Officier</option>
+            <option value="Cadet">Cadet</option>
+          </select>
+        </div>
+      </div>
+      <div class="fg">
+        <label>Commentaire</label>
+        <textarea id="aCommentaire" placeholder="Raison de l'attribution, mérites, contexte..." style="min-height:80px"></textarea>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('modalAttribution')">Annuler</button>
+      <button class="btn btn-primary" onclick="saveAttribution()">Attribuer</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL DÉCISION (approuver/refuser) -->
+<div class="modal-bg" id="modalDecision">
+  <div class="modal" style="max-width:480px">
+    <div class="modal-head">
+      <div class="modal-title" id="decisionTitle">DÉCISION</div>
+      <button class="modal-close" onclick="closeModal('modalDecision')">×</button>
+    </div>
+    <div class="modal-body">
+      <div id="decisionInfo" style="margin-bottom:14px"></div>
+      <div class="fg">
+        <label>Commentaire de décision</label>
+        <textarea id="decisionComment" placeholder="Justification de la décision..." style="min-height:80px"></textarea>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('modalDecision')">Annuler</button>
+      <button id="btnRefuser" class="btn btn-danger" onclick="processDecision('refused')">✗ Refuser</button>
+      <button id="btnApprouver" class="btn btn-success" onclick="processDecision('approved')" style="background:var(--success);border-color:var(--success);color:#fff">✓ Approuver</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+  import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+  import { getFirestore, collection, addDoc, getDocs, doc, updateDoc, query, orderBy, onSnapshot } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+  import { initPage, startClock, showToast, openModal, closeModal, setupModalClose, addLog, getPerms } from './utils2.js';
+
+  const FC = {
+    apiKey:"AIzaSyA4GxYd32GNs5EDjjm2UI1a0d25YxigMVU",
+    authDomain:"lspd-intranet-2aed9.firebaseapp.com",
+    projectId:"lspd-intranet-2aed9",
+    storageBucket:"lspd-intranet-2aed9.firebasestorage.app",
+    messagingSenderId:"780922925382",
+    appId:"1:780922925382:web:a32d5e89bcff75bd8b3547"
+  };
+
+  const app  = initializeApp(FC);
+  const auth = getAuth(app);
+  const db   = getFirestore(app);
+
+  const GRADES = ['Chef de Police','Chef Assistant','Chef Adjoint','Commandant','Capitaine','Lieutenant','Sergent','Officier','Cadet'];
+  const GRADE_COLORS = {
+    'Chef de Police':'#c9a84c','Chef Assistant':'#c9a84c','Chef Adjoint':'#c9a84c',
+    'Commandant':'#2589d0','Capitaine':'#2589d0','Lieutenant':'#2589d0',
+    'Sergent':'#4ade80','Officier':'#dce8f4','Cadet':'#445e7a'
+  };
+
+  let allDemandes = [], allOfficiers = [], userGrade = '', userName = '', userPerms = {}, decidingId = null;
+  let currentTab = 'pending';
+
+  startClock('tbClock');
+  setupModalClose();
+  window.closeModal = closeModal;
+  window.openModal  = openModal;
+
+  initPage(auth, db, onAuthStateChanged, 'promotions').then(async ({ grade, name, perms }) => {
+    userGrade = grade; userName = name; userPerms = perms;
+
+    document.getElementById('sMonGrade').textContent = grade || '—';
+
+    // Bouton demande — tous sauf Chef de Police
+    if (grade !== 'Chef de Police') {
+      document.getElementById('btnDemande').style.display = 'inline-flex';
+    }
+    // Bouton attribution — grades supérieurs
+    if (perms.canAdmin || ['Chef de Police','Chef Assistant','Chef Adjoint','Commandant'].includes(grade)) {
+      document.getElementById('btnAttribution').style.display = 'inline-flex';
+    }
+
+    await Promise.all([loadDemandes(), loadOfficiers()]);
+  });
+
+  // ── Chargement ────────────────────────────────────────────
+  async function loadDemandes() {
+    try {
+      const snap = await getDocs(collection(db, 'promotions'));
+      allDemandes = snap.docs.map(d => ({ id: d.id, ...d.data() }))
+        .sort((a,b) => (b.createdAt||'').localeCompare(a.createdAt||''));
+      updateStats();
+      renderAll();
+    } catch(e) { console.error(e); }
+  }
+
+  async function loadOfficiers() {
+    try {
+      const snap = await getDocs(collection(db, 'officiers'));
+      allOfficiers = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+      // Remplir le select officiers
+      const sel = document.getElementById('aOfficier');
+      sel.innerHTML = allOfficiers.map(o =>
+        `<option value="${o.id}" data-grade="${o.grade||''}">${o.nom} — ${o.grade||'—'}</option>`
+      ).join('');
+      if (allOfficiers.length) {
+        document.getElementById('aGradeActuel').value = allOfficiers[0].grade || '';
+      }
+      sel.addEventListener('change', function() {
+        const o = allOfficiers.find(x => x.id === this.value);
+        document.getElementById('aGradeActuel').value = o ? o.grade || '' : '';
+      });
+    } catch(e) { console.error(e); }
+  }
+
+  // ── Stats ─────────────────────────────────────────────────
+  function updateStats() {
+    document.getElementById('sEnAttente').textContent  = allDemandes.filter(d => d.statut === 'pending').length;
+    document.getElementById('sApprouvees').textContent = allDemandes.filter(d => d.statut === 'approved').length;
+    document.getElementById('sRefusees').textContent   = allDemandes.filter(d => d.statut === 'refused').length;
+  }
+
+  // ── Rendu ─────────────────────────────────────────────────
+  function gradeBadge(g) {
+    const c = GRADE_COLORS[g] || 'var(--text2)';
+    return `<span class="grade-badge" style="background:${c}22;color:${c};border:1px solid ${c}44">${g||'—'}</span>`;
+  }
+
+  function statutBadge(s) {
+    const map = {
+      pending:  ['⏳ En attente', 'var(--warning)',  'rgba(214,137,16,.15)'],
+      approved: ['✓ Approuvée',   'var(--success)',  'rgba(26,158,86,.15)'],
+      refused:  ['✗ Refusée',     'var(--danger)',   'rgba(184,48,48,.15)'],
+      direct:   ['⭐ Attribution', 'var(--gold)',     'rgba(201,168,76,.15)']
+    };
+    const [label, color, bg] = map[s] || map.pending;
+    return `<span style="font-family:'JetBrains Mono',monospace;font-size:9px;font-weight:700;letter-spacing:1px;padding:2px 8px;border-radius:3px;color:${color};background:${bg};border:1px solid ${color}44">${label}</span>`;
+  }
+
+  function cardHTML(d) {
+    const canDecide = userPerms.canAdmin ||
+      ['Chef de Police','Chef Assistant','Chef Adjoint','Commandant'].includes(userGrade);
+    const isMine = d.officierNom === userName;
+
+    return `
+      <div class="promo-card ${d.statut}" style="margin-bottom:10px">
+        <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-wrap:wrap">
+          <div style="flex:1">
+            <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;flex-wrap:wrap">
+              <span style="font-size:14px;font-weight:700;color:var(--text)">${d.officierNom||'—'}</span>
+              ${statutBadge(d.statut)}
+              ${d.type === 'direct' ? '<span style="font-family:JetBrains Mono,monospace;font-size:9px;color:var(--text3);letter-spacing:1px">ATTRIBUTION DIRECTE</span>' : ''}
+            </div>
+            <div class="grade-arrow">
+              ${gradeBadge(d.gradeActuel)}
+              <span style="color:var(--gold);font-size:16px">→</span>
+              ${gradeBadge(d.gradeNouv)}
+            </div>
+            ${d.justification ? `<div style="font-size:12px;color:var(--text2);margin-top:8px;padding:8px 10px;background:var(--surface2);border-radius:4px;line-height:1.6">${d.justification}</div>` : ''}
+            ${d.commentaire ? `<div style="font-size:11px;color:var(--text2);margin-top:6px;padding:6px 10px;background:rgba(201,168,76,.05);border-left:2px solid var(--gold);border-radius:0 4px 4px 0">💬 ${d.commentaire}</div>` : ''}
+            <div style="font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--text3);margin-top:8px">
+              ${d.createdAt ? new Date(d.createdAt).toLocaleDateString('fr-FR',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'}) : ''}
+              ${d.decidePar ? ` — Décision par ${d.decidePar}` : ''}
+            </div>
+          </div>
+          ${d.statut === 'pending' && canDecide && !isMine ? `
+            <button onclick="openDecision('${d.id}')" style="padding:7px 14px;background:var(--gold);color:#0a0c12;border:none;border-radius:5px;font-family:'Inter',sans-serif;font-size:11px;font-weight:700;cursor:pointer;flex-shrink:0">
+              Décider
+            </button>` : ''}
+        </div>
+      </div>`;
+  }
+
+  function renderAll() {
+    const pending  = allDemandes.filter(d => d.statut === 'pending');
+    const all      = allDemandes;
+    // Historique = approuvées seulement
+    const hist     = allDemandes.filter(d => d.statut === 'approved' || d.statut === 'direct');
+
+    document.getElementById('panelPending').innerHTML = pending.length
+      ? pending.map(cardHTML).join('')
+      : '<div class="empty-state"><div class="ei">✓</div><p>Aucune demande en attente</p></div>';
+
+    document.getElementById('panelAll').innerHTML = all.length
+      ? all.map(cardHTML).join('')
+      : '<div class="empty-state"><div class="ei">📋</div><p>Aucune demande</p></div>';
+
+    // Historique en timeline
+    document.getElementById('panelHist').innerHTML = hist.length
+      ? `<div style="display:flex;flex-direction:column;gap:0">` +
+        hist.map(d => `
+          <div class="hist-item">
+            <div class="hist-dot" style="background:${GRADE_COLORS[d.gradeNouv]||'var(--gold)'}"></div>
+            <div style="flex:1">
+              <div style="font-size:13px;font-weight:600;color:var(--text)">${d.officierNom||'—'}</div>
+              <div class="grade-arrow" style="margin:4px 0">
+                ${gradeBadge(d.gradeActuel)} <span style="color:var(--gold)">→</span> ${gradeBadge(d.gradeNouv)}
+              </div>
+              ${d.commentaire ? `<div style="font-size:11px;color:var(--text2)">${d.commentaire}</div>` : ''}
+              <div style="font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--text3);margin-top:4px">
+                ${d.createdAt ? new Date(d.createdAt).toLocaleDateString('fr-FR') : ''} — par ${d.decidePar||d.officierNom||'—'}
+              </div>
+            </div>
+          </div>`).join('') + `</div>`
+      : '<div class="empty-state"><div class="ei">📜</div><p>Aucun historique</p></div>';
+  }
+
+  // ── Onglets ───────────────────────────────────────────────
+  window.switchTab = function(tab) {
+    currentTab = tab;
+    ['pending','all','hist'].forEach(t => {
+      document.getElementById('panel' + t.charAt(0).toUpperCase() + t.slice(1)).style.display = t === tab ? 'block' : 'none';
+      document.getElementById('tab' + t.charAt(0).toUpperCase() + t.slice(1)).classList.toggle('active', t === tab);
+    });
+  };
+
+  // ── Demande de promotion ──────────────────────────────────
+  window.openDemandeModal = function() {
+    document.getElementById('dGradeActuel').value = userGrade || '';
+    document.getElementById('dJustification').value = '';
+    // Proposer les grades supérieurs au grade actuel
+    const idx = GRADES.indexOf(userGrade);
+    const sel = document.getElementById('dGradeDemande');
+    sel.innerHTML = GRADES.slice(0, idx > 0 ? idx : GRADES.length)
+      .map(g => `<option value="${g}">${g}</option>`).join('');
+    openModal('modalDemande');
+  };
+
+  window.saveDemande = async function() {
+    const justification = document.getElementById('dJustification').value.trim();
+    if (!justification) { showToast('La justification est obligatoire', 'error'); return; }
+    try {
+      await addDoc(collection(db, 'promotions'), {
+        type:         'demande',
+        officierNom:  userName,
+        gradeActuel:  userGrade,
+        gradeNouv:    document.getElementById('dGradeDemande').value,
+        justification,
+        statut:       'pending',
+        createdAt:    new Date().toISOString()
+      });
+      await addLog(db, 'Demande de promotion', `${userName} → ${document.getElementById('dGradeDemande').value}`);
+      showToast('Demande envoyée ✓', 'success');
+      closeModal('modalDemande');
+      await loadDemandes();
+    } catch(e) { showToast('Erreur : ' + e.message, 'error'); }
+  };
+
+  // ── Attribution directe ───────────────────────────────────
+  window.openAttributionModal = function() {
+    document.getElementById('aCommentaire').value = '';
+    openModal('modalAttribution');
+  };
+
+  window.saveAttribution = async function() {
+    const selEl    = document.getElementById('aOfficier');
+    const officier = allOfficiers.find(x => x.id === selEl.value);
+    if (!officier) { showToast('Sélectionne un officier', 'error'); return; }
+    const gradeNouv = document.getElementById('aGradeNouv').value;
+    if (gradeNouv === officier.grade) { showToast('Le grade est identique', 'error'); return; }
+    const commentaire = document.getElementById('aCommentaire').value.trim();
+    try {
+      // Enregistrer dans l'historique des promotions
+      await addDoc(collection(db, 'promotions'), {
+        type:        'direct',
+        officierNom: officier.nom,
+        gradeActuel: officier.grade || '',
+        gradeNouv,
+        commentaire,
+        statut:      'approved',
+        decidePar:   userName,
+        createdAt:   new Date().toISOString()
+      });
+      // Mettre à jour le grade de l'officier
+      await updateDoc(doc(db, 'officiers', officier.id), { grade: gradeNouv });
+      await addLog(db, 'Attribution de grade', `${officier.nom} : ${officier.grade} → ${gradeNouv}`);
+      showToast(`Grade attribué à ${officier.nom} ✓`, 'success');
+      closeModal('modalAttribution');
+      await loadDemandes();
+    } catch(e) { showToast('Erreur : ' + e.message, 'error'); }
+  };
+
+  // ── Décision ──────────────────────────────────────────────
+  window.openDecision = function(id) {
+    const d = allDemandes.find(x => x.id === id);
+    if (!d) return;
+    decidingId = id;
+    document.getElementById('decisionTitle').textContent = 'DÉCISION — ' + (d.officierNom||'').toUpperCase();
+    document.getElementById('decisionComment').value = '';
+    document.getElementById('decisionInfo').innerHTML = `
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
+        <span style="font-size:14px;font-weight:700">${d.officierNom}</span>
+        ${statutBadge(d.statut)}
+      </div>
+      <div class="grade-arrow">
+        ${gradeBadge(d.gradeActuel)} <span style="color:var(--gold);font-size:16px">→</span> ${gradeBadge(d.gradeNouv)}
+      </div>
+      ${d.justification ? `<div style="font-size:12px;color:var(--text2);margin-top:8px;padding:8px;background:var(--surface2);border-radius:4px">${d.justification}</div>` : ''}
+    `;
+    openModal('modalDecision');
+  };
+
+  window.processDecision = async function(decision) {
+    const d = allDemandes.find(x => x.id === decidingId);
+    if (!d) return;
+    const commentaire = document.getElementById('decisionComment').value.trim();
+    try {
+      await updateDoc(doc(db, 'promotions', decidingId), {
+        statut:     decision,
+        commentaire,
+        decidePar:  userName,
+        decideAt:   new Date().toISOString()
+      });
+      // Si approuvé → mettre à jour le grade de l'officier dans la collection officiers
+      if (decision === 'approved') {
+        const officier = allOfficiers.find(o => o.nom === d.officierNom);
+        if (officier) {
+          await updateDoc(doc(db, 'officiers', officier.id), { grade: d.gradeNouv });
+        }
+      }
+      await addLog(db, decision === 'approved' ? 'Promotion approuvée' : 'Promotion refusée',
+        `${d.officierNom} : ${d.gradeActuel} → ${d.gradeNouv}`);
+      showToast(decision === 'approved' ? 'Promotion approuvée ✓' : 'Demande refusée', decision === 'approved' ? 'success' : 'error');
+      closeModal('modalDecision');
+      decidingId = null;
+      await loadDemandes();
+    } catch(e) { showToast('Erreur : ' + e.message, 'error'); }
+  };
+</script>
+</body>
+</html>

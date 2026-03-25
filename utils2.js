@@ -191,7 +191,7 @@ export function buildSidebar(elementId, activePage, grade) {
     h += nav('amendes',      activePage, '◇', 'Amendes / PV',        'amendes.html');
     h += nav('rapports',     activePage, '▣', 'Rapports',            'rapports.html');
     h += nav('saisies',        activePage, '▨', 'Saisies',            'saisies.html');
-    h += nav('armes-civiles', activePage, '▤', 'Armes civiles',    'armes-civiles.html');
+    h += nav('armes-civiles', activePage, '🔫', 'Armes civiles',    'armes-civiles.html');
   }
 
   h += `<div class="sb-divider"></div><div class="sb-section">Personnel</div>`;
@@ -201,7 +201,9 @@ export function buildSidebar(elementId, activePage, grade) {
     h += `<div class="sb-divider"></div><div class="sb-section">État major</div>`;
     if (p.canManageVehicles) h += nav('vehicules',  activePage, '◉', 'Véhicules',      'vehicules.html');
     if (p.canManageWeapons)  h += nav('armurerie',  activePage, '▲', 'Armurerie',       'armurerie.html');
+    if (p.canLogs)           h += nav('logs',        activePage, '≡', 'Historique',     'logs.html');
     if (p.canAdmin)          h += nav('admin',       activePage, '⊞', 'Administration', 'admin.html');
+    h += nav('promotions', activePage, '⭐', 'Grades & Promotions', 'promotions.html');
   }
 
   h += `<div class="sb-divider"></div><div class="sb-section">Réseau</div>`;
