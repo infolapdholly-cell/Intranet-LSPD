@@ -139,14 +139,14 @@
         <div class="fg"><label>Propriétaire (civil)</label><input id="wProprietaire" placeholder="Nom Prénom"></div>
         <div class="fg"><label>Type d'arme</label>
           <select id="wType">
-            <option value="Pistolet">Pistolet</option>
-            <option value="Revolver">Revolver</option>
-            <option value="Fusil">Fusil</option>
-            <option value="Fusil d'assaut">Fusil d'assaut</option>
-            <option value="Fusil à pompe">Fusil à pompe</option>
-            <option value="Sniper">Sniper</option>
-            <option value="Mitraillette">Mitraillette</option>
-            <option value="Autre">Autre</option>
+            <option value="Pistolet">🔫 Pistolet</option>
+            <option value="Revolver">🔫 Revolver</option>
+            <option value="Fusil">🎯 Fusil</option>
+            <option value="Fusil d'assaut">⚡ Fusil d'assaut</option>
+            <option value="Fusil à pompe">💥 Fusil à pompe</option>
+            <option value="Sniper">🎯 Sniper</option>
+            <option value="Mitraillette">⚡ Mitraillette</option>
+            <option value="Autre">📌 Autre</option>
           </select>
         </div>
         <div class="fg"><label>Marque / Modèle</label><input id="wModele" placeholder="ex: Glock 17, AK-47..."></div>
@@ -182,7 +182,7 @@
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
   import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
   import { getFirestore, collection, addDoc, getDocs, doc, updateDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
-  import { initPage, startClock, showToast, openModal, closeModal, setupModalClose, addLog, getPerms } from './utils2.js';
+  import { initPage, startClock, showToast, openModal, closeModal, setupModalClose, addLog, getPerms } from './utils3.js';
 
   const FC = {
     apiKey:"AIzaSyA4GxYd32GNs5EDjjm2UI1a0d25YxigMVU",

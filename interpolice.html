@@ -58,7 +58,7 @@ body{font-family:'IBM Plex Sans',sans-serif;background:var(--bg);color:var(--tex
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>INTERPOLICE — San Andreas</title>
   <link rel="icon" type="image/png" href="https://r2.fivemanage.com/XEcvh0aBGRYhLzNNcRsQI/lspdnouveau.png">
-  <link rel="stylesheet" href="style.css?v=14">
+  <link rel="stylesheet" href="style.css?v=15">
   <style>
     .dept-badge {
       display:inline-flex; align-items:center; gap:6px; padding:3px 10px;
@@ -256,16 +256,11 @@ body{font-family:'IBM Plex Sans',sans-serif;background:var(--bg);color:var(--tex
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
   import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
   import { getFirestore, collection, addDoc, getDocs, onSnapshot, query, orderBy, limit } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
-  import { initPage, startClock, showToast, statusBadge } from './utils2.js?v=3';
-
-  // Fonctions modal définies localement (compatibilité utils.js)
-  function openModal(id)  { document.getElementById(id)?.classList.add('open'); }
-  function closeModal(id) { document.getElementById(id)?.classList.remove('open'); }
-  function setupModalClose() { document.querySelectorAll('.modal-bg').forEach(m => m.addEventListener('click', e => { if(e.target===m) m.classList.remove('open'); })); }
+  import { initPage, startClock, showToast, openModal, closeModal, setupModalClose, statusBadge, addLog } from './utils3.js';
 
   import { printCasier } from './pdf-templates.js';
 
-  // ---- CONFIG LSPD (auth + casiers LSPD) ----
+  // ---- CONFIG LSPD (base principale) ----
   const lspdConfig = {
     apiKey: "AIzaSyA4GxYd32GNs5EDjjm2UI1a0d25YxigMVU",
     authDomain: "lspd-intranet-2aed9.firebaseapp.com",
@@ -275,34 +270,24 @@ body{font-family:'IBM Plex Sans',sans-serif;background:var(--bg);color:var(--tex
     appId: "1:780922925382:web:a32d5e89bcff75bd8b3547"
   };
 
-  // ---- CONFIG BCSO (casiers BCSO) ----
+  // ---- CONFIG BCSO (lecture des casiers) ----
   const bcsoConfig = {
-    apiKey: "AIzaSyDTrqTkudkB4gM6tZlTDcDPTGk2gvi713Y",
-    authDomain: "bcso-intranet-60c02.firebaseapp.com",
-    projectId: "bcso-intranet-60c02",
-    storageBucket: "bcso-intranet-60c02.firebasestorage.app",
-    messagingSenderId: "251172788920",
-    appId: "1:251172788920:web:262b6bbc703f8fa971b24d"
+    apiKey: "AIzaSyC_kfIx8Q5d6zha5NUFNpsbR5D02d5q1DA",
+    authDomain: "bcso-intranet-3d5ab.firebaseapp.com",
+    projectId: "bcso-intranet-3d5ab",
+    storageBucket: "bcso-intranet-3d5ab.firebasestorage.app",
+    messagingSenderId: "788391241057",
+    appId: "1:788391241057:web:66e876f97ee32825f01120"
   };
 
-  // ---- CONFIG INTERPOLICE (partagé LSPD + BCSO) ----
-  const interConfig = {
-    apiKey: "AIzaSyALfR1TKAHAI2ZIexZ4Nx-73KcRiM0uouE",
-    authDomain: "interpolice-los-santos.firebaseapp.com",
-    projectId: "interpolice-los-santos",
-    storageBucket: "interpolice-los-santos.firebasestorage.app",
-    messagingSenderId: "937356759538",
-    appId: "1:937356759538:web:21396d74aaaf370bdd1b6b"
-  };
-
-  // 3 apps Firebase : auth LSPD, casiers BCSO, données partagées interpolice
-  const lspdApp  = initializeApp(lspdConfig);
-  const bcsoApp  = initializeApp(bcsoConfig, 'bcso');
-  const interApp = initializeApp(interConfig, 'interpolice');
-  const auth    = getAuth(lspdApp);
-  const dbLspd  = getFirestore(lspdApp);
-  const dbBcso  = getFirestore(bcsoApp);
-  const dbInter = getFirestore(interApp);
+  // App LSPD = app par défaut (sans nom) pour que l'auth fonctionne
+  const lspdApp = initializeApp(lspdConfig);
+  const bcsoApp = initializeApp(bcsoConfig, 'bcso');
+  const auth = getAuth(lspdApp);
+  const dbLspd = getFirestore(lspdApp);
+  const dbBcso = getFirestore(bcsoApp);
+  // Base interpolice = collection dans LSPD Firebase
+  const dbInter = dbLspd;
 
   let allCasiers = [], userName = '', userDept = 'LSPD';
   startClock('tbClock');
