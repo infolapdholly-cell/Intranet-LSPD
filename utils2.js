@@ -230,13 +230,17 @@ export function buildSidebar(elementId, activePage, grade) {
 
   // ── Unités spéciales (selon spécialités de l'officier) ──
   const specs = JSON.parse(sessionStorage.getItem('lspd_specialites') || '[]');
-  const hasSpec = s => specs.includes(s) || specs.includes(s.toLowerCase());
-  if (hasSpec('Académie') || hasSpec('SWAT') || hasSpec('Détective') || hasSpec('K9')) {
+  const gradesSuperieurs = ['chef de police', 'chef assistant'];
+  const isSuperGrade = gradesSuperieurs.includes((grade||'').toLowerCase());
+  const hasSpec = s => isSuperGrade || specs.includes(s) || specs.includes(s.toLowerCase());
+  const hasAnySpec = isSuperGrade || specs.some(s => ['Académie','SWAT','Détective','Detective','K9','Police Maritime'].includes(s));
+  if (hasAnySpec) {
     h += `<div class="sb-divider"></div><div class="sb-section">Unités spéciales</div>`;
-    if (hasSpec('Académie'))  h += nav('academie',  activePage, '🎓', 'Académie',   'academie.html');
-    if (hasSpec('SWAT'))      h += nav('swat',       activePage, '⚡', 'SWAT',       'swat.html');
+    if (hasSpec('Académie'))         h += nav('academie',  activePage, '🎓', 'Académie',         'academie.html');
+    if (hasSpec('SWAT'))             h += nav('swat',       activePage, '⚡', 'SWAT',              'swat.html');
     if (hasSpec('Détective') || hasSpec('Detective')) h += nav('detective', activePage, '🔍', 'Détective', 'detective.html');
-    if (hasSpec('K9'))        h += nav('k9',         activePage, '🐕', 'K9',         'k9.html');
+    if (hasSpec('K9'))               h += nav('k9',         activePage, '🐕', 'K9',                'k9.html');
+    if (hasSpec('Police Maritime'))  h += nav('maritime',   activePage, '⚓', 'Police Maritime',   'maritime.html');
   }
 
   h += `<div class="sb-divider"></div><div class="sb-section">Réseau</div>`;

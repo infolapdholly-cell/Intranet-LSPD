@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="icon" type="image/png" href="https://r2.fivemanage.com/XEcvh0aBGRYhLzNNcRsQI/lspdnouveau.png">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LSPD — Police Maritime</title>
+  <link rel="stylesheet" href="style.css?v=15">
+  <style>
+    .vessel-card { background:var(--surface); border:1px solid var(--border); border-radius:8px; overflow:hidden; transition:all .15s; }
+    .vessel-card:hover { border-color:var(--accent-b); box-shadow:0 0 12px rgba(37,137,208,.12); }
+    .vessel-photo { width:100%; height:120px; background:var(--surface2); display:flex; align-items:center; justify-content:center; font-size:44px; overflow:hidden; position:relative; }
+    .vessel-photo img { width:100%; height:100%; object-fit:cover; }
+    .vessel-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(220px,1fr)); gap:12px; }
+  </style>
+</head>
+<body>
+<div class="app-shell">
+<div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
+<div class="topbar">
+  <div class="tb-left">
+    <button class="tb-menu-btn" onclick="toggleSidebar()">☰</button>
+    <div class="tb-brand"><div class="tb-shield"></div><img class="tb-logo" src="https://r2.fivemanage.com/XEcvh0aBGRYhLzNNcRsQI/lspdnouveau.png" alt="LSPD" onerror="this.style.display='none'"><div class="tb-title">L.S.P.D</div></div>
+    <div class="tb-page">Police Maritime</div>
+  </div>
+  <div class="tb-right">
+    <div class="tb-status"><div class="live-dot"></div>En ligne</div>
+    <div class="tb-time" id="tbClock">--:--:--</div>
+    <div class="tb-user"><span class="tb-grade" id="tbGrade">—</span><span class="tb-name" id="tbName">Officier</span></div>
+    <button class="btn-out" onclick="logout()">Quitter</button>
+  </div>
+</div>
+<div class="shell">
+  <div class="sidebar" id="sidebar"></div>
+  <div class="main">
+    <div class="page-head">
+      <div class="page-head-left"><h2>⚓ Police Maritime</h2><p>// Unité maritime — Patrouilles et interventions en mer</p></div>
+      <div style="display:flex;gap:8px">
+        <button class="btn btn-ghost" id="btnNewIntervention">+ Intervention</button>
+        <button class="btn btn-primary" id="btnNewVessel">+ Embarcation</button>
+      </div>
+    </div>
+
+    <!-- Onglets -->
+    <div style="display:flex;gap:0;border-bottom:1px solid var(--border);margin-bottom:20px">
+      <button id="tabVessels" onclick="switchTab('vessels')" style="padding:9px 20px;background:transparent;border:none;border-bottom:2px solid var(--accent-b);color:var(--accent-b);font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:2px;text-transform:uppercase;cursor:pointer;font-weight:600;margin-bottom:-1px">⚓ Embarcations</button>
+      <button id="tabInterventions" onclick="switchTab('interventions')" style="padding:9px 20px;background:transparent;border:none;border-bottom:2px solid transparent;color:var(--text2);font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:2px;text-transform:uppercase;cursor:pointer;font-weight:600;margin-bottom:-1px">🌊 Interventions</button>
+    </div>
+
+    <!-- Stats -->
+    <div class="stats-grid" style="grid-template-columns:repeat(4,1fr);margin-bottom:20px">
+      <div class="stat-box blue"><div class="stat-lbl">EMBARCATIONS</div><div class="stat-val" id="sVessels">—</div></div>
+      <div class="stat-box green"><div class="stat-lbl">EN SERVICE</div><div class="stat-val" id="sEnService">—</div></div>
+      <div class="stat-box gold"><div class="stat-lbl">INTERVENTIONS</div><div class="stat-val" id="sInterventions">—</div></div>
+      <div class="stat-box red"><div class="stat-lbl">EN COURS</div><div class="stat-val" id="sEnCours">—</div></div>
+    </div>
+
+    <!-- Panel Embarcations -->
+    <div id="panelVessels">
+      <div class="vessel-grid" id="vesselGrid"></div>
+      <div id="vesselEmpty" style="display:none" class="empty-state"><div class="ei">⚓</div><p>Aucune embarcation enregistrée</p></div>
+    </div>
+
+    <!-- Panel Interventions -->
+    <div id="panelInterventions" style="display:none">
+      <div class="search-bar" style="margin-bottom:16px">
+        <input type="text" id="searchIntervention" placeholder="Rechercher par titre, zone, officier..." oninput="filterInterventions()">
+        <select id="filterIntervention" onchange="filterInterventions()">
+          <option value="">Tous</option>
+          <option value="En cours">En cours</option>
+          <option value="Terminée">Terminée</option>
+          <option value="Annulée">Annulée</option>
+        </select>
+      </div>
+      <div id="interventionGrid" style="display:flex;flex-direction:column;gap:10px"></div>
+      <div id="interventionEmpty" style="display:none" class="empty-state"><div class="ei">🌊</div><p>Aucune intervention enregistrée</p></div>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- MODAL EMBARCATION -->
+<div class="modal-bg" id="modalVessel">
+  <div class="modal" style="max-width:560px">
+    <div class="modal-head">
+      <div class="modal-title" id="modalVesselTitle">NOUVELLE EMBARCATION</div>
+      <button class="modal-close" onclick="closeModal('modalVessel')">×</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-grid g2" style="margin-bottom:12px">
+        <div class="fg"><label>Nom / Immatriculation *</label><input id="vNom" placeholder="ex: LSPD-Marine-01"></div>
+        <div class="fg"><label>Type</label>
+          <select id="vType">
+            <option value="Vedette">Vedette</option>
+            <option value="Zodiac">Zodiac</option>
+            <option value="Hors-bord">Hors-bord</option>
+            <option value="Jet-ski">Jet-ski</option>
+            <option value="Autre">Autre</option>
+          </select>
+        </div>
+        <div class="fg"><label>Statut</label>
+          <select id="vStatut">
+            <option value="En service">En service</option>
+            <option value="En maintenance">En maintenance</option>
+            <option value="Hors service">Hors service</option>
+          </select>
+        </div>
+        <div class="fg"><label>Officier assigné</label><input id="vOfficier" placeholder="Nom de l'officier"></div>
+      </div>
+      <div class="fg" style="margin-bottom:12px"><label>Photo (URL)</label><input id="vPhoto" placeholder="https://..."></div>
+      <div class="fg"><label>Notes</label><textarea id="vNotes" placeholder="État, équipements..."></textarea></div>
+    </div>
+    <div class="modal-footer">
+      <button id="btnDeleteVessel" style="display:none;margin-right:auto" class="btn btn-danger btn-sm" onclick="deleteVessel()">🗑</button>
+      <button class="btn btn-ghost" onclick="closeModal('modalVessel')">Annuler</button>
+      <button class="btn btn-primary" onclick="saveVessel()">Enregistrer</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL INTERVENTION -->
+<div class="modal-bg" id="modalIntervention">
+  <div class="modal" style="max-width:580px">
+    <div class="modal-head">
+      <div class="modal-title" id="modalInterventionTitle">NOUVELLE INTERVENTION</div>
+      <button class="modal-close" onclick="closeModal('modalIntervention')">×</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-grid g2" style="margin-bottom:12px">
+        <div class="fg" style="grid-column:1/-1"><label>Titre *</label><input id="iTitre" placeholder="ex: Contrôle embarcation suspecte, Sauvetage..."></div>
+        <div class="fg"><label>Type</label>
+          <select id="iType">
+            <option value="Patrouille">Patrouille</option>
+            <option value="Contrôle">Contrôle</option>
+            <option value="Sauvetage">Sauvetage</option>
+            <option value="Poursuite">Poursuite</option>
+            <option value="Trafic">Trafic</option>
+            <option value="Autre">Autre</option>
+          </select>
+        </div>
+        <div class="fg"><label>Statut</label>
+          <select id="iStatut">
+            <option value="En cours">En cours</option>
+            <option value="Terminée">Terminée</option>
+            <option value="Annulée">Annulée</option>
+          </select>
+        </div>
+        <div class="fg"><label>Zone / Secteur</label><input id="iZone" placeholder="ex: Port de LS, Alamo Sea..."></div>
+        <div class="fg"><label>Date & Heure</label><input type="datetime-local" id="iDate"></div>
+        <div class="fg"><label>Officier responsable</label><input id="iOfficier" placeholder="Nom de l'officier"></div>
+        <div class="fg"><label>Embarcation utilisée</label><input id="iVessel" placeholder="ex: LSPD-Marine-01"></div>
+      </div>
+      <div class="fg"><label>Compte-rendu</label><textarea id="iNotes" placeholder="Déroulement, résultats, personnes impliquées..."></textarea></div>
+    </div>
+    <div class="modal-footer">
+      <button id="btnDeleteIntervention" style="display:none;margin-right:auto" class="btn btn-danger btn-sm" onclick="deleteIntervention()">🗑</button>
+      <button class="btn btn-ghost" onclick="closeModal('modalIntervention')">Annuler</button>
+      <button class="btn btn-primary" onclick="saveIntervention()">Enregistrer</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+  import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+  import { getFirestore, collection, addDoc, getDocs, doc, updateDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+  import { initPage, startClock, showToast, openModal, closeModal, setupModalClose } from './utils2.js';
+
+  const FC = { apiKey:"AIzaSyA4GxYd32GNs5EDjjm2UI1a0d25YxigMVU",authDomain:"lspd-intranet-2aed9.firebaseapp.com",projectId:"lspd-intranet-2aed9",storageBucket:"lspd-intranet-2aed9.firebasestorage.app",messagingSenderId:"780922925382",appId:"1:780922925382:web:a32d5e89bcff75bd8b3547" };
+  const app = initializeApp(FC); const auth = getAuth(app); const db = getFirestore(app);
+  let vessels = [], interventions = [], editingVessel = null, editingIntervention = null, userPerms = {};
+  let currentTab = 'vessels';
+
+  startClock('tbClock'); setupModalClose();
+  window.closeModal = closeModal; window.openModal = openModal;
+
+  initPage(auth, db, onAuthStateChanged, 'maritime').then(async ({ perms }) => {
+    userPerms = perms;
+    if (perms.canWrite) {
+      document.getElementById('btnNewVessel').addEventListener('click', () => { editingVessel=null; resetVessel(); document.getElementById('modalVesselTitle').textContent='NOUVELLE EMBARCATION'; document.getElementById('btnDeleteVessel').style.display='none'; openModal('modalVessel'); });
+      document.getElementById('btnNewIntervention').addEventListener('click', () => { editingIntervention=null; resetIntervention(); document.getElementById('modalInterventionTitle').textContent='NOUVELLE INTERVENTION'; document.getElementById('btnDeleteIntervention').style.display='none'; document.getElementById('iDate').value=new Date().toISOString().slice(0,16); openModal('modalIntervention'); });
+    } else {
+      document.getElementById('btnNewVessel').style.display='none';
+      document.getElementById('btnNewIntervention').style.display='none';
+    }
+    await Promise.all([loadVessels(), loadInterventions()]);
+  });
+
+  async function loadVessels() {
+    const snap = await getDocs(collection(db,'maritime-vessels'));
+    vessels = snap.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>(a.nom||'').localeCompare(b.nom||''));
+    document.getElementById('sVessels').textContent   = vessels.length;
+    document.getElementById('sEnService').textContent = vessels.filter(v=>v.statut==='En service').length;
+    renderVessels(vessels);
+  }
+
+  async function loadInterventions() {
+    const snap = await getDocs(collection(db,'maritime-interventions'));
+    interventions = snap.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>(b.createdAt||'').localeCompare(a.createdAt||''));
+    document.getElementById('sInterventions').textContent = interventions.length;
+    document.getElementById('sEnCours').textContent       = interventions.filter(i=>i.statut==='En cours').length;
+    renderInterventions(interventions);
+  }
+
+  const V_STATUT_C = {'En service':'var(--success)','En maintenance':'var(--gold)','Hors service':'var(--danger)'};
+  const I_STATUT_C = {'En cours':'var(--danger)','Terminée':'var(--success)','Annulée':'var(--text2)'};
+
+  function renderVessels(list) {
+    const grid = document.getElementById('vesselGrid'); const empty = document.getElementById('vesselEmpty');
+    if (!list.length) { grid.innerHTML=''; empty.style.display='flex'; return; }
+    empty.style.display='none';
+    grid.innerHTML = list.map(v=>`
+      <div class="vessel-card">
+        <div class="vessel-photo">${v.photoUrl?`<img src="${v.photoUrl}" onerror="this.parentNode.innerHTML='⛵'">`:'⛵'}</div>
+        <div style="padding:12px">
+          <div style="font-size:13px;font-weight:700;margin-bottom:4px;color:var(--text)">${v.nom||'—'}</div>
+          <div style="font-family:JetBrains Mono,monospace;font-size:10px;color:var(--accent-b);margin-bottom:8px">${v.type||'—'}</div>
+          <span style="font-family:JetBrains Mono,monospace;font-size:9px;padding:2px 8px;border-radius:3px;color:${V_STATUT_C[v.statut]||'var(--text2)'};background:${V_STATUT_C[v.statut]||'var(--text2)'}18;border:1px solid ${V_STATUT_C[v.statut]||'var(--text2)'}33">${v.statut||'—'}</span>
+          ${v.officier?`<div style="font-family:JetBrains Mono,monospace;font-size:9px;color:var(--text2);margin-top:8px">👮 ${v.officier}</div>`:''}
+        </div>
+        <div style="padding:8px 12px;border-top:1px solid var(--border)">
+          ${userPerms.canWrite?`<button onclick="editVessel('${v.id}')" style="width:100%;padding:5px;background:rgba(37,137,208,.08);border:1px solid rgba(37,137,208,.2);border-radius:4px;color:var(--accent-b);font-size:11px;cursor:pointer">✏️ Modifier</button>`:''}
+        </div>
+      </div>`).join('');
+  }
+
+  function renderInterventions(list) {
+    const grid = document.getElementById('interventionGrid'); const empty = document.getElementById('interventionEmpty');
+    if (!list.length) { grid.innerHTML=''; empty.style.display='flex'; return; }
+    empty.style.display='none';
+    grid.innerHTML = list.map(i=>`
+      <div style="background:var(--surface);border:1px solid var(--border);border-left:3px solid ${I_STATUT_C[i.statut]||'var(--border)'};border-radius:8px;padding:16px;transition:background .15s" onmouseover="this.style.background='var(--surface2)'" onmouseout="this.style.background='var(--surface)'">
+        <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px">
+          <div style="flex:1">
+            <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;flex-wrap:wrap">
+              <span style="font-size:14px;font-weight:700;color:var(--text)">${i.titre||'—'}</span>
+              <span style="font-family:JetBrains Mono,monospace;font-size:9px;padding:2px 8px;border-radius:3px;color:${I_STATUT_C[i.statut]||'var(--text2)'};background:${I_STATUT_C[i.statut]||'var(--text2)'}18;border:1px solid ${I_STATUT_C[i.statut]||'var(--text2)'}33">${i.statut||'—'}</span>
+              <span style="font-family:JetBrains Mono,monospace;font-size:9px;color:var(--text3)">${i.type||''}</span>
+            </div>
+            <div style="display:flex;gap:16px;flex-wrap:wrap;margin-bottom:6px">
+              ${i.zone?`<div style="font-family:JetBrains Mono,monospace;font-size:10px;color:var(--text2)">📍 ${i.zone}</div>`:''}
+              ${i.officier?`<div style="font-family:JetBrains Mono,monospace;font-size:10px;color:var(--text2)">👮 ${i.officier}</div>`:''}
+              ${i.vessel?`<div style="font-family:JetBrains Mono,monospace;font-size:10px;color:var(--text2)">⚓ ${i.vessel}</div>`:''}
+              ${i.date?`<div style="font-family:JetBrains Mono,monospace;font-size:10px;color:var(--text2)">📅 ${new Date(i.date).toLocaleDateString('fr-FR')}</div>`:''}
+            </div>
+            ${i.notes?`<div style="font-size:12px;color:var(--text2);padding:8px 10px;background:var(--surface2);border-radius:4px;line-height:1.6">${i.notes}</div>`:''}
+          </div>
+          ${userPerms.canWrite?`<button onclick="editIntervention('${i.id}')" style="padding:6px 12px;background:rgba(37,137,208,.08);border:1px solid rgba(37,137,208,.2);border-radius:4px;color:var(--accent-b);font-size:11px;cursor:pointer;flex-shrink:0">✏️</button>`:''}
+        </div>
+      </div>`).join('');
+  }
+
+  window.switchTab = function(tab) {
+    currentTab = tab;
+    document.getElementById('panelVessels').style.display       = tab==='vessels'       ? 'block' : 'none';
+    document.getElementById('panelInterventions').style.display = tab==='interventions' ? 'block' : 'none';
+    const tV = document.getElementById('tabVessels');
+    const tI = document.getElementById('tabInterventions');
+    tV.style.borderBottomColor = tab==='vessels'       ? 'var(--accent-b)' : 'transparent';
+    tV.style.color             = tab==='vessels'       ? 'var(--accent-b)' : 'var(--text2)';
+    tI.style.borderBottomColor = tab==='interventions' ? 'var(--accent-b)' : 'transparent';
+    tI.style.color             = tab==='interventions' ? 'var(--accent-b)' : 'var(--text2)';
+  };
+
+  window.filterInterventions = function() {
+    const q = document.getElementById('searchIntervention').value.toLowerCase();
+    const s = document.getElementById('filterIntervention').value;
+    renderInterventions(interventions.filter(i=>(i.titre+' '+i.zone+' '+i.officier).toLowerCase().includes(q)&&(!s||i.statut===s)));
+  };
+
+  window.editVessel = function(id) {
+    const v = vessels.find(x=>x.id===id); if (!v) return;
+    editingVessel=id;
+    document.getElementById('modalVesselTitle').textContent='MODIFIER L\'EMBARCATION';
+    document.getElementById('btnDeleteVessel').style.display = userPerms.canDelete?'inline-flex':'none';
+    document.getElementById('vNom').value    = v.nom     || '';
+    document.getElementById('vType').value   = v.type    || 'Vedette';
+    document.getElementById('vStatut').value = v.statut  || 'En service';
+    document.getElementById('vOfficier').value = v.officier || '';
+    document.getElementById('vPhoto').value  = v.photoUrl|| '';
+    document.getElementById('vNotes').value  = v.notes   || '';
+    openModal('modalVessel');
+  };
+
+  window.saveVessel = async function() {
+    const nom = document.getElementById('vNom').value.trim();
+    if (!nom) { showToast('Le nom est obligatoire','error'); return; }
+    const payload = { nom, type:document.getElementById('vType').value, statut:document.getElementById('vStatut').value, officier:document.getElementById('vOfficier').value.trim(), photoUrl:document.getElementById('vPhoto').value.trim(), notes:document.getElementById('vNotes').value.trim(), updatedAt:new Date().toISOString() };
+    try {
+      if (editingVessel) { await updateDoc(doc(db,'maritime-vessels',editingVessel),payload); showToast('Embarcation mise à jour ✓','success'); }
+      else { payload.createdAt=new Date().toISOString(); await addDoc(collection(db,'maritime-vessels'),payload); showToast('Embarcation enregistrée ✓','success'); }
+      closeModal('modalVessel'); editingVessel=null; await loadVessels();
+    } catch(e) { showToast('Erreur : '+e.message,'error'); }
+  };
+
+  window.deleteVessel = async function() {
+    if (!editingVessel||!confirm('Supprimer cette embarcation ?')) return;
+    await deleteDoc(doc(db,'maritime-vessels',editingVessel));
+    showToast('Supprimée','success'); closeModal('modalVessel'); editingVessel=null; await loadVessels();
+  };
+
+  window.editIntervention = function(id) {
+    const i = interventions.find(x=>x.id===id); if (!i) return;
+    editingIntervention=id;
+    document.getElementById('modalInterventionTitle').textContent='MODIFIER L\'INTERVENTION';
+    document.getElementById('btnDeleteIntervention').style.display = userPerms.canDelete?'inline-flex':'none';
+    document.getElementById('iTitre').value   = i.titre   || '';
+    document.getElementById('iType').value    = i.type    || 'Patrouille';
+    document.getElementById('iStatut').value  = i.statut  || 'En cours';
+    document.getElementById('iZone').value    = i.zone    || '';
+    document.getElementById('iDate').value    = i.date    || '';
+    document.getElementById('iOfficier').value= i.officier|| '';
+    document.getElementById('iVessel').value  = i.vessel  || '';
+    document.getElementById('iNotes').value   = i.notes   || '';
+    openModal('modalIntervention');
+  };
+
+  window.saveIntervention = async function() {
+    const titre = document.getElementById('iTitre').value.trim();
+    if (!titre) { showToast('Le titre est obligatoire','error'); return; }
+    const payload = { titre, type:document.getElementById('iType').value, statut:document.getElementById('iStatut').value, zone:document.getElementById('iZone').value.trim(), date:document.getElementById('iDate').value, officier:document.getElementById('iOfficier').value.trim(), vessel:document.getElementById('iVessel').value.trim(), notes:document.getElementById('iNotes').value.trim(), updatedAt:new Date().toISOString() };
+    try {
+      if (editingIntervention) { await updateDoc(doc(db,'maritime-interventions',editingIntervention),payload); showToast('Intervention mise à jour ✓','success'); }
+      else { payload.createdAt=new Date().toISOString(); await addDoc(collection(db,'maritime-interventions'),payload); showToast('Intervention enregistrée ✓','success'); }
+      closeModal('modalIntervention'); editingIntervention=null; await loadInterventions();
+    } catch(e) { showToast('Erreur : '+e.message,'error'); }
+  };
+
+  window.deleteIntervention = async function() {
+    if (!editingIntervention||!confirm('Supprimer cette intervention ?')) return;
+    await deleteDoc(doc(db,'maritime-interventions',editingIntervention));
+    showToast('Supprimée','success'); closeModal('modalIntervention'); editingIntervention=null; await loadInterventions();
+  };
+
+  function resetVessel()       { ['vNom','vOfficier','vPhoto','vNotes'].forEach(id=>document.getElementById(id).value=''); document.getElementById('vType').value='Vedette'; document.getElementById('vStatut').value='En service'; }
+  function resetIntervention() { ['iTitre','iZone','iDate','iOfficier','iVessel','iNotes'].forEach(id=>document.getElementById(id).value=''); document.getElementById('iType').value='Patrouille'; document.getElementById('iStatut').value='En cours'; }
+</script>
+</body>
+</html>
