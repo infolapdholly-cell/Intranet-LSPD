@@ -203,31 +203,31 @@ export function buildSidebar(elementId, activePage, grade) {
   let h = '';
 
   h += `<div class="sb-section">Principal</div>`;
-  h += nav('dashboard', activePage, '◈', 'Tableau de bord', 'dashboard.html');
+  h += nav('dashboard', activePage, '⬡', 'Tableau de bord', 'dashboard.html');
 
   if (p.canRead) {
     h += `<div class="sb-divider"></div><div class="sb-section">Opérations</div>`;
-    h += nav('casiers',      activePage, '▤', 'Casiers judiciaires', 'casiers.html');
-    h += nav('arrestations', activePage, '◎', 'Arrestations',        'arrestations.html');
-    h += nav('amendes',      activePage, '◇', 'Amendes / PV',        'amendes.html');
-    h += nav('rapports',     activePage, '▣', 'Rapports',            'rapports.html');
-    h += nav('saisies',        activePage, '▨', 'Saisies',            'saisies.html');
-    h += nav('armes-civiles',        activePage, '🔫', 'Armes civiles',        'armes-civiles.html');
-    h += nav('vehicules-suspects', activePage, '🚗', 'Véhicules suspects',  'vehicules-suspects.html');
+    h += nav('casiers',      activePage, '⊟', 'Casiers judiciaires', 'casiers.html');
+    h += nav('arrestations', activePage, '⊕', 'Arrestations',        'arrestations.html');
+    h += nav('amendes',      activePage, '⊖', 'Amendes / PV',        'amendes.html');
+    h += nav('rapports',     activePage, '⊞', 'Rapports',            'rapports.html');
+    h += nav('saisies',        activePage, '⊠', 'Saisies',            'saisies.html');
+    h += nav('armes-civiles',        activePage, '⌖', 'Armes civiles',        'armes-civiles.html');
+    h += nav('vehicules-suspects', activePage, '⊡', 'Véhicules suspects',  'vehicules-suspects.html');
   }
 
   h += `<div class="sb-divider"></div><div class="sb-section">Personnel</div>`;
-  h += nav('officiers', activePage, '▦', 'Officiers', 'officiers.html');
+  h += nav('officiers', activePage, '⊟', 'Officiers', 'officiers.html');
 
   if (p.canEtatMajor) {
     h += `<div class="sb-divider"></div><div class="sb-section">État major</div>`;
-    if (p.canManageVehicles) h += nav('vehicules',  activePage, '◉', 'Véhicules',      'vehicules.html');
-    if (p.canManageWeapons)  h += nav('armurerie',  activePage, '▲', 'Armurerie',       'armurerie.html');
-    if (p.canLogs)           h += nav('logs',        activePage, '≡', 'Historique',     'logs.html');
-    if (p.canAdmin)          h += nav('admin',       activePage, '⊞', 'Administration', 'admin.html');
+    if (p.canManageVehicles) h += nav('vehicules',  activePage, '⬡', 'Véhicules',      'vehicules.html');
+    if (p.canManageWeapons)  h += nav('armurerie',  activePage, '⬠', 'Armurerie',       'armurerie.html');
+    if (p.canLogs)           h += nav('logs',        activePage, '≣', 'Historique',     'logs.html');
+    if (p.canAdmin)          h += nav('admin',       activePage, '⊟', 'Administration', 'admin.html');
   }
 
-  h += nav('promotions', activePage, '◈', 'Grades & Promotions', 'promotions.html');
+  h += nav('promotions', activePage, '⬧', 'Grades & Promotions', 'promotions.html');
 
   // ── Unités spéciales (selon spécialités de l'officier) ──
   const specs = JSON.parse(sessionStorage.getItem('lspd_specialites') || '[]');
@@ -241,17 +241,17 @@ export function buildSidebar(elementId, activePage, grade) {
   const hasAnySpec = isSuperGrade || isAdmin || specs.some(s => ['Académie','SWAT','Détective','Detective','K9','Police Maritime'].includes(s));
   if (hasAnySpec) {
     h += `<div class="sb-divider"></div><div class="sb-section">Unités spéciales</div>`;
-    if (hasSpec('Académie'))         h += nav('academie',  activePage, '🎓', 'Académie',         'academie.html');
-    if (hasSpec('SWAT'))             h += nav('swat',       activePage, '⚡', 'SWAT',              'swat.html');
-    if (hasSpec('Détective') || hasSpec('Detective')) h += nav('detective', activePage, '🔍', 'Détective', 'detective.html');
-    if (hasSpec('K9'))               h += nav('k9',         activePage, '🐕', 'K9',                'k9.html');
-    if (hasSpec('Police Maritime'))  h += nav('maritime',   activePage, '⚓', 'Police Maritime',   'maritime.html');
+    if (hasSpec('Académie'))         h += nav('academie',  activePage, '⬡', 'Académie',         'academie.html');
+    if (hasSpec('SWAT'))             h += nav('swat',       activePage, '◈', 'SWAT',              'swat.html');
+    if (hasSpec('Détective') || hasSpec('Detective')) h += nav('detective', activePage, '◎', 'Détective', 'detective.html');
+    if (hasSpec('K9'))               h += nav('k9',         activePage, '⬧', 'K9',                'k9.html');
+    if (hasSpec('Police Maritime'))  h += nav('maritime',   activePage, '⬠', 'Police Maritime',   'maritime.html');
   }
 
   h += `<div class="sb-divider"></div><div class="sb-section">Réseau</div>`;
-  h += nav('interpolice', activePage, '↗', 'Interpolice',  'interpolice.html');
-  h += nav('calendrier',  activePage, '📅', 'Calendrier',    'calendrier.html');
-  h += nav('code-penal',  activePage, '📋', 'Code Pénal',     'code-penal.html');
+  h += nav('interpolice', activePage, '⇢', 'Interpolice',  'interpolice.html');
+  h += nav('calendrier',  activePage, '▦', 'Calendrier',    'calendrier.html');
+  h += nav('code-penal',  activePage, '≡', 'Code Pénal',     'code-penal.html');
   h += `<div class="sb-divider"></div>`;
   h += `<a class="sb-item" href="#" onclick="event.preventDefault();window.logout()"><span class="sb-icon">⊘</span>Déconnexion</a>`;
 
