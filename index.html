@@ -222,13 +222,15 @@
   const auth = getAuth(app);
   const db   = getFirestore(app);
 
+  // Détecter si on vient du bouton retour de maintenance
+  const cameFromMaintenance = new URLSearchParams(window.location.search).get('from') === 'maintenance';
+
   onAuthStateChanged(auth, async user => {
     if (!user) return; // Pas connecté, on reste sur la page login
     try {
       // Vérifier compte suspendu
       const uSnap = await getDoc(doc(db,'users',user.uid));
       if (uSnap.exists() && uSnap.data().suspended) {
-        // Compte suspendu : déconnecter silencieusement et afficher erreur
         const { signOut } = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js");
         await signOut(auth);
         const errText = document.getElementById('liErrText');
@@ -238,11 +240,18 @@
         return;
       }
 
-      // Vérifier maintenance — grades supérieurs passent
+      // Vérifier maintenance
       const mSnap = await getDoc(doc(db,'config','maintenance'));
       if (mSnap.exists() && mSnap.data().enabled === true) {
         const userGrade = uSnap.exists() ? (uSnap.data().grade||'cadet').toLowerCase() : 'cadet';
         if (userGrade !== 'chef de police') {
+          // Si on vient du bouton "Retour" de maintenance → déconnecter et rester sur login
+          if (cameFromMaintenance) {
+            const { signOut } = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js");
+            await signOut(auth);
+            return; // Rester sur index.html sans rediriger
+          }
+          // Sinon rediriger vers maintenance
           const d = mSnap.data();
           const params = new URLSearchParams({ msg: d.message||'', eta: d.eta||'', reason: d.reason||'' });
           window.location.replace('maintenance.html?' + params.toString());
