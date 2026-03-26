@@ -51,18 +51,24 @@ export async function initPage(auth, db, onAuthStateChanged, pageName) {
             window.location.replace('change-password.html');
             return;
           }
+          // Stocker le flag dans sessionStorage comme backup
+          sessionStorage.setItem('lspd_force_pwd', data.forcePasswordChange ? '1' : '0');
         } else {
-          // Document pas encore créé → peut-être première connexion
-          // Vérifier via metadata Firebase : si creationTime = lastSignInTime → première connexion
+          // Document pas encore créé → première connexion probable
           const meta = user.metadata;
           if (meta && meta.creationTime && meta.lastSignInTime) {
             const created = new Date(meta.creationTime).getTime();
             const lastIn  = new Date(meta.lastSignInTime).getTime();
-            if (Math.abs(created - lastIn) < 5000 && !curPage.endsWith('change-password.html')) {
+            if (Math.abs(created - lastIn) < 10000 && !curPage.endsWith('change-password.html')) {
               window.location.replace('change-password.html');
               return;
             }
           }
+        }
+        // Vérifier aussi le backup sessionStorage
+        if (sessionStorage.getItem('lspd_force_pwd') === '1' && !curPage.endsWith('change-password.html')) {
+          window.location.replace('change-password.html');
+          return;
         }
       } catch(e) { console.warn('Grade load failed:', e); }
 
