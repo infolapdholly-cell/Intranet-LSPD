@@ -256,7 +256,12 @@ body{font-family:'IBM Plex Sans',sans-serif;background:var(--bg);color:var(--tex
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
   import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
   import { getFirestore, collection, addDoc, getDocs, onSnapshot, query, orderBy, limit } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
-  import { initPage, startClock, showToast, openModal, closeModal, setupModalClose, statusBadge } from './utils.js?v=3';
+  import { initPage, startClock, showToast, statusBadge } from './utils.js?v=3';
+
+  // Fonctions modal définies localement (compatibilité utils.js)
+  function openModal(id)  { document.getElementById(id)?.classList.add('open'); }
+  function closeModal(id) { document.getElementById(id)?.classList.remove('open'); }
+  function setupModalClose() { document.querySelectorAll('.modal-bg').forEach(m => m.addEventListener('click', e => { if(e.target===m) m.classList.remove('open'); })); }
 
   import { printCasier } from './pdf-templates.js';
 
