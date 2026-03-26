@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="icon" type="image/png" href="https://r2.fivemanage.com/XEcvh0aBGRYhLzNNcRsQI/lspdnouveau.png">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LSPD — SWAT</title>
+  <link rel="stylesheet" href="style.css?v=15">
+</head>
+<body>
+<div class="app-shell">
+<div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
+<div class="topbar">
+  <div class="tb-left">
+    <button class="tb-menu-btn" onclick="toggleSidebar()">☰</button>
+    <div class="tb-brand"><div class="tb-shield"></div><img class="tb-logo" src="https://r2.fivemanage.com/XEcvh0aBGRYhLzNNcRsQI/lspdnouveau.png" alt="LSPD" onerror="this.style.display='none'"><div class="tb-title">L.S.P.D</div></div>
+    <div class="tb-page">SWAT</div>
+  </div>
+  <div class="tb-right">
+    <div class="tb-status"><div class="live-dot"></div>En ligne</div>
+    <div class="tb-time" id="tbClock">--:--:--</div>
+    <div class="tb-user"><span class="tb-grade" id="tbGrade">—</span><span class="tb-name" id="tbName">Officier</span></div>
+    <button class="btn-out" onclick="logout()">Quitter</button>
+  </div>
+</div>
+<div class="shell">
+  <div class="sidebar" id="sidebar"></div>
+  <div class="main">
+    <div class="page-head">
+      <div class="page-head-left"><h2>⚡ Unité SWAT</h2><p>// Opérations tactiques spéciales — Los Santos Police Department</p></div>
+      <button class="btn btn-primary" id="btnNew">+ Nouvelle opération</button>
+    </div>
+    <div class="stats-grid" style="grid-template-columns:repeat(4,1fr)">
+      <div class="stat-box blue"><div class="stat-lbl">OPÉRATIONS</div><div class="stat-val" id="sTotal">—</div></div>
+      <div class="stat-box red"><div class="stat-lbl">EN COURS</div><div class="stat-val" id="sEnCours">—</div></div>
+      <div class="stat-box green"><div class="stat-lbl">TERMINÉES</div><div class="stat-val" id="sTerminees">—</div></div>
+      <div class="stat-box gold"><div class="stat-lbl">PLANIFIÉES</div><div class="stat-val" id="sPlanifiees">—</div></div>
+    </div>
+    <div class="search-bar">
+      <input type="text" id="searchInput" placeholder="Rechercher par nom, cible, lieu..." oninput="filterItems()">
+      <select id="filterStatut" onchange="filterItems()">
+        <option value="">Tous</option>
+        <option value="Planifiée">Planifiée</option>
+        <option value="En cours">En cours</option>
+        <option value="Terminée">Terminée</option>
+        <option value="Annulée">Annulée</option>
+      </select>
+    </div>
+    <div id="itemGrid" style="display:flex;flex-direction:column;gap:10px"></div>
+    <div id="itemEmpty" style="display:none" class="empty-state"><div class="ei">⚡</div><p>Aucune opération enregistrée</p></div>
+  </div>
+</div>
+</div>
+
+<div class="modal-bg" id="modalForm">
+  <div class="modal" style="max-width:600px">
+    <div class="modal-head">
+      <div class="modal-title" id="modalTitle">NOUVELLE OPÉRATION</div>
+      <button class="modal-close" onclick="closeModal('modalForm')">×</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-grid g2" style="margin-bottom:12px">
+        <div class="fg" style="grid-column:1/-1"><label>Nom de l'opération *</label><input id="fNom" placeholder="ex: Opération Tonnerre, Raid Mirage..."></div>
+        <div class="fg"><label>Type</label>
+          <select id="fType">
+            <option value="Raid">Raid</option>
+            <option value="Négociation">Négociation</option>
+            <option value="Extraction">Extraction</option>
+            <option value="Surveillance">Surveillance</option>
+            <option value="Neutralisation">Neutralisation</option>
+            <option value="Autre">Autre</option>
+          </select>
+        </div>
+        <div class="fg"><label>Statut</label>
+          <select id="fStatut">
+            <option value="Planifiée">Planifiée</option>
+            <option value="En cours">En cours</option>
+            <option value="Terminée">Terminée</option>
+            <option value="Annulée">Annulée</option>
+          </select>
+        </div>
+        <div class="fg"><label>Cible / Objectif</label><input id="fCible" placeholder="Nom du suspect ou objectif"></div>
+        <div class="fg"><label>Lieu</label><input id="fLieu" placeholder="ex: Maze Bank Arena, Sandy Shores..."></div>
+        <div class="fg"><label>Date / Heure</label><input type="datetime-local" id="fDate"></div>
+        <div class="fg"><label>Chef d'équipe</label><input id="fChef" placeholder="Nom du responsable"></div>
+        <div class="fg" style="grid-column:1/-1"><label>Membres de l'équipe</label><input id="fEquipe" placeholder="ex: Dupont, Martin, Beck..."></div>
+      </div>
+      <div class="fg"><label>Compte-rendu / Notes</label><textarea id="fNotes" placeholder="Déroulement de l'opération, résultats..."></textarea></div>
+    </div>
+    <div class="modal-footer">
+      <button id="btnDelete" style="display:none;margin-right:auto" class="btn btn-danger btn-sm" onclick="deleteItem()">🗑 Supprimer</button>
+      <button class="btn btn-ghost" onclick="closeModal('modalForm')">Annuler</button>
+      <button class="btn btn-primary" onclick="saveItem()">Enregistrer</button>
+    </div>
+  </div>
+</div>
+<div class="toast" id="toast"></div>
+
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+  import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+  import { getFirestore, collection, addDoc, getDocs, doc, updateDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+  import { initPage, startClock, showToast, openModal, closeModal, setupModalClose } from './utils2.js';
+
+  const FC = { apiKey:"AIzaSyA4GxYd32GNs5EDjjm2UI1a0d25YxigMVU",authDomain:"lspd-intranet-2aed9.firebaseapp.com",projectId:"lspd-intranet-2aed9",storageBucket:"lspd-intranet-2aed9.firebasestorage.app",messagingSenderId:"780922925382",appId:"1:780922925382:web:a32d5e89bcff75bd8b3547" };
+  const app = initializeApp(FC); const auth = getAuth(app); const db = getFirestore(app);
+  let allItems = [], editingId = null, userPerms = {};
+
+  startClock('tbClock'); setupModalClose();
+  window.closeModal = closeModal; window.openModal = openModal;
+
+  initPage(auth, db, onAuthStateChanged, 'swat').then(async ({ perms }) => {
+    userPerms = perms;
+    if (perms.canWrite) { document.getElementById('btnNew').addEventListener('click', () => { editingId=null; resetForm(); document.getElementById('modalTitle').textContent='NOUVELLE OPÉRATION'; document.getElementById('btnDelete').style.display='none'; openModal('modalForm'); }); }
+    else { document.getElementById('btnNew').style.display = 'none'; }
+    await load();
+  });
+
+  async function load() {
+    try {
+      const snap = await getDocs(collection(db,'swat-operations'));
+      allItems = snap.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>(b.createdAt||'').localeCompare(a.createdAt||''));
+      document.getElementById('sTotal').textContent      = allItems.length;
+      document.getElementById('sEnCours').textContent    = allItems.filter(i=>i.statut==='En cours').length;
+      document.getElementById('sTerminees').textContent  = allItems.filter(i=>i.statut==='Terminée').length;
+      document.getElementById('sPlanifiees').textContent = allItems.filter(i=>i.statut==='Planifiée').length;
+      render(allItems);
+    } catch(e) { console.error(e); }
+  }
+
+  const TYPE_COLORS = {'Raid':'var(--danger)','Négociation':'var(--gold)','Extraction':'var(--accent-b)','Surveillance':'var(--success)','Neutralisation':'var(--danger-l)','Autre':'var(--text2)'};
+  const STATUT_COLORS = {'Planifiée':'var(--gold)','En cours':'var(--danger)','Terminée':'var(--success)','Annulée':'var(--text2)'};
+
+  function render(list) {
+    const grid = document.getElementById('itemGrid'); const empty = document.getElementById('itemEmpty');
+    if (!list.length) { grid.innerHTML=''; empty.style.display='flex'; return; }
+    empty.style.display = 'none';
+    grid.innerHTML = list.map(o => `
+      <div style="background:var(--surface);border:1px solid var(--border);border-left:3px solid ${STATUT_COLORS[o.statut]||'var(--border)'};border-radius:8px;padding:16px;transition:all .15s" onmouseover="this.style.background='var(--surface2)'" onmouseout="this.style.background='var(--surface)'">
+        <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-wrap:wrap">
+          <div style="flex:1">
+            <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;flex-wrap:wrap">
+              <span style="font-size:14px;font-weight:700;color:var(--text)">${o.nom||'—'}</span>
+              <span style="font-family:JetBrains Mono,monospace;font-size:9px;padding:2px 8px;border-radius:3px;color:${TYPE_COLORS[o.type]||'var(--text2)'};background:${TYPE_COLORS[o.type]||'var(--text2)'}18;border:1px solid ${TYPE_COLORS[o.type]||'var(--text2)'}33">${o.type||'—'}</span>
+              <span style="font-family:JetBrains Mono,monospace;font-size:9px;padding:2px 8px;border-radius:3px;color:${STATUT_COLORS[o.statut]||'var(--text2)'};background:${STATUT_COLORS[o.statut]||'var(--text2)'}18;border:1px solid ${STATUT_COLORS[o.statut]||'var(--text2)'}33">${o.statut||'—'}</span>
+            </div>
+            <div style="display:flex;gap:20px;flex-wrap:wrap;margin-bottom:6px">
+              ${o.cible ? `<div style="font-family:JetBrains Mono,monospace;font-size:10px;color:var(--text2)">🎯 Cible : <span style="color:var(--text)">${o.cible}</span></div>` : ''}
+              ${o.lieu  ? `<div style="font-family:JetBrains Mono,monospace;font-size:10px;color:var(--text2)">📍 ${o.lieu}</div>` : ''}
+              ${o.chef  ? `<div style="font-family:JetBrains Mono,monospace;font-size:10px;color:var(--text2)">👮 Chef : ${o.chef}</div>` : ''}
+              ${o.date  ? `<div style="font-family:JetBrains Mono,monospace;font-size:10px;color:var(--text2)">📅 ${new Date(o.date).toLocaleDateString('fr-FR')}</div>` : ''}
+            </div>
+            ${o.equipe ? `<div style="font-size:11px;color:var(--text2)">Équipe : <span style="color:var(--text)">${o.equipe}</span></div>` : ''}
+            ${o.notes  ? `<div style="font-size:12px;color:var(--text2);margin-top:8px;padding:8px 10px;background:var(--surface2);border-radius:4px;line-height:1.6">${o.notes}</div>` : ''}
+          </div>
+          ${userPerms.canWrite ? `<button onclick="editItem('${o.id}')" style="padding:6px 12px;background:rgba(201,168,76,.08);border:1px solid rgba(201,168,76,.2);border-radius:4px;color:var(--gold);font-size:11px;cursor:pointer;flex-shrink:0">✏️</button>` : ''}
+        </div>
+      </div>`).join('');
+  }
+
+  window.filterItems = function() {
+    const q = document.getElementById('searchInput').value.toLowerCase();
+    const s = document.getElementById('filterStatut').value;
+    render(allItems.filter(i=>(i.nom+' '+i.cible+' '+i.lieu).toLowerCase().includes(q) && (!s||i.statut===s)));
+  };
+
+  window.editItem = function(id) {
+    const o = allItems.find(x=>x.id===id); if (!o) return;
+    editingId = id;
+    document.getElementById('modalTitle').textContent = 'MODIFIER L\'OPÉRATION';
+    document.getElementById('btnDelete').style.display = userPerms.canDelete ? 'inline-flex' : 'none';
+    document.getElementById('fNom').value    = o.nom    || '';
+    document.getElementById('fType').value   = o.type   || 'Raid';
+    document.getElementById('fStatut').value = o.statut || 'Planifiée';
+    document.getElementById('fCible').value  = o.cible  || '';
+    document.getElementById('fLieu').value   = o.lieu   || '';
+    document.getElementById('fDate').value   = o.date   || '';
+    document.getElementById('fChef').value   = o.chef   || '';
+    document.getElementById('fEquipe').value = o.equipe || '';
+    document.getElementById('fNotes').value  = o.notes  || '';
+    openModal('modalForm');
+  };
+
+  window.saveItem = async function() {
+    const nom = document.getElementById('fNom').value.trim();
+    if (!nom) { showToast('Le nom est obligatoire','error'); return; }
+    const payload = { nom, type:document.getElementById('fType').value, statut:document.getElementById('fStatut').value, cible:document.getElementById('fCible').value.trim(), lieu:document.getElementById('fLieu').value.trim(), date:document.getElementById('fDate').value, chef:document.getElementById('fChef').value.trim(), equipe:document.getElementById('fEquipe').value.trim(), notes:document.getElementById('fNotes').value.trim(), updatedAt:new Date().toISOString() };
+    try {
+      if (editingId) { await updateDoc(doc(db,'swat-operations',editingId),payload); showToast('Opération mise à jour ✓','success'); }
+      else { payload.createdAt=new Date().toISOString(); await addDoc(collection(db,'swat-operations'),payload); showToast('Opération enregistrée ✓','success'); }
+      closeModal('modalForm'); editingId=null; await load();
+    } catch(e) { showToast('Erreur : '+e.message,'error'); }
+  };
+
+  window.deleteItem = async function() {
+    if (!editingId||!confirm('Supprimer cette opération ?')) return;
+    await deleteDoc(doc(db,'swat-operations',editingId));
+    showToast('Opération supprimée','success'); closeModal('modalForm'); editingId=null; await load();
+  };
+
+  function resetForm() { ['fNom','fCible','fLieu','fDate','fChef','fEquipe','fNotes'].forEach(id=>document.getElementById(id).value=''); document.getElementById('fType').value='Raid'; document.getElementById('fStatut').value='Planifiée'; }
+</script>
+</body>
+</html>

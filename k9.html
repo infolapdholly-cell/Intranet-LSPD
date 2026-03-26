@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="icon" type="image/png" href="https://r2.fivemanage.com/XEcvh0aBGRYhLzNNcRsQI/lspdnouveau.png">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LSPD — K9</title>
+  <link rel="stylesheet" href="style.css?v=15">
+  <style>
+    .k9-card { background:var(--surface); border:1px solid var(--border); border-radius:8px; overflow:hidden; transition:all .15s; }
+    .k9-card:hover { border-color:var(--gold); box-shadow:0 0 12px rgba(201,168,76,.1); }
+    .k9-photo { width:100%; height:120px; background:var(--surface2); display:flex; align-items:center; justify-content:center; font-size:48px; overflow:hidden; }
+    .k9-photo img { width:100%; height:100%; object-fit:cover; }
+    .k9-body { padding:12px; }
+    .k9-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(200px,1fr)); gap:12px; }
+  </style>
+</head>
+<body>
+<div class="app-shell">
+<div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
+<div class="topbar">
+  <div class="tb-left">
+    <button class="tb-menu-btn" onclick="toggleSidebar()">☰</button>
+    <div class="tb-brand"><div class="tb-shield"></div><img class="tb-logo" src="https://r2.fivemanage.com/XEcvh0aBGRYhLzNNcRsQI/lspdnouveau.png" alt="LSPD" onerror="this.style.display='none'"><div class="tb-title">L.S.P.D</div></div>
+    <div class="tb-page">K9</div>
+  </div>
+  <div class="tb-right">
+    <div class="tb-status"><div class="live-dot"></div>En ligne</div>
+    <div class="tb-time" id="tbClock">--:--:--</div>
+    <div class="tb-user"><span class="tb-grade" id="tbGrade">—</span><span class="tb-name" id="tbName">Officier</span></div>
+    <button class="btn-out" onclick="logout()">Quitter</button>
+  </div>
+</div>
+<div class="shell">
+  <div class="sidebar" id="sidebar"></div>
+  <div class="main">
+    <div class="page-head">
+      <div class="page-head-left"><h2>🐕 Unité K9</h2><p>// Registre des chiens policiers — Los Santos Police Department</p></div>
+      <button class="btn btn-primary" id="btnNew">+ Enregistrer un chien</button>
+    </div>
+    <div class="stats-grid" style="grid-template-columns:repeat(3,1fr)">
+      <div class="stat-box blue"><div class="stat-lbl">TOTAL CHIENS</div><div class="stat-val" id="sTotal">—</div></div>
+      <div class="stat-box green"><div class="stat-lbl">EN SERVICE</div><div class="stat-val" id="sActifs">—</div></div>
+      <div class="stat-box gold"><div class="stat-lbl">RETRAITÉS</div><div class="stat-val" id="sRetraites">—</div></div>
+    </div>
+    <div class="k9-grid" id="itemGrid"></div>
+    <div id="itemEmpty" style="display:none" class="empty-state"><div class="ei">🐕</div><p>Aucun chien enregistré</p></div>
+  </div>
+</div>
+</div>
+
+<div class="modal-bg" id="modalForm">
+  <div class="modal" style="max-width:560px">
+    <div class="modal-head">
+      <div class="modal-title" id="modalTitle">ENREGISTRER UN CHIEN</div>
+      <button class="modal-close" onclick="closeModal('modalForm')">×</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-grid g2" style="margin-bottom:12px">
+        <div class="fg"><label>Nom du chien *</label><input id="fNom" placeholder="ex: Rex, Axel, Thor..."></div>
+        <div class="fg"><label>Race</label><input id="fRace" placeholder="ex: Berger Allemand, Malinois..."></div>
+        <div class="fg"><label>Spécialité</label>
+          <select id="fSpec">
+            <option value="Pistage">Pistage</option>
+            <option value="Stupéfiants">Stupéfiants</option>
+            <option value="Explosifs">Explosifs</option>
+            <option value="Intervention">Intervention</option>
+            <option value="Recherche">Recherche</option>
+            <option value="Polyvalent">Polyvalent</option>
+          </select>
+        </div>
+        <div class="fg"><label>Statut</label>
+          <select id="fStatut">
+            <option value="En service">En service</option>
+            <option value="En formation">En formation</option>
+            <option value="Blessé">Blessé</option>
+            <option value="Retraité">Retraité</option>
+          </select>
+        </div>
+        <div class="fg"><label>Maître-chien</label><input id="fMaitre" placeholder="Nom de l'officier"></div>
+        <div class="fg"><label>Date de naissance</label><input type="date" id="fDateNaissance"></div>
+        <div class="fg"><label>Date d'entrée en service</label><input type="date" id="fDateEntree"></div>
+        <div class="fg"><label>Numéro de puce</label><input id="fPuce" placeholder="ex: 98765000123456"></div>
+      </div>
+      <div class="fg" style="margin-bottom:12px"><label>Photo (URL)</label><input id="fPhoto" placeholder="https://..."></div>
+      <div class="fg"><label>Notes / Historique médical</label><textarea id="fNotes" placeholder="Vaccins, missions, blessures..."></textarea></div>
+    </div>
+    <div class="modal-footer">
+      <button id="btnDelete" style="display:none;margin-right:auto" class="btn btn-danger btn-sm" onclick="deleteItem()">🗑 Supprimer</button>
+      <button class="btn btn-ghost" onclick="closeModal('modalForm')">Annuler</button>
+      <button class="btn btn-primary" onclick="saveItem()">Enregistrer</button>
+    </div>
+  </div>
+</div>
+<div class="toast" id="toast"></div>
+
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+  import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+  import { getFirestore, collection, addDoc, getDocs, doc, updateDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+  import { initPage, startClock, showToast, openModal, closeModal, setupModalClose } from './utils2.js';
+
+  const FC = { apiKey:"AIzaSyA4GxYd32GNs5EDjjm2UI1a0d25YxigMVU",authDomain:"lspd-intranet-2aed9.firebaseapp.com",projectId:"lspd-intranet-2aed9",storageBucket:"lspd-intranet-2aed9.firebasestorage.app",messagingSenderId:"780922925382",appId:"1:780922925382:web:a32d5e89bcff75bd8b3547" };
+  const app = initializeApp(FC); const auth = getAuth(app); const db = getFirestore(app);
+  let allItems = [], editingId = null, userPerms = {};
+
+  startClock('tbClock'); setupModalClose();
+  window.closeModal = closeModal; window.openModal = openModal;
+
+  initPage(auth, db, onAuthStateChanged, 'k9').then(async ({ perms }) => {
+    userPerms = perms;
+    if (perms.canWrite) { document.getElementById('btnNew').addEventListener('click', () => { editingId=null; resetForm(); document.getElementById('modalTitle').textContent='ENREGISTRER UN CHIEN'; document.getElementById('btnDelete').style.display='none'; openModal('modalForm'); }); }
+    else { document.getElementById('btnNew').style.display='none'; }
+    await load();
+  });
+
+  async function load() {
+    try {
+      const snap = await getDocs(collection(db,'k9-chiens'));
+      allItems = snap.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>(a.nom||'').localeCompare(b.nom||''));
+      document.getElementById('sTotal').textContent    = allItems.length;
+      document.getElementById('sActifs').textContent   = allItems.filter(i=>i.statut==='En service'||i.statut==='En formation').length;
+      document.getElementById('sRetraites').textContent= allItems.filter(i=>i.statut==='Retraité').length;
+      render(allItems);
+    } catch(e) { console.error(e); }
+  }
+
+  const STATUT_C = {'En service':'var(--success)','En formation':'var(--gold)','Blessé':'var(--danger)','Retraité':'var(--text2)'};
+
+  function render(list) {
+    const grid = document.getElementById('itemGrid'); const empty = document.getElementById('itemEmpty');
+    if (!list.length) { grid.innerHTML=''; empty.style.display='flex'; return; }
+    empty.style.display='none';
+    grid.innerHTML = list.map(c => `
+      <div class="k9-card">
+        <div class="k9-photo">${c.photoUrl ? `<img src="${c.photoUrl}" onerror="this.parentNode.innerHTML='🐕'">` : '🐕'}</div>
+        <div class="k9-body">
+          <div style="font-size:15px;font-weight:700;margin-bottom:4px;color:var(--text)">${c.nom||'—'}</div>
+          <div style="font-family:JetBrains Mono,monospace;font-size:10px;color:var(--gold);opacity:.8;margin-bottom:8px">${c.race||'—'} — ${c.specialite||'—'}</div>
+          <div style="font-family:JetBrains Mono,monospace;font-size:9px;padding:2px 8px;border-radius:3px;display:inline-block;color:${STATUT_C[c.statut]||'var(--text2)'};background:${STATUT_C[c.statut]||'var(--text2)'}18;border:1px solid ${STATUT_C[c.statut]||'var(--text2)'}33;margin-bottom:8px">${c.statut||'—'}</div>
+          <div style="font-family:JetBrains Mono,monospace;font-size:9px;color:var(--text2);margin-bottom:2px">Maître : <span style="color:var(--text)">${c.maitre||'—'}</span></div>
+          ${c.puce ? `<div style="font-family:JetBrains Mono,monospace;font-size:9px;color:var(--text3)">Puce : ${c.puce}</div>` : ''}
+        </div>
+        <div style="display:flex;gap:6px;padding:8px 12px;border-top:1px solid var(--border)">
+          ${userPerms.canWrite ? `<button onclick="editItem('${c.id}')" style="flex:1;padding:5px;background:rgba(201,168,76,.08);border:1px solid rgba(201,168,76,.2);border-radius:4px;color:var(--gold);font-size:11px;cursor:pointer">✏️ Modifier</button>` : ''}
+        </div>
+      </div>`).join('');
+  }
+
+  window.editItem = function(id) {
+    const c = allItems.find(x=>x.id===id); if (!c) return;
+    editingId=id;
+    document.getElementById('modalTitle').textContent = 'FICHE CHIEN';
+    document.getElementById('btnDelete').style.display = userPerms.canDelete ? 'inline-flex' : 'none';
+    document.getElementById('fNom').value          = c.nom           || '';
+    document.getElementById('fRace').value         = c.race          || '';
+    document.getElementById('fSpec').value         = c.specialite    || 'Polyvalent';
+    document.getElementById('fStatut').value       = c.statut        || 'En service';
+    document.getElementById('fMaitre').value       = c.maitre        || '';
+    document.getElementById('fDateNaissance').value= c.dateNaissance || '';
+    document.getElementById('fDateEntree').value   = c.dateEntree    || '';
+    document.getElementById('fPuce').value         = c.puce          || '';
+    document.getElementById('fPhoto').value        = c.photoUrl      || '';
+    document.getElementById('fNotes').value        = c.notes         || '';
+    openModal('modalForm');
+  };
+
+  window.saveItem = async function() {
+    const nom = document.getElementById('fNom').value.trim();
+    if (!nom) { showToast('Le nom est obligatoire','error'); return; }
+    const payload = { nom, race:document.getElementById('fRace').value.trim(), specialite:document.getElementById('fSpec').value, statut:document.getElementById('fStatut').value, maitre:document.getElementById('fMaitre').value.trim(), dateNaissance:document.getElementById('fDateNaissance').value, dateEntree:document.getElementById('fDateEntree').value, puce:document.getElementById('fPuce').value.trim(), photoUrl:document.getElementById('fPhoto').value.trim(), notes:document.getElementById('fNotes').value.trim(), updatedAt:new Date().toISOString() };
+    try {
+      if (editingId) { await updateDoc(doc(db,'k9-chiens',editingId),payload); showToast('Fiche mise à jour ✓','success'); }
+      else { payload.createdAt=new Date().toISOString(); await addDoc(collection(db,'k9-chiens'),payload); showToast('Chien enregistré ✓','success'); }
+      closeModal('modalForm'); editingId=null; await load();
+    } catch(e) { showToast('Erreur : '+e.message,'error'); }
+  };
+
+  window.deleteItem = async function() {
+    if (!editingId||!confirm('Supprimer ce chien du registre ?')) return;
+    await deleteDoc(doc(db,'k9-chiens',editingId));
+    showToast('Supprimé','success'); closeModal('modalForm'); editingId=null; await load();
+  };
+
+  function resetForm() { ['fNom','fRace','fMaitre','fDateNaissance','fDateEntree','fPuce','fPhoto','fNotes'].forEach(id=>document.getElementById(id).value=''); document.getElementById('fSpec').value='Polyvalent'; document.getElementById('fStatut').value='En service'; }
+</script>
+</body>
+</html>

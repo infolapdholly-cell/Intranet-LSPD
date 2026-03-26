@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="icon" type="image/png" href="https://r2.fivemanage.com/XEcvh0aBGRYhLzNNcRsQI/lspdnouveau.png">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LSPD — Détective</title>
+  <link rel="stylesheet" href="style.css?v=15">
+</head>
+<body>
+<div class="app-shell">
+<div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
+<div class="topbar">
+  <div class="tb-left">
+    <button class="tb-menu-btn" onclick="toggleSidebar()">☰</button>
+    <div class="tb-brand"><div class="tb-shield"></div><img class="tb-logo" src="https://r2.fivemanage.com/XEcvh0aBGRYhLzNNcRsQI/lspdnouveau.png" alt="LSPD" onerror="this.style.display='none'"><div class="tb-title">L.S.P.D</div></div>
+    <div class="tb-page">Détective</div>
+  </div>
+  <div class="tb-right">
+    <div class="tb-status"><div class="live-dot"></div>En ligne</div>
+    <div class="tb-time" id="tbClock">--:--:--</div>
+    <div class="tb-user"><span class="tb-grade" id="tbGrade">—</span><span class="tb-name" id="tbName">Officier</span></div>
+    <button class="btn-out" onclick="logout()">Quitter</button>
+  </div>
+</div>
+<div class="shell">
+  <div class="sidebar" id="sidebar"></div>
+  <div class="main">
+    <div class="page-head">
+      <div class="page-head-left"><h2>🔍 Enquêtes & Dossiers</h2><p>// Unité détective — Dossiers confidentiels</p></div>
+      <button class="btn btn-primary" id="btnNew">+ Ouvrir une enquête</button>
+    </div>
+    <div class="stats-grid" style="grid-template-columns:repeat(4,1fr)">
+      <div class="stat-box blue"><div class="stat-lbl">TOTAL</div><div class="stat-val" id="sTotal">—</div></div>
+      <div class="stat-box red"><div class="stat-lbl">OUVERTES</div><div class="stat-val" id="sOuvertes">—</div></div>
+      <div class="stat-box gold"><div class="stat-lbl">EN COURS</div><div class="stat-val" id="sEnCours">—</div></div>
+      <div class="stat-box green"><div class="stat-lbl">FERMÉES</div><div class="stat-val" id="sFermees">—</div></div>
+    </div>
+    <div class="search-bar">
+      <input type="text" id="searchInput" placeholder="Rechercher par titre, suspect, détective..." oninput="filterItems()">
+      <select id="filterStatut" onchange="filterItems()">
+        <option value="">Tous</option>
+        <option value="Ouverte">Ouverte</option>
+        <option value="En cours">En cours</option>
+        <option value="Fermée">Fermée</option>
+        <option value="Classée">Classée</option>
+      </select>
+    </div>
+    <div id="itemGrid" style="display:flex;flex-direction:column;gap:10px"></div>
+    <div id="itemEmpty" style="display:none" class="empty-state"><div class="ei">🔍</div><p>Aucune enquête enregistrée</p></div>
+  </div>
+</div>
+</div>
+
+<div class="modal-bg" id="modalForm">
+  <div class="modal" style="max-width:620px">
+    <div class="modal-head">
+      <div class="modal-title" id="modalTitle">NOUVELLE ENQUÊTE</div>
+      <button class="modal-close" onclick="closeModal('modalForm')">×</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-grid g2" style="margin-bottom:12px">
+        <div class="fg" style="grid-column:1/-1"><label>Titre de l'enquête *</label><input id="fTitre" placeholder="ex: Affaire Vinewood, Trafic Grove Street..."></div>
+        <div class="fg"><label>Type</label>
+          <select id="fType">
+            <option value="Homicide">Homicide</option>
+            <option value="Trafic">Trafic</option>
+            <option value="Vol">Vol</option>
+            <option value="Corruption">Corruption</option>
+            <option value="Disparition">Disparition</option>
+            <option value="Gang">Gang</option>
+            <option value="Autre">Autre</option>
+          </select>
+        </div>
+        <div class="fg"><label>Statut</label>
+          <select id="fStatut">
+            <option value="Ouverte">Ouverte</option>
+            <option value="En cours">En cours</option>
+            <option value="Fermée">Fermée</option>
+            <option value="Classée">Classée</option>
+          </select>
+        </div>
+        <div class="fg"><label>Suspect(s) principal(aux)</label><input id="fSuspect" placeholder="Noms des suspects"></div>
+        <div class="fg"><label>Détective responsable</label><input id="fDetective" placeholder="Nom du détective"></div>
+        <div class="fg"><label>Date d'ouverture</label><input type="date" id="fDate"></div>
+        <div class="fg"><label>Niveau de confidentialité</label>
+          <select id="fNiveau">
+            <option value="Standard">Standard</option>
+            <option value="Confidentiel">Confidentiel</option>
+            <option value="Top Secret">Top Secret</option>
+          </select>
+        </div>
+      </div>
+      <div class="fg" style="margin-bottom:12px"><label>Résumé de l'affaire</label><textarea id="fResume" placeholder="Faits, circonstances, éléments connus..."></textarea></div>
+      <div class="fg"><label>Preuves / Indices</label><textarea id="fPreuves" placeholder="Liste des preuves collectées..."></textarea></div>
+    </div>
+    <div class="modal-footer">
+      <button id="btnDelete" style="display:none;margin-right:auto" class="btn btn-danger btn-sm" onclick="deleteItem()">🗑 Archiver</button>
+      <button class="btn btn-ghost" onclick="closeModal('modalForm')">Annuler</button>
+      <button class="btn btn-primary" onclick="saveItem()">Enregistrer</button>
+    </div>
+  </div>
+</div>
+<div class="toast" id="toast"></div>
+
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+  import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+  import { getFirestore, collection, addDoc, getDocs, doc, updateDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+  import { initPage, startClock, showToast, openModal, closeModal, setupModalClose } from './utils2.js';
+
+  const FC = { apiKey:"AIzaSyA4GxYd32GNs5EDjjm2UI1a0d25YxigMVU",authDomain:"lspd-intranet-2aed9.firebaseapp.com",projectId:"lspd-intranet-2aed9",storageBucket:"lspd-intranet-2aed9.firebasestorage.app",messagingSenderId:"780922925382",appId:"1:780922925382:web:a32d5e89bcff75bd8b3547" };
+  const app = initializeApp(FC); const auth = getAuth(app); const db = getFirestore(app);
+  let allItems = [], editingId = null, userPerms = {};
+
+  startClock('tbClock'); setupModalClose();
+  window.closeModal = closeModal; window.openModal = openModal;
+
+  initPage(auth, db, onAuthStateChanged, 'detective').then(async ({ perms }) => {
+    userPerms = perms;
+    if (perms.canWrite) { document.getElementById('btnNew').addEventListener('click', () => { editingId=null; resetForm(); document.getElementById('modalTitle').textContent='NOUVELLE ENQUÊTE'; document.getElementById('btnDelete').style.display='none'; document.getElementById('fDate').value=new Date().toISOString().split('T')[0]; openModal('modalForm'); }); }
+    else { document.getElementById('btnNew').style.display='none'; }
+    await load();
+  });
+
+  async function load() {
+    try {
+      const snap = await getDocs(collection(db,'detective-enquetes'));
+      allItems = snap.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>(b.createdAt||'').localeCompare(a.createdAt||''));
+      document.getElementById('sTotal').textContent    = allItems.length;
+      document.getElementById('sOuvertes').textContent = allItems.filter(i=>i.statut==='Ouverte').length;
+      document.getElementById('sEnCours').textContent  = allItems.filter(i=>i.statut==='En cours').length;
+      document.getElementById('sFermees').textContent  = allItems.filter(i=>i.statut==='Fermée'||i.statut==='Classée').length;
+      render(allItems);
+    } catch(e) { console.error(e); }
+  }
+
+  const STATUT_C = {'Ouverte':'var(--danger)','En cours':'var(--gold)','Fermée':'var(--success)','Classée':'var(--text2)'};
+  const NIVEAU_C = {'Standard':'var(--text2)','Confidentiel':'var(--gold)','Top Secret':'var(--danger)'};
+
+  function render(list) {
+    const grid = document.getElementById('itemGrid'); const empty = document.getElementById('itemEmpty');
+    if (!list.length) { grid.innerHTML=''; empty.style.display='flex'; return; }
+    empty.style.display='none';
+    grid.innerHTML = list.map(e => `
+      <div style="background:var(--surface);border:1px solid var(--border);border-left:3px solid ${STATUT_C[e.statut]||'var(--border)'};border-radius:8px;padding:16px;transition:all .15s" onmouseover="this.style.background='var(--surface2)'" onmouseout="this.style.background='var(--surface)'">
+        <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px">
+          <div style="flex:1">
+            <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;flex-wrap:wrap">
+              <span style="font-size:14px;font-weight:700;color:var(--text)">${e.titre||'—'}</span>
+              <span style="font-family:JetBrains Mono,monospace;font-size:9px;padding:2px 8px;border-radius:3px;color:${STATUT_C[e.statut]||'var(--text2)'};background:${STATUT_C[e.statut]||'var(--text2)'}18;border:1px solid ${STATUT_C[e.statut]||'var(--text2)'}33">${e.statut||'—'}</span>
+              ${e.niveau ? `<span style="font-family:JetBrains Mono,monospace;font-size:8px;padding:2px 8px;border-radius:3px;color:${NIVEAU_C[e.niveau]||'var(--text2)'};background:${NIVEAU_C[e.niveau]||'var(--text2)'}15;border:1px solid ${NIVEAU_C[e.niveau]||'var(--text2)'}33">🔒 ${e.niveau}</span>` : ''}
+            </div>
+            <div style="display:flex;gap:16px;flex-wrap:wrap;margin-bottom:8px">
+              ${e.type      ? `<div style="font-family:JetBrains Mono,monospace;font-size:10px;color:var(--text2)">Type : <span style="color:var(--text)">${e.type}</span></div>` : ''}
+              ${e.suspect   ? `<div style="font-family:JetBrains Mono,monospace;font-size:10px;color:var(--text2)">Suspect : <span style="color:var(--text)">${e.suspect}</span></div>` : ''}
+              ${e.detective ? `<div style="font-family:JetBrains Mono,monospace;font-size:10px;color:var(--text2)">Détective : ${e.detective}</div>` : ''}
+              ${e.date      ? `<div style="font-family:JetBrains Mono,monospace;font-size:10px;color:var(--text2)">📅 ${new Date(e.date).toLocaleDateString('fr-FR')}</div>` : ''}
+            </div>
+            ${e.resume  ? `<div style="font-size:12px;color:var(--text2);margin-bottom:6px;padding:8px 10px;background:var(--surface2);border-radius:4px;line-height:1.6">${e.resume}</div>` : ''}
+            ${e.preuves ? `<div style="font-size:11px;color:var(--text3);padding:6px 10px;background:rgba(201,168,76,.04);border:1px solid rgba(201,168,76,.12);border-radius:4px">🔎 Preuves : ${e.preuves}</div>` : ''}
+          </div>
+          ${userPerms.canWrite ? `<button onclick="editItem('${e.id}')" style="padding:6px 12px;background:rgba(201,168,76,.08);border:1px solid rgba(201,168,76,.2);border-radius:4px;color:var(--gold);font-size:11px;cursor:pointer;flex-shrink:0">✏️</button>` : ''}
+        </div>
+      </div>`).join('');
+  }
+
+  window.filterItems = function() {
+    const q = document.getElementById('searchInput').value.toLowerCase();
+    const s = document.getElementById('filterStatut').value;
+    render(allItems.filter(i=>(i.titre+' '+i.suspect+' '+i.detective).toLowerCase().includes(q) && (!s||i.statut===s)));
+  };
+
+  window.editItem = function(id) {
+    const e = allItems.find(x=>x.id===id); if (!e) return;
+    editingId=id;
+    document.getElementById('modalTitle').textContent = 'MODIFIER L\'ENQUÊTE';
+    document.getElementById('btnDelete').style.display = userPerms.canDelete ? 'inline-flex' : 'none';
+    document.getElementById('fTitre').value    = e.titre    || '';
+    document.getElementById('fType').value     = e.type     || 'Autre';
+    document.getElementById('fStatut').value   = e.statut   || 'Ouverte';
+    document.getElementById('fSuspect').value  = e.suspect  || '';
+    document.getElementById('fDetective').value= e.detective|| '';
+    document.getElementById('fDate').value     = e.date     || '';
+    document.getElementById('fNiveau').value   = e.niveau   || 'Standard';
+    document.getElementById('fResume').value   = e.resume   || '';
+    document.getElementById('fPreuves').value  = e.preuves  || '';
+    openModal('modalForm');
+  };
+
+  window.saveItem = async function() {
+    const titre = document.getElementById('fTitre').value.trim();
+    if (!titre) { showToast('Le titre est obligatoire','error'); return; }
+    const payload = { titre, type:document.getElementById('fType').value, statut:document.getElementById('fStatut').value, suspect:document.getElementById('fSuspect').value.trim(), detective:document.getElementById('fDetective').value.trim(), date:document.getElementById('fDate').value, niveau:document.getElementById('fNiveau').value, resume:document.getElementById('fResume').value.trim(), preuves:document.getElementById('fPreuves').value.trim(), updatedAt:new Date().toISOString() };
+    try {
+      if (editingId) { await updateDoc(doc(db,'detective-enquetes',editingId),payload); showToast('Enquête mise à jour ✓','success'); }
+      else { payload.createdAt=new Date().toISOString(); await addDoc(collection(db,'detective-enquetes'),payload); showToast('Enquête ouverte ✓','success'); }
+      closeModal('modalForm'); editingId=null; await load();
+    } catch(e) { showToast('Erreur : '+e.message,'error'); }
+  };
+
+  window.deleteItem = async function() {
+    if (!editingId||!confirm('Archiver cette enquête ?')) return;
+    await deleteDoc(doc(db,'detective-enquetes',editingId));
+    showToast('Enquête archivée','success'); closeModal('modalForm'); editingId=null; await load();
+  };
+
+  function resetForm() { ['fTitre','fSuspect','fDetective','fDate','fResume','fPreuves'].forEach(id=>document.getElementById(id).value=''); document.getElementById('fType').value='Autre'; document.getElementById('fStatut').value='Ouverte'; document.getElementById('fNiveau').value='Standard'; }
+</script>
+</body>
+</html>

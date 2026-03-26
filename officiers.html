@@ -142,12 +142,34 @@
             <option>Sergent</option><option>Officier</option><option>Cadet</option>
           </select>
         </div>
-        <div class="fg"><label>Spécialité</label>
-          <select id="oSpec">
-            <option>Patrouille</option><option>SWAT</option>
-            <option>Circulation</option><option>Détective</option>
-            <option>Sous-cover</option><option>K9</option><option>Autre</option>
-          </select>
+        <div class="fg" style="grid-column:1/-1">
+          <label>Spécialités</label>
+          <div id="oSpecList" style="display:flex;flex-wrap:wrap;gap:8px;margin-top:4px">
+            <label style="display:flex;align-items:center;gap:5px;padding:5px 10px;background:var(--surface2);border:1px solid var(--border);border-radius:4px;cursor:pointer;font-size:12px;user-select:none">
+              <input type="checkbox" name="spec" value="Patrouille"> Patrouille
+            </label>
+            <label style="display:flex;align-items:center;gap:5px;padding:5px 10px;background:var(--surface2);border:1px solid var(--border);border-radius:4px;cursor:pointer;font-size:12px;user-select:none">
+              <input type="checkbox" name="spec" value="SWAT"> SWAT
+            </label>
+            <label style="display:flex;align-items:center;gap:5px;padding:5px 10px;background:var(--surface2);border:1px solid var(--border);border-radius:4px;cursor:pointer;font-size:12px;user-select:none">
+              <input type="checkbox" name="spec" value="Circulation"> Circulation
+            </label>
+            <label style="display:flex;align-items:center;gap:5px;padding:5px 10px;background:var(--surface2);border:1px solid var(--border);border-radius:4px;cursor:pointer;font-size:12px;user-select:none">
+              <input type="checkbox" name="spec" value="Détective"> Détective
+            </label>
+            <label style="display:flex;align-items:center;gap:5px;padding:5px 10px;background:var(--surface2);border:1px solid var(--border);border-radius:4px;cursor:pointer;font-size:12px;user-select:none">
+              <input type="checkbox" name="spec" value="Académie"> Académie
+            </label>
+            <label style="display:flex;align-items:center;gap:5px;padding:5px 10px;background:var(--surface2);border:1px solid var(--border);border-radius:4px;cursor:pointer;font-size:12px;user-select:none">
+              <input type="checkbox" name="spec" value="K9"> K9
+            </label>
+            <label style="display:flex;align-items:center;gap:5px;padding:5px 10px;background:var(--surface2);border:1px solid var(--border);border-radius:4px;cursor:pointer;font-size:12px;user-select:none">
+              <input type="checkbox" name="spec" value="Sous-cover"> Sous-cover
+            </label>
+            <label style="display:flex;align-items:center;gap:5px;padding:5px 10px;background:var(--surface2);border:1px solid var(--border);border-radius:4px;cursor:pointer;font-size:12px;user-select:none">
+              <input type="checkbox" name="spec" value="Autre"> Autre
+            </label>
+          </div>
         </div>
         <div class="fg"><label>Statut</label>
           <select id="oStatut">
@@ -312,7 +334,7 @@
         </div>
         <div class="oc-body">
           <div class="oc-row"><span class="oc-lbl">MATRICULE</span><span style="font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--text);font-weight:600">${o.matricule||'—'}</span></div>
-          <div class="oc-row"><span class="oc-lbl">SPÉCIALITÉ</span><span style="font-size:12px;color:var(--text)">${o.specialite||'—'}</span></div>
+          <div class="oc-row"><span class="oc-lbl">SPÉCIALITÉ</span><span style="font-size:12px;color:var(--text)">${(Array.isArray(o.specialites)?o.specialites:(o.specialite?[o.specialite]:[])).join(', ')||'—'}</span></div>
           <div class="oc-row"><span class="oc-lbl">ENTRÉE</span><span style="font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--text)">${o.dateEntree||'—'}</span></div>
         </div>
         <div class="oc-actions">
@@ -334,7 +356,7 @@
         <td><strong>${o.nom||'—'}</strong></td>
         <td style="font-size:12px;font-weight:700;color:${gradeColor(o.grade)}">${o.grade||'—'}</td>
         <td style="font-family:'JetBrains Mono',monospace;font-size:12px">${o.matricule||'—'}</td>
-        <td style="font-size:12px">${o.specialite||'—'}</td>
+        <td style="font-size:12px">${(Array.isArray(o.specialites)?o.specialites:(o.specialite?[o.specialite]:[])).join(', ')||'—'}</td>
         <td>${statusBadge(o.statut)}</td>
         <td>${isOnline
           ? '<span style="display:flex;align-items:center;gap:4px;font-family:JetBrains Mono,monospace;font-size:10px;color:var(--green)"><span style="width:8px;height:8px;border-radius:50%;background:var(--green);display:inline-block"></span>En ligne</span>'
@@ -383,7 +405,7 @@
       </div>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px">
         <div><div style="font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--text2);letter-spacing:2px;margin-bottom:3px">MATRICULE</div><div style="font-family:'JetBrains Mono',monospace;font-size:13px">${o.matricule||'—'}</div></div>
-        <div><div style="font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--text2);letter-spacing:2px;margin-bottom:3px">SPÉCIALITÉ</div><div style="font-size:13px">${o.specialite||'—'}</div></div>
+        <div><div style="font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--text2);letter-spacing:2px;margin-bottom:3px">SPÉCIALITÉS</div><div style="font-size:13px">${(Array.isArray(o.specialites)?o.specialites:(o.specialite?[o.specialite]:[])).map(s=>'<span style="display:inline-block;padding:1px 7px;background:rgba(201,168,76,.08);border:1px solid rgba(201,168,76,.18);border-radius:3px;font-size:11px;margin:1px">'+s+'</span>').join('')||'—'}</div></div>
         <div><div style="font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--text2);letter-spacing:2px;margin-bottom:3px">DATE D'ENTRÉE</div><div style="font-family:'JetBrains Mono',monospace;font-size:13px">${o.dateEntree||'—'}</div></div>
         <div><div style="font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--text2);letter-spacing:2px;margin-bottom:3px">TÉLÉPHONE</div><div style="font-family:'JetBrains Mono',monospace;font-size:13px;color:var(--gold)">${o.telephone||'—'}</div></div>
         <div><div style="font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--text2);letter-spacing:2px;margin-bottom:3px">EMAIL</div><div style="font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--accent-b)">${o.email||'—'}</div></div>
@@ -436,7 +458,7 @@
     document.getElementById('materielInput').value = '';
     document.getElementById('serieInput').value = '';
     document.getElementById('oGrade').value = 'Officier';
-    document.getElementById('oSpec').value = 'Patrouille';
+    document.querySelectorAll('#oSpecList input[type=checkbox]').forEach(cb => cb.checked = false);
     document.getElementById('oStatut').value = 'Actif';
     openModal('modalOfficier');
   }
@@ -449,7 +471,10 @@
     document.getElementById('oNom').value = o.nom||'';
     document.getElementById('oMatricule').value = o.matricule||'';
     document.getElementById('oGrade').value = o.grade||'Officier';
-    document.getElementById('oSpec').value = o.specialite||'Patrouille';
+    const specs = Array.isArray(o.specialites) ? o.specialites : (o.specialite ? [o.specialite] : []);
+    document.querySelectorAll('#oSpecList input[type=checkbox]').forEach(cb => {
+      cb.checked = specs.includes(cb.value);
+    });
     document.getElementById('oStatut').value = o.statut||'Actif';
     document.getElementById('oDate').value = o.dateEntree||'';
     document.getElementById('oTel').value = o.telephone||'';
@@ -472,7 +497,7 @@
       nom, uid: document.getElementById('oUid').value,
       matricule: document.getElementById('oMatricule').value,
       grade: document.getElementById('oGrade').value,
-      specialite: document.getElementById('oSpec').value,
+      specialites: Array.from(document.querySelectorAll('#oSpecList input[type=checkbox]:checked')).map(cb => cb.value),
       statut: document.getElementById('oStatut').value,
       dateEntree: document.getElementById('oDate').value,
       telephone: document.getElementById('oTel').value,

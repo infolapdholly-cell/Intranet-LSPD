@@ -35,6 +35,9 @@ export async function initPage(auth, db, onAuthStateChanged, pageName) {
           const data = snap.data();
           grade = (data.grade||'cadet').toLowerCase();
           name  = data.displayName || user.email;
+          // Stocker les spécialités pour la sidebar
+          const specsData = Array.isArray(data.specialites) ? data.specialites : (data.specialite ? [data.specialite] : []);
+          sessionStorage.setItem('lspd_specialites', JSON.stringify(specsData));
           if (data.suspended) {
             try {
               const { signOut } = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js");
@@ -208,8 +211,8 @@ export function buildSidebar(elementId, activePage, grade) {
     h += nav('amendes',      activePage, '◇', 'Amendes / PV',        'amendes.html');
     h += nav('rapports',     activePage, '▣', 'Rapports',            'rapports.html');
     h += nav('saisies',        activePage, '▨', 'Saisies',            'saisies.html');
-    h += nav('armes-civiles',        activePage, '▣', 'Armes civiles',        'armes-civiles.html');
-    h += nav('vehicules-suspects', activePage, '▤', 'Véhicules suspects',  'vehicules-suspects.html');
+    h += nav('armes-civiles',        activePage, '🔫', 'Armes civiles',        'armes-civiles.html');
+    h += nav('vehicules-suspects', activePage, '🚗', 'Véhicules suspects',  'vehicules-suspects.html');
   }
 
   h += `<div class="sb-divider"></div><div class="sb-section">Personnel</div>`;
@@ -219,15 +222,27 @@ export function buildSidebar(elementId, activePage, grade) {
     h += `<div class="sb-divider"></div><div class="sb-section">État major</div>`;
     if (p.canManageVehicles) h += nav('vehicules',  activePage, '◉', 'Véhicules',      'vehicules.html');
     if (p.canManageWeapons)  h += nav('armurerie',  activePage, '▲', 'Armurerie',       'armurerie.html');
+    if (p.canLogs)           h += nav('logs',        activePage, '≡', 'Historique',     'logs.html');
     if (p.canAdmin)          h += nav('admin',       activePage, '⊞', 'Administration', 'admin.html');
   }
 
   h += nav('promotions', activePage, '◈', 'Grades & Promotions', 'promotions.html');
 
+  // ── Unités spéciales (selon spécialités de l'officier) ──
+  const specs = JSON.parse(sessionStorage.getItem('lspd_specialites') || '[]');
+  const hasSpec = s => specs.includes(s) || specs.includes(s.toLowerCase());
+  if (hasSpec('Académie') || hasSpec('SWAT') || hasSpec('Détective') || hasSpec('K9')) {
+    h += `<div class="sb-divider"></div><div class="sb-section">Unités spéciales</div>`;
+    if (hasSpec('Académie'))  h += nav('academie',  activePage, '🎓', 'Académie',   'academie.html');
+    if (hasSpec('SWAT'))      h += nav('swat',       activePage, '⚡', 'SWAT',       'swat.html');
+    if (hasSpec('Détective') || hasSpec('Detective')) h += nav('detective', activePage, '🔍', 'Détective', 'detective.html');
+    if (hasSpec('K9'))        h += nav('k9',         activePage, '🐕', 'K9',         'k9.html');
+  }
+
   h += `<div class="sb-divider"></div><div class="sb-section">Réseau</div>`;
   h += nav('interpolice', activePage, '↗', 'Interpolice',  'interpolice.html');
-  h += nav('calendrier',  activePage, '▣', 'Calendrier',    'calendrier.html');
-  h += nav('code-penal',  activePage, '▣', 'Code Pénal',     'code-penal.html');
+  h += nav('calendrier',  activePage, '📅', 'Calendrier',    'calendrier.html');
+  h += nav('code-penal',  activePage, '📋', 'Code Pénal',     'code-penal.html');
   h += `<div class="sb-divider"></div>`;
   h += `<a class="sb-item" href="#" onclick="event.preventDefault();window.logout()"><span class="sb-icon">⊘</span>Déconnexion</a>`;
 
