@@ -7,6 +7,89 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>LSPD — Académie</title>
   <link rel="stylesheet" href="style.css?v=15">
+  <style>
+    /* ── Hero banner ── */
+    .acad-hero {
+      position:relative; border-radius:10px; overflow:hidden;
+      background:linear-gradient(135deg,#05080f 0%,#0c1a2e 50%,#05080f 100%);
+      border:1px solid var(--border); margin-bottom:24px; padding:28px 32px;
+      display:flex; align-items:center; gap:24px;
+    }
+    .acad-hero-bg {
+      position:absolute; inset:0; opacity:.06;
+      background:url('https://r2.fivemanage.com/XEcvh0aBGRYhLzNNcRsQI/LSPD_Academie.png') center/contain no-repeat;
+      pointer-events:none;
+    }
+    .acad-hero-logo {
+      width:90px; height:90px; object-fit:contain; flex-shrink:0; position:relative; z-index:1;
+      filter:drop-shadow(0 0 12px rgba(201,168,76,.3));
+    }
+    .acad-hero-text { position:relative; z-index:1; }
+    .acad-hero-title {
+      font-family:'Inter',sans-serif; font-size:26px; font-weight:700;
+      color:var(--text); letter-spacing:.5px; margin-bottom:4px;
+    }
+    .acad-hero-title span { color:var(--gold); }
+    .acad-hero-sub {
+      font-family:'JetBrains Mono',monospace; font-size:10px;
+      color:var(--text3); letter-spacing:3px; text-transform:uppercase;
+    }
+    .acad-hero-motto {
+      margin-top:8px; font-family:'JetBrains Mono',monospace;
+      font-size:11px; color:var(--gold); opacity:.7; letter-spacing:2px;
+      font-style:italic;
+    }
+
+    /* ── Tabs ── */
+    .acad-tabs { display:flex; gap:0; border-bottom:1px solid var(--border); margin-bottom:20px; flex-wrap:wrap; }
+    .acad-tab {
+      padding:9px 18px; background:transparent; border:none;
+      border-bottom:2px solid transparent; color:var(--text2);
+      font-family:'JetBrains Mono',monospace; font-size:10px;
+      letter-spacing:2px; text-transform:uppercase; cursor:pointer;
+      font-weight:600; margin-bottom:-1px; transition:all .15s;
+    }
+    .acad-tab.active { border-bottom-color:var(--gold); color:var(--gold); }
+    .acad-tab:hover:not(.active) { color:var(--text); }
+
+    /* ── Cadet card ── */
+    .cadet-card {
+      background:var(--surface); border:1px solid var(--border);
+      border-radius:8px; padding:16px; transition:all .15s;
+    }
+    .cadet-card:hover { border-color:var(--gold); }
+    .cadet-progress-bar {
+      height:5px; background:var(--surface2); border-radius:3px; overflow:hidden; margin-top:6px;
+    }
+    .cadet-progress-fill { height:100%; border-radius:3px; background:linear-gradient(90deg,var(--gold),#e8c86a); transition:width .4s; }
+
+    /* ── Cours card ── */
+    .cours-card {
+      background:var(--surface); border:1px solid var(--border);
+      border-radius:8px; overflow:hidden; transition:all .15s;
+    }
+    .cours-card:hover { border-color:var(--accent-b); }
+    .cours-header { background:var(--surface2); padding:12px 16px; border-bottom:1px solid var(--border); }
+
+    /* ── Résultat badge ── */
+    .res-badge { display:inline-flex; align-items:center; gap:4px; padding:2px 8px; border-radius:3px; font-family:'JetBrains Mono',monospace; font-size:9px; font-weight:700; letter-spacing:1px; }
+    .res-pass { background:rgba(26,158,86,.15); color:var(--success); border:1px solid rgba(26,158,86,.3); }
+    .res-fail { background:rgba(184,48,48,.15); color:var(--danger-l); border:1px solid rgba(184,48,48,.3); }
+    .res-pending { background:rgba(214,137,16,.12); color:var(--gold); border:1px solid rgba(214,137,16,.3); }
+
+    /* ── Agenda item ── */
+    .agenda-item {
+      display:flex; align-items:flex-start; gap:14px; padding:12px 0;
+      border-bottom:1px solid var(--border);
+    }
+    .agenda-item:last-child { border-bottom:none; }
+    .agenda-date-box {
+      background:var(--surface2); border:1px solid var(--border); border-radius:6px;
+      padding:6px 10px; text-align:center; flex-shrink:0; min-width:52px;
+    }
+  </style>
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="theme-color" content="#05080f">
 </head>
 <body>
 <div class="app-shell">
@@ -14,7 +97,10 @@
 <div class="topbar">
   <div class="tb-left">
     <button class="tb-menu-btn" onclick="toggleSidebar()">☰</button>
-    <div class="tb-brand"><div class="tb-shield"></div><img class="tb-logo" src="https://r2.fivemanage.com/XEcvh0aBGRYhLzNNcRsQI/lspdnouveau.png" alt="LSPD" onerror="this.style.display='none'"><div class="tb-title">L.S.P.D</div></div>
+    <div class="tb-brand"><div class="tb-shield"></div>
+      <img class="tb-logo" src="https://r2.fivemanage.com/XEcvh0aBGRYhLzNNcRsQI/lspdnouveau.png" alt="LSPD" onerror="this.style.display='none'">
+      <div class="tb-title">L.S.P.D</div>
+    </div>
     <div class="tb-page">Académie</div>
   </div>
   <div class="tb-right">
@@ -27,61 +113,173 @@
 <div class="shell">
   <div class="sidebar" id="sidebar"></div>
   <div class="main">
-    <div class="page-head">
-      <div class="page-head-left"><h2>Académie de Police</h2><p>// Formation & suivi des cadets — Los Santos Police Department</p></div>
-      <button class="btn btn-primary" id="btnNew">+ Nouvelle formation</button>
+
+    <!-- Hero -->
+    <div class="acad-hero">
+      <div class="acad-hero-bg"></div>
+      <img class="acad-hero-logo" src="https://r2.fivemanage.com/XEcvh0aBGRYhLzNNcRsQI/LSPD_Academie.png" alt="Académie" onerror="this.style.display='none'">
+      <div class="acad-hero-text">
+        <div class="acad-hero-title">LSPD <span>Académie</span></div>
+        <div class="acad-hero-sub">Los Santos Police Department — Formation & Recrutement</div>
+        <div class="acad-hero-motto">"Learn and Serve"</div>
+      </div>
     </div>
-    <div class="stats-grid" style="grid-template-columns:repeat(4,1fr)">
-      <div class="stat-box blue"><div class="stat-lbl">FORMATIONS</div><div class="stat-val" id="sTotal">—</div></div>
-      <div class="stat-box green"><div class="stat-lbl">EN COURS</div><div class="stat-val" id="sEnCours">—</div></div>
-      <div class="stat-box gold"><div class="stat-lbl">TERMINÉES</div><div class="stat-val" id="sTerminees">—</div></div>
-      <div class="stat-box blue"><div class="stat-lbl">CADETS INSCRITS</div><div class="stat-val" id="sCadets">—</div></div>
+
+    <!-- Stats -->
+    <div class="stats-grid" style="grid-template-columns:repeat(4,1fr);margin-bottom:20px">
+      <div class="stat-box blue"><div class="stat-lbl">CADETS</div><div class="stat-val" id="sCadets">—</div></div>
+      <div class="stat-box gold"><div class="stat-lbl">COURS ACTIFS</div><div class="stat-val" id="sCours">—</div></div>
+      <div class="stat-box green"><div class="stat-lbl">FORMATIONS</div><div class="stat-val" id="sFormations">—</div></div>
+      <div class="stat-box blue"><div class="stat-lbl">MOY. POINTS</div><div class="stat-val" id="sMoyenne">—</div></div>
     </div>
-    <div class="search-bar">
-      <input type="text" id="searchInput" placeholder="Rechercher par titre, instructeur..." oninput="filterItems()">
-      <select id="filterStatut" onchange="filterItems()">
-        <option value="">Tous les statuts</option>
-        <option value="En cours">En cours</option>
-        <option value="Terminée">Terminée</option>
-        <option value="Planifiée">Planifiée</option>
-      </select>
+
+    <!-- Onglets -->
+    <div class="acad-tabs">
+      <button class="acad-tab active" id="tabClasse"     onclick="switchTab('classe')">▦ Classe</button>
+      <button class="acad-tab"        id="tabAgenda"     onclick="switchTab('agenda')">▦ Agenda</button>
+      <button class="acad-tab"        id="tabFormateurs" onclick="switchTab('formateurs')" style="display:none">◈ Plans de formation</button>
+      <button class="acad-tab"        id="tabResultats"  onclick="switchTab('resultats')" style="display:none">≣ Résultats détaillés</button>
     </div>
-    <div id="itemGrid" style="display:flex;flex-direction:column;gap:10px"></div>
-    <div id="itemEmpty" style="display:none" class="empty-state"><div class="ei">🎓</div><p>Aucune formation enregistrée</p></div>
+
+    <!-- PANEL : Classe -->
+    <div id="panelClasse">
+      <div id="cadetGrid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:12px"></div>
+      <div id="cadetEmpty" style="display:none" class="empty-state"><div class="ei">▦</div><p>Aucun cadet enregistré</p></div>
+    </div>
+
+    <!-- PANEL : Agenda -->
+    <div id="panelAgenda" style="display:none">
+      <div style="display:flex;justify-content:flex-end;margin-bottom:14px">
+        <button id="btnNewAgenda" class="btn btn-primary" style="display:none">+ Ajouter une session</button>
+      </div>
+      <div id="agendaList"></div>
+      <div id="agendaEmpty" style="display:none" class="empty-state"><div class="ei">▦</div><p>Aucune session planifiée</p></div>
+    </div>
+
+    <!-- PANEL : Plans de formation (formateurs) -->
+    <div id="panelFormateurs" style="display:none">
+      <div style="display:flex;justify-content:flex-end;margin-bottom:14px">
+        <button id="btnNewCours" class="btn btn-primary">+ Nouveau cours</button>
+      </div>
+      <div id="coursList" style="display:flex;flex-direction:column;gap:12px"></div>
+      <div id="coursEmpty" style="display:none" class="empty-state"><div class="ei">◈</div><p>Aucun plan de formation</p></div>
+    </div>
+
+    <!-- PANEL : Résultats détaillés -->
+    <div id="panelResultats" style="display:none">
+      <div style="display:flex;gap:10px;margin-bottom:16px;flex-wrap:wrap">
+        <select id="filterCadetRes" onchange="renderResultats()" style="padding:8px 12px;background:var(--surface);border:1px solid var(--border);border-radius:5px;color:var(--text);font-family:'JetBrains Mono',monospace;font-size:11px">
+          <option value="">Tous les cadets</option>
+        </select>
+        <button id="btnNewResultat" class="btn btn-primary">+ Ajouter un résultat</button>
+      </div>
+      <div id="resultatList" style="display:flex;flex-direction:column;gap:8px"></div>
+      <div id="resultatEmpty" style="display:none" class="empty-state"><div class="ei">≣</div><p>Aucun résultat enregistré</p></div>
+    </div>
+
   </div>
 </div>
 </div>
 
-<div class="modal-bg" id="modalForm">
-  <div class="modal" style="max-width:580px">
+<!-- MODAL COURS (plan de formation) -->
+<div class="modal-bg" id="modalCours">
+  <div class="modal" style="max-width:640px">
     <div class="modal-head">
-      <div class="modal-title" id="modalTitle">NOUVELLE FORMATION</div>
-      <button class="modal-close" onclick="closeModal('modalForm')">×</button>
+      <div class="modal-title" id="modalCoursTitle">NOUVEAU COURS</div>
+      <button class="modal-close" onclick="closeModal('modalCours')">×</button>
     </div>
     <div class="modal-body">
       <div class="form-grid g2" style="margin-bottom:12px">
-        <div class="fg" style="grid-column:1/-1"><label>Titre de la formation *</label><input id="fTitre" placeholder="ex: Formation tir, Cours de procédure..."></div>
-        <div class="fg"><label>Instructeur</label><input id="fInstructeur" placeholder="Nom de l'instructeur"></div>
-        <div class="fg"><label>Date</label><input type="date" id="fDate"></div>
-        <div class="fg"><label>Durée</label><input id="fDuree" placeholder="ex: 2h, 1 journée..."></div>
+        <div class="fg" style="grid-column:1/-1"><label>Nom du cours *</label><input id="cNom" placeholder="ex: Tir de précision, Procédure d'arrestation..."></div>
+        <div class="fg"><label>Durée</label><input id="cDuree" placeholder="ex: 1h30, 2 séances..."></div>
+        <div class="fg"><label>Points maximum</label><input type="number" id="cPointsMax" placeholder="ex: 100" min="0"></div>
+        <div class="fg"><label>Catégorie</label>
+          <select id="cCategorie">
+            <option value="Physique">Physique</option>
+            <option value="Tir">Tir</option>
+            <option value="Procédure">Procédure</option>
+            <option value="Conduite">Conduite</option>
+            <option value="Théorie">Théorie</option>
+            <option value="Terrain">Terrain</option>
+            <option value="Autre">Autre</option>
+          </select>
+        </div>
         <div class="fg"><label>Statut</label>
-          <select id="fStatut">
-            <option value="Planifiée">Planifiée</option>
-            <option value="En cours">En cours</option>
-            <option value="Terminée">Terminée</option>
+          <select id="cStatut">
+            <option value="Actif">Actif</option>
+            <option value="Archivé">Archivé</option>
           </select>
         </div>
       </div>
-      <div class="fg" style="margin-bottom:12px"><label>Cadets inscrits</label><input id="fCadets" placeholder="ex: Dupont, Martin, Leclerc..."></div>
-      <div class="fg"><label>Description / Contenu</label><textarea id="fDescription" placeholder="Programme de la formation, objectifs..."></textarea></div>
+      <div class="fg" style="margin-bottom:12px"><label>Description / Objectifs</label><textarea id="cDescription" placeholder="Objectifs pédagogiques, contenu du cours..."></textarea></div>
+      <div class="fg">
+        <label>Références physiques / Barème</label>
+        <textarea id="cBareme" placeholder="ex: 30 pompes en 2 min = 20pts, 50 abdos = 15pts, Course 1.6km &lt; 8min = 25pts..."></textarea>
+      </div>
     </div>
     <div class="modal-footer">
-      <button id="btnDelete" style="display:none;margin-right:auto" class="btn btn-danger btn-sm" onclick="deleteItem()">🗑 Supprimer</button>
-      <button class="btn btn-ghost" onclick="closeModal('modalForm')">Annuler</button>
-      <button class="btn btn-primary" onclick="saveItem()">Enregistrer</button>
+      <button id="btnDeleteCours" style="display:none;margin-right:auto" class="btn btn-danger btn-sm" onclick="deleteCours()">🗑 Supprimer</button>
+      <button class="btn btn-ghost" onclick="closeModal('modalCours')">Annuler</button>
+      <button class="btn btn-primary" onclick="saveCours()">Enregistrer</button>
     </div>
   </div>
 </div>
+
+<!-- MODAL AGENDA -->
+<div class="modal-bg" id="modalAgenda">
+  <div class="modal" style="max-width:520px">
+    <div class="modal-head">
+      <div class="modal-title" id="modalAgendaTitle">NOUVELLE SESSION</div>
+      <button class="modal-close" onclick="closeModal('modalAgenda')">×</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-grid g2" style="margin-bottom:12px">
+        <div class="fg" style="grid-column:1/-1"><label>Titre *</label><input id="aTitre" placeholder="ex: Séance tir, Cours procédure..."></div>
+        <div class="fg"><label>Cours associé</label><select id="aCours"><option value="">— Aucun —</option></select></div>
+        <div class="fg"><label>Formateur</label><input id="aFormateur" placeholder="Nom du formateur"></div>
+        <div class="fg"><label>Date & Heure</label><input type="datetime-local" id="aDate"></div>
+        <div class="fg"><label>Lieu</label><input id="aLieu" placeholder="ex: Stand de tir, Salle A..."></div>
+      </div>
+      <div class="fg"><label>Notes</label><textarea id="aNotes" placeholder="Informations supplémentaires pour les cadets..."></textarea></div>
+    </div>
+    <div class="modal-footer">
+      <button id="btnDeleteAgenda" style="display:none;margin-right:auto" class="btn btn-danger btn-sm" onclick="deleteAgenda()">🗑</button>
+      <button class="btn btn-ghost" onclick="closeModal('modalAgenda')">Annuler</button>
+      <button class="btn btn-primary" onclick="saveAgenda()">Enregistrer</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL RÉSULTAT -->
+<div class="modal-bg" id="modalResultat">
+  <div class="modal" style="max-width:520px">
+    <div class="modal-head">
+      <div class="modal-title" id="modalResultatTitle">AJOUTER UN RÉSULTAT</div>
+      <button class="modal-close" onclick="closeModal('modalResultat')">×</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-grid g2" style="margin-bottom:12px">
+        <div class="fg"><label>Cadet *</label><select id="rCadet"><option value="">Sélectionner...</option></select></div>
+        <div class="fg"><label>Cours *</label><select id="rCours"><option value="">Sélectionner...</option></select></div>
+        <div class="fg"><label>Points obtenus *</label><input type="number" id="rPoints" placeholder="ex: 78" min="0"></div>
+        <div class="fg"><label>Points maximum</label><input type="number" id="rPointsMax" placeholder="ex: 100" min="0" readonly style="opacity:.6"></div>
+        <div class="fg"><label>Date</label><input type="date" id="rDate"></div>
+        <div class="fg"><label>Formateur</label><input id="rFormateur" placeholder="Nom du formateur"></div>
+      </div>
+      <div class="fg" style="margin-bottom:12px">
+        <label>Détail des performances (références)</label>
+        <textarea id="rPerformances" placeholder="ex: Pompes : 35/30 ✓, Abdos : 42/50 ✓, Course : 7m52s ✓..."></textarea>
+      </div>
+      <div class="fg"><label>Commentaire</label><textarea id="rCommentaire" placeholder="Observations du formateur..."></textarea></div>
+    </div>
+    <div class="modal-footer">
+      <button id="btnDeleteResultat" style="display:none;margin-right:auto" class="btn btn-danger btn-sm" onclick="deleteResultat()">🗑</button>
+      <button class="btn btn-ghost" onclick="closeModal('modalResultat')">Annuler</button>
+      <button class="btn btn-primary" onclick="saveResultat()">Enregistrer</button>
+    </div>
+  </div>
+</div>
+
 <div class="toast" id="toast"></div>
 
 <script type="module">
@@ -92,96 +290,381 @@
 
   const FC = { apiKey:"AIzaSyA4GxYd32GNs5EDjjm2UI1a0d25YxigMVU",authDomain:"lspd-intranet-2aed9.firebaseapp.com",projectId:"lspd-intranet-2aed9",storageBucket:"lspd-intranet-2aed9.firebasestorage.app",messagingSenderId:"780922925382",appId:"1:780922925382:web:a32d5e89bcff75bd8b3547" };
   const app = initializeApp(FC); const auth = getAuth(app); const db = getFirestore(app);
-  let allItems = [], editingId = null, userPerms = {}, userName = '';
+
+  let cadets=[], cours=[], agenda=[], resultats=[];
+  let editingCours=null, editingAgenda=null, editingResultat=null;
+  let userGrade='', userName='', userPerms={};
+  let isFormateur=false, isSuper=false;
 
   startClock('tbClock'); setupModalClose();
   window.closeModal = closeModal; window.openModal = openModal;
 
   initPage(auth, db, onAuthStateChanged, 'academie').then(async ({ grade, name, perms }) => {
-    userPerms = perms; userName = name;
-    if (perms.canWrite) {
-      document.getElementById('btnNew').addEventListener('click', () => { editingId = null; resetForm(); document.getElementById('modalTitle').textContent = 'NOUVELLE FORMATION'; document.getElementById('btnDelete').style.display = 'none'; document.getElementById('fDate').value = new Date().toISOString().split('T')[0]; openModal('modalForm'); });
-    } else { document.getElementById('btnNew').style.display = 'none'; }
-    await load();
+    userGrade=grade; userName=name; userPerms=perms;
+
+    // Rôles
+    isFormateur = perms.canAdmin ||
+      ['chef de police','chef assistant','chef adjoint','commandant','capitaine','lieutenant','sergent'].includes(grade) ||
+      (JSON.parse(sessionStorage.getItem('lspd_specialites')||'[]').includes('Académie'));
+    isSuper = perms.canAdmin;
+
+    // Afficher les onglets selon le rôle
+    if (isFormateur) {
+      document.getElementById('tabFormateurs').style.display = 'block';
+      document.getElementById('tabResultats').style.display  = 'block';
+      document.getElementById('btnNewAgenda').style.display  = 'inline-flex';
+    }
+
+    await Promise.all([loadCadets(), loadCours(), loadAgenda(), loadResultats()]);
   });
 
-  async function load() {
+  // ── Chargement ────────────────────────────────────────────
+  async function loadCadets() {
     try {
-      const snap = await getDocs(collection(db, 'academie-formations'));
-      allItems = snap.docs.map(d => ({ id: d.id, ...d.data() })).sort((a,b) => (b.createdAt||'').localeCompare(a.createdAt||''));
-      document.getElementById('sTotal').textContent    = allItems.length;
-      document.getElementById('sEnCours').textContent  = allItems.filter(i => i.statut === 'En cours').length;
-      document.getElementById('sTerminees').textContent= allItems.filter(i => i.statut === 'Terminée').length;
-      const cadets = allItems.reduce((acc, i) => acc + (i.cadets ? i.cadets.split(',').filter(Boolean).length : 0), 0);
-      document.getElementById('sCadets').textContent   = cadets;
-      render(allItems);
+      const snap = await getDocs(collection(db,'officiers'));
+      cadets = snap.docs.map(d=>({id:d.id,...d.data()}))
+        .filter(o => (o.grade||'').toLowerCase() === 'cadet')
+        .sort((a,b)=>(a.nom||'').localeCompare(b.nom||''));
+      document.getElementById('sCadets').textContent = cadets.length;
+      renderClasse();
+      populateCadetSelects();
     } catch(e) { console.error(e); }
   }
 
-  const STATUT_COLORS = { 'En cours':'var(--success)', 'Terminée':'var(--accent-b)', 'Planifiée':'var(--gold)' };
+  async function loadCours() {
+    try {
+      const snap = await getDocs(collection(db,'academie-cours'));
+      cours = snap.docs.map(d=>({id:d.id,...d.data()}))
+        .filter(c=>c.statut!=='Archivé')
+        .sort((a,b)=>(a.nom||'').localeCompare(b.nom||''));
+      document.getElementById('sCours').textContent = cours.length;
+      renderCours();
+      populateCoursSelects();
+    } catch(e) { console.error(e); }
+  }
 
-  function render(list) {
-    const grid = document.getElementById('itemGrid'); const empty = document.getElementById('itemEmpty');
-    if (!list.length) { grid.innerHTML = ''; empty.style.display = 'flex'; return; }
-    empty.style.display = 'none';
-    grid.innerHTML = list.map(f => `
-      <div style="background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:16px;display:flex;align-items:flex-start;gap:16px;transition:all .15s" onmouseover="this.style.borderColor='var(--gold)'" onmouseout="this.style.borderColor='var(--border)'">
-        <div style="flex:1">
-          <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;flex-wrap:wrap">
-            <span style="font-size:14px;font-weight:700;color:var(--text)">${f.titre||'—'}</span>
-            <span style="font-family:JetBrains Mono,monospace;font-size:9px;padding:2px 8px;border-radius:3px;border:1px solid;color:${STATUT_COLORS[f.statut]||'var(--text2)'};border-color:${STATUT_COLORS[f.statut]||'var(--text2)'}22;background:${STATUT_COLORS[f.statut]||'var(--text2)'}15">${f.statut||'—'}</span>
+  async function loadAgenda() {
+    try {
+      const snap = await getDocs(collection(db,'academie-agenda'));
+      agenda = snap.docs.map(d=>({id:d.id,...d.data()}))
+        .sort((a,b)=>(a.date||'').localeCompare(b.date||''));
+      document.getElementById('sFormations').textContent = agenda.length;
+      renderAgenda();
+    } catch(e) { console.error(e); }
+  }
+
+  async function loadResultats() {
+    try {
+      const snap = await getDocs(collection(db,'academie-resultats'));
+      resultats = snap.docs.map(d=>({id:d.id,...d.data()}));
+      // Moyenne des points
+      const tots = resultats.filter(r=>r.points && r.pointsMax);
+      const moy = tots.length ? Math.round(tots.reduce((s,r)=>s+(r.points/r.pointsMax*100),0)/tots.length) : 0;
+      document.getElementById('sMoyenne').textContent = moy ? moy+'%' : '—';
+      renderResultats();
+    } catch(e) { console.error(e); }
+  }
+
+  // ── Onglets ───────────────────────────────────────────────
+  window.switchTab = function(tab) {
+    ['classe','agenda','formateurs','resultats'].forEach(t => {
+      document.getElementById('panel'+t.charAt(0).toUpperCase()+t.slice(1)).style.display = t===tab?'block':'none';
+      const btn = document.getElementById('tab'+t.charAt(0).toUpperCase()+t.slice(1));
+      if (btn) btn.classList.toggle('active', t===tab);
+    });
+  };
+
+  // ── Render Classe ─────────────────────────────────────────
+  function renderClasse() {
+    const grid = document.getElementById('cadetGrid'); const empty = document.getElementById('cadetEmpty');
+    if (!cadets.length) { grid.innerHTML=''; empty.style.display='flex'; return; }
+    empty.style.display='none';
+    grid.innerHTML = cadets.map(c => {
+      const cadetRes = resultats.filter(r=>r.cadetNom===c.nom);
+      const totalPts = cadetRes.reduce((s,r)=>s+(parseInt(r.points)||0),0);
+      const totalMax = cadetRes.reduce((s,r)=>s+(parseInt(r.pointsMax)||0),0);
+      const pct = totalMax ? Math.round(totalPts/totalMax*100) : 0;
+      const nbCours = [...new Set(cadetRes.map(r=>r.coursNom))].length;
+      const color = pct>=80?'var(--success)':pct>=60?'var(--gold)':'var(--danger-l)';
+      return `
+        <div class="cadet-card">
+          <div style="display:flex;align-items:center;gap:12px;margin-bottom:12px">
+            <div style="width:44px;height:44px;border-radius:50%;background:var(--surface2);border:2px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;overflow:hidden">
+              ${c.photoUrl?`<img src="${c.photoUrl}" style="width:100%;height:100%;object-fit:cover" onerror="this.parentNode.innerHTML='👮'">`:'👮'}
+            </div>
+            <div style="flex:1;min-width:0">
+              <div style="font-size:13px;font-weight:700;color:var(--text)">${c.nom||'—'}</div>
+              <div style="font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--text3);letter-spacing:1px">${c.matricule||'—'}</div>
+            </div>
+            <div style="text-align:right;flex-shrink:0">
+              <div style="font-family:'JetBrains Mono',monospace;font-size:15px;font-weight:700;color:${color}">${pct}%</div>
+              <div style="font-family:'JetBrains Mono',monospace;font-size:8px;color:var(--text3)">${totalPts}/${totalMax} pts</div>
+            </div>
           </div>
-          <div style="display:flex;gap:20px;flex-wrap:wrap;margin-bottom:8px">
-            ${f.instructeur ? `<div style="font-family:JetBrains Mono,monospace;font-size:10px;color:var(--text2)">👮 ${f.instructeur}</div>` : ''}
-            ${f.date ? `<div style="font-family:JetBrains Mono,monospace;font-size:10px;color:var(--text2)">📅 ${new Date(f.date).toLocaleDateString('fr-FR')}</div>` : ''}
-            ${f.duree ? `<div style="font-family:JetBrains Mono,monospace;font-size:10px;color:var(--text2)">⏱ ${f.duree}</div>` : ''}
+          <div style="font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--text3);margin-bottom:4px">${nbCours} cours / ${cours.length} complétés</div>
+          <div class="cadet-progress-bar"><div class="cadet-progress-fill" style="width:${pct}%;background:linear-gradient(90deg,${color},${color}aa)"></div></div>
+          ${isFormateur?`<div style="margin-top:10px;display:flex;gap:6px">
+            <button onclick="openAddResultat('${c.nom}')" style="flex:1;padding:5px 8px;background:rgba(201,168,76,.08);border:1px solid rgba(201,168,76,.2);border-radius:4px;color:var(--gold);font-size:10px;cursor:pointer;font-family:'JetBrains Mono',monospace">+ Résultat</button>
+            <button onclick="viewCadetDetail('${c.nom}')" style="padding:5px 10px;background:rgba(61,88,120,.15);border:1px solid rgba(61,88,120,.3);border-radius:4px;color:var(--text2);font-size:11px;cursor:pointer">◎</button>
+          </div>`:''}
+        </div>`;
+    }).join('');
+  }
+
+  // ── Render Agenda ─────────────────────────────────────────
+  function renderAgenda() {
+    const list = document.getElementById('agendaList'); const empty = document.getElementById('agendaEmpty');
+    const future = agenda.filter(a=>!a.date||new Date(a.date)>=new Date(Date.now()-86400000));
+    if (!future.length) { list.innerHTML=''; empty.style.display='flex'; return; }
+    empty.style.display='none';
+    list.innerHTML = future.map(a => {
+      const d = a.date ? new Date(a.date) : null;
+      return `
+        <div class="agenda-item">
+          <div class="agenda-date-box">
+            ${d?`<div style="font-family:'JetBrains Mono',monospace;font-size:15px;font-weight:700;color:var(--gold)">${d.getDate().toString().padStart(2,'0')}</div>
+            <div style="font-family:'JetBrains Mono',monospace;font-size:8px;color:var(--text3);text-transform:uppercase">${d.toLocaleDateString('fr-FR',{month:'short'})}</div>
+            <div style="font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--text2)">${d.toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'})}</div>`
+            :'<div style="font-family:JetBrains Mono,monospace;font-size:11px;color:var(--text3)">—</div>'}
           </div>
-          ${f.cadets ? `<div style="font-size:11px;color:var(--text2);margin-bottom:6px">Cadets : <span style="color:var(--text)">${f.cadets}</span></div>` : ''}
-          ${f.description ? `<div style="font-size:12px;color:var(--text2);padding:8px 10px;background:var(--surface2);border-radius:4px;line-height:1.6">${f.description}</div>` : ''}
+          <div style="flex:1">
+            <div style="font-size:14px;font-weight:600;color:var(--text);margin-bottom:4px">${a.titre||'—'}</div>
+            <div style="display:flex;gap:14px;flex-wrap:wrap">
+              ${a.formateur?`<div style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--text2)">👮 ${a.formateur}</div>`:''}
+              ${a.lieu?`<div style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--text2)">📍 ${a.lieu}</div>`:''}
+              ${a.cours?`<div style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--gold);opacity:.8">◈ ${a.cours}</div>`:''}
+            </div>
+            ${a.notes?`<div style="font-size:11px;color:var(--text2);margin-top:6px">${a.notes}</div>`:''}
+          </div>
+          ${isFormateur?`<button onclick="editAgendaItem('${a.id}')" style="padding:5px 10px;background:transparent;border:1px solid var(--border);border-radius:4px;color:var(--text2);font-size:11px;cursor:pointer;flex-shrink:0">✏️</button>`:''}
+        </div>`;
+    }).join('');
+  }
+
+  // ── Render Cours ──────────────────────────────────────────
+  function renderCours() {
+    const list = document.getElementById('coursList'); const empty = document.getElementById('coursEmpty');
+    if (!cours.length) { list.innerHTML=''; empty.style.display='flex'; return; }
+    empty.style.display='none';
+    const CAT_COLORS = {'Physique':'var(--danger)','Tir':'var(--gold)','Procédure':'var(--accent-b)','Conduite':'var(--success)','Théorie':'var(--purple-l)','Terrain':'var(--warning)','Autre':'var(--text2)'};
+    list.innerHTML = cours.map(c => `
+      <div class="cours-card">
+        <div class="cours-header" style="display:flex;align-items:center;justify-content:space-between;gap:12px">
+          <div>
+            <div style="display:flex;align-items:center;gap:10px;margin-bottom:4px">
+              <span style="font-size:14px;font-weight:700;color:var(--text)">${c.nom||'—'}</span>
+              <span style="font-family:'JetBrains Mono',monospace;font-size:9px;padding:2px 8px;border-radius:3px;color:${CAT_COLORS[c.categorie]||'var(--text2)'};background:${CAT_COLORS[c.categorie]||'var(--text2)'}18;border:1px solid ${CAT_COLORS[c.categorie]||'var(--text2)'}33">${c.categorie||'—'}</span>
+            </div>
+            <div style="display:flex;gap:16px">
+              ${c.duree?`<div style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--text2)">⏱ ${c.duree}</div>`:''}
+              ${c.pointsMax?`<div style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--gold)">◈ ${c.pointsMax} pts max</div>`:''}
+            </div>
+          </div>
+          <button onclick="editCoursItem('${c.id}')" style="padding:6px 12px;background:rgba(201,168,76,.08);border:1px solid rgba(201,168,76,.2);border-radius:4px;color:var(--gold);font-size:11px;cursor:pointer;flex-shrink:0">✏️</button>
         </div>
-        ${userPerms.canWrite ? `<button onclick="editItem('${f.id}')" style="padding:6px 12px;background:rgba(201,168,76,.08);border:1px solid rgba(201,168,76,.2);border-radius:4px;color:var(--gold);font-size:11px;cursor:pointer;flex-shrink:0">✏️ Modifier</button>` : ''}
+        ${c.description?`<div style="padding:10px 16px;font-size:12px;color:var(--text2);border-bottom:1px solid var(--border);line-height:1.6">${c.description}</div>`:''}
+        ${c.bareme?`<div style="padding:10px 16px;background:rgba(201,168,76,.03)">
+          <div style="font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--gold);opacity:.6;letter-spacing:2px;margin-bottom:6px;text-transform:uppercase">Barème / Références</div>
+          <div style="font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--text2);line-height:1.8;white-space:pre-wrap">${c.bareme}</div>
+        </div>`:''}
       </div>`).join('');
   }
 
-  window.filterItems = function() {
-    const q = document.getElementById('searchInput').value.toLowerCase();
-    const s = document.getElementById('filterStatut').value;
-    render(allItems.filter(i => (i.titre+' '+i.instructeur+' '+i.cadets).toLowerCase().includes(q) && (!s || i.statut === s)));
+  // ── Render Résultats ──────────────────────────────────────
+  window.renderResultats = function() {
+    const list = document.getElementById('resultatList'); const empty = document.getElementById('resultatEmpty');
+    const filterCadet = document.getElementById('filterCadetRes').value;
+    let data = filterCadet ? resultats.filter(r=>r.cadetNom===filterCadet) : resultats;
+    data = data.sort((a,b)=>(b.createdAt||'').localeCompare(a.createdAt||''));
+    if (!data.length) { list.innerHTML=''; empty.style.display='flex'; return; }
+    empty.style.display='none';
+    list.innerHTML = data.map(r => {
+      const pct = r.pointsMax ? Math.round(r.points/r.pointsMax*100) : null;
+      const status = pct===null?'pending':pct>=60?'pass':'fail';
+      return `
+        <div style="background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:14px;display:flex;align-items:flex-start;gap:14px;flex-wrap:wrap">
+          <div style="flex:1;min-width:200px">
+            <div style="display:flex;align-items:center;gap:10px;margin-bottom:6px;flex-wrap:wrap">
+              <span style="font-weight:700;color:var(--text);font-size:13px">${r.cadetNom||'—'}</span>
+              <span style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--gold)">◈ ${r.coursNom||'—'}</span>
+              <span class="res-badge res-${status}">${status==='pass'?'✓ Réussi':status==='fail'?'✗ Échoué':'⏳ En attente'}</span>
+            </div>
+            ${r.performances?`<div style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--text2);padding:6px 10px;background:var(--surface2);border-radius:4px;margin-bottom:6px;white-space:pre-wrap;line-height:1.7">${r.performances}</div>`:''}
+            ${r.commentaire?`<div style="font-size:11px;color:var(--text2);font-style:italic">💬 ${r.commentaire}</div>`:''}
+            <div style="font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--text3);margin-top:6px">
+              ${r.formateur?r.formateur+' — ':''} ${r.date?new Date(r.date).toLocaleDateString('fr-FR'):''}
+            </div>
+          </div>
+          <div style="text-align:center;flex-shrink:0">
+            <div style="font-family:'JetBrains Mono',monospace;font-size:22px;font-weight:700;color:${status==='pass'?'var(--success)':status==='fail'?'var(--danger-l)':'var(--gold)'}">${r.points||0}</div>
+            <div style="font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--text3)">/ ${r.pointsMax||'—'} pts</div>
+            ${pct!==null?`<div style="font-family:'JetBrains Mono',monospace;font-size:10px;margin-top:2px;color:var(--text2)">${pct}%</div>`:''}
+          </div>
+          <button onclick="editResultatItem('${r.id}')" style="padding:5px 10px;background:transparent;border:1px solid var(--border);border-radius:4px;color:var(--text2);font-size:11px;cursor:pointer;flex-shrink:0">✏️</button>
+        </div>`;
+    }).join('');
   };
 
-  window.editItem = function(id) {
-    const f = allItems.find(x => x.id === id); if (!f) return;
-    editingId = id;
-    document.getElementById('modalTitle').textContent = 'MODIFIER LA FORMATION';
-    document.getElementById('btnDelete').style.display = userPerms.canDelete ? 'inline-flex' : 'none';
-    document.getElementById('fTitre').value       = f.titre       || '';
-    document.getElementById('fInstructeur').value = f.instructeur || '';
-    document.getElementById('fDate').value        = f.date        || '';
-    document.getElementById('fDuree').value       = f.duree       || '';
-    document.getElementById('fStatut').value      = f.statut      || 'Planifiée';
-    document.getElementById('fCadets').value      = f.cadets      || '';
-    document.getElementById('fDescription').value = f.description || '';
-    openModal('modalForm');
+  // ── Helpers selects ───────────────────────────────────────
+  function populateCadetSelects() {
+    const opts = cadets.map(c=>`<option value="${c.nom}">${c.nom}</option>`).join('');
+    document.getElementById('rCadet').innerHTML = '<option value="">Sélectionner...</option>' + opts;
+    const sel = document.getElementById('filterCadetRes');
+    sel.innerHTML = '<option value="">Tous les cadets</option>' + opts;
+  }
+
+  function populateCoursSelects() {
+    const opts = cours.map(c=>`<option value="${c.nom}" data-max="${c.pointsMax||0}">${c.nom}</option>`).join('');
+    document.getElementById('rCours').innerHTML = '<option value="">Sélectionner...</option>' + opts;
+    document.getElementById('aCours').innerHTML = '<option value="">— Aucun —</option>' + opts;
+    // Auto-remplir pointsMax quand on change le cours
+    document.getElementById('rCours').addEventListener('change', function() {
+      const sel = this.options[this.selectedIndex];
+      document.getElementById('rPointsMax').value = sel?.dataset.max || '';
+    });
+  }
+
+  // ── CRUD Cours ────────────────────────────────────────────
+  document.getElementById('btnNewCours').addEventListener('click', () => {
+    editingCours=null;
+    ['cNom','cDuree','cDescription','cBareme'].forEach(id=>document.getElementById(id).value='');
+    document.getElementById('cPointsMax').value='';
+    document.getElementById('cCategorie').value='Physique';
+    document.getElementById('cStatut').value='Actif';
+    document.getElementById('modalCoursTitle').textContent='NOUVEAU COURS';
+    document.getElementById('btnDeleteCours').style.display='none';
+    openModal('modalCours');
+  });
+
+  window.editCoursItem = function(id) {
+    const c = cours.find(x=>x.id===id); if (!c) return;
+    editingCours=id;
+    document.getElementById('modalCoursTitle').textContent='MODIFIER LE COURS';
+    document.getElementById('btnDeleteCours').style.display='inline-flex';
+    document.getElementById('cNom').value         = c.nom||'';
+    document.getElementById('cDuree').value       = c.duree||'';
+    document.getElementById('cPointsMax').value   = c.pointsMax||'';
+    document.getElementById('cCategorie').value   = c.categorie||'Physique';
+    document.getElementById('cStatut').value      = c.statut||'Actif';
+    document.getElementById('cDescription').value = c.description||'';
+    document.getElementById('cBareme').value      = c.bareme||'';
+    openModal('modalCours');
   };
 
-  window.saveItem = async function() {
-    const titre = document.getElementById('fTitre').value.trim();
-    if (!titre) { showToast('Le titre est obligatoire', 'error'); return; }
-    const payload = { titre, instructeur: document.getElementById('fInstructeur').value.trim(), date: document.getElementById('fDate').value, duree: document.getElementById('fDuree').value.trim(), statut: document.getElementById('fStatut').value, cadets: document.getElementById('fCadets').value.trim(), description: document.getElementById('fDescription').value.trim(), updatedAt: new Date().toISOString() };
+  window.saveCours = async function() {
+    const nom = document.getElementById('cNom').value.trim();
+    if (!nom) { showToast('Le nom est obligatoire','error'); return; }
+    const payload = { nom, duree:document.getElementById('cDuree').value.trim(), pointsMax:parseInt(document.getElementById('cPointsMax').value)||0, categorie:document.getElementById('cCategorie').value, statut:document.getElementById('cStatut').value, description:document.getElementById('cDescription').value.trim(), bareme:document.getElementById('cBareme').value.trim(), updatedAt:new Date().toISOString() };
     try {
-      if (editingId) { await updateDoc(doc(db,'academie-formations',editingId), payload); showToast('Formation mise à jour ✓','success'); }
-      else { payload.createdAt = new Date().toISOString(); await addDoc(collection(db,'academie-formations'), payload); showToast('Formation enregistrée ✓','success'); }
-      closeModal('modalForm'); editingId = null; await load();
+      if (editingCours) { await updateDoc(doc(db,'academie-cours',editingCours),payload); showToast('Cours mis à jour ✓','success'); }
+      else { payload.createdAt=new Date().toISOString(); await addDoc(collection(db,'academie-cours'),payload); showToast('Cours créé ✓','success'); }
+      closeModal('modalCours'); editingCours=null; await loadCours();
     } catch(e) { showToast('Erreur : '+e.message,'error'); }
   };
 
-  window.deleteItem = async function() {
-    if (!editingId || !confirm('Supprimer cette formation ?')) return;
-    await deleteDoc(doc(db,'academie-formations',editingId));
-    showToast('Formation supprimée','success'); closeModal('modalForm'); editingId = null; await load();
+  window.deleteCours = async function() {
+    if (!editingCours||!confirm('Supprimer ce cours ?')) return;
+    await deleteDoc(doc(db,'academie-cours',editingCours));
+    showToast('Cours supprimé','success'); closeModal('modalCours'); editingCours=null; await loadCours();
   };
 
-  function resetForm() { ['fTitre','fInstructeur','fDate','fDuree','fCadets','fDescription'].forEach(id => document.getElementById(id).value = ''); document.getElementById('fStatut').value = 'Planifiée'; }
+  // ── CRUD Agenda ───────────────────────────────────────────
+  document.getElementById('btnNewAgenda').addEventListener('click', () => {
+    editingAgenda=null;
+    ['aTitre','aFormateur','aLieu','aNotes'].forEach(id=>document.getElementById(id).value='');
+    document.getElementById('aDate').value='';
+    document.getElementById('modalAgendaTitle').textContent='NOUVELLE SESSION';
+    document.getElementById('btnDeleteAgenda').style.display='none';
+    openModal('modalAgenda');
+  });
+
+  window.editAgendaItem = function(id) {
+    const a = agenda.find(x=>x.id===id); if (!a) return;
+    editingAgenda=id;
+    document.getElementById('modalAgendaTitle').textContent='MODIFIER LA SESSION';
+    document.getElementById('btnDeleteAgenda').style.display='inline-flex';
+    document.getElementById('aTitre').value    = a.titre    ||'';
+    document.getElementById('aDate').value     = a.date     ||'';
+    document.getElementById('aFormateur').value= a.formateur||'';
+    document.getElementById('aLieu').value     = a.lieu     ||'';
+    document.getElementById('aNotes').value    = a.notes    ||'';
+    openModal('modalAgenda');
+  };
+
+  window.saveAgenda = async function() {
+    const titre = document.getElementById('aTitre').value.trim();
+    if (!titre) { showToast('Le titre est obligatoire','error'); return; }
+    const payload = { titre, date:document.getElementById('aDate').value, formateur:document.getElementById('aFormateur').value.trim(), cours:document.getElementById('aCours').value, lieu:document.getElementById('aLieu').value.trim(), notes:document.getElementById('aNotes').value.trim(), updatedAt:new Date().toISOString() };
+    try {
+      if (editingAgenda) { await updateDoc(doc(db,'academie-agenda',editingAgenda),payload); showToast('Session mise à jour ✓','success'); }
+      else { payload.createdAt=new Date().toISOString(); await addDoc(collection(db,'academie-agenda'),payload); showToast('Session ajoutée ✓','success'); }
+      closeModal('modalAgenda'); editingAgenda=null; await loadAgenda();
+    } catch(e) { showToast('Erreur : '+e.message,'error'); }
+  };
+
+  window.deleteAgenda = async function() {
+    if (!editingAgenda||!confirm('Supprimer cette session ?')) return;
+    await deleteDoc(doc(db,'academie-agenda',editingAgenda));
+    showToast('Supprimée','success'); closeModal('modalAgenda'); editingAgenda=null; await loadAgenda();
+  };
+
+  // ── CRUD Résultats ────────────────────────────────────────
+  document.getElementById('btnNewResultat').addEventListener('click', () => {
+    editingResultat=null;
+    document.getElementById('modalResultatTitle').textContent='AJOUTER UN RÉSULTAT';
+    document.getElementById('btnDeleteResultat').style.display='none';
+    ['rPoints','rPointsMax','rDate','rPerformances','rCommentaire'].forEach(id=>document.getElementById(id).value='');
+    document.getElementById('rCadet').value='';
+    document.getElementById('rCours').value='';
+    document.getElementById('rFormateur').value=userName;
+    document.getElementById('rDate').value=new Date().toISOString().split('T')[0];
+    openModal('modalResultat');
+  });
+
+  window.openAddResultat = function(cadetNom) {
+    document.getElementById('btnNewResultat').click();
+    document.getElementById('rCadet').value = cadetNom;
+  };
+
+  window.editResultatItem = function(id) {
+    const r = resultats.find(x=>x.id===id); if (!r) return;
+    editingResultat=id;
+    document.getElementById('modalResultatTitle').textContent='MODIFIER LE RÉSULTAT';
+    document.getElementById('btnDeleteResultat').style.display='inline-flex';
+    document.getElementById('rCadet').value       = r.cadetNom    ||'';
+    document.getElementById('rCours').value       = r.coursNom    ||'';
+    document.getElementById('rPoints').value      = r.points      ||'';
+    document.getElementById('rPointsMax').value   = r.pointsMax   ||'';
+    document.getElementById('rDate').value        = r.date        ||'';
+    document.getElementById('rFormateur').value   = r.formateur   ||'';
+    document.getElementById('rPerformances').value= r.performances||'';
+    document.getElementById('rCommentaire').value = r.commentaire ||'';
+    openModal('modalResultat');
+  };
+
+  window.saveResultat = async function() {
+    const cadetNom = document.getElementById('rCadet').value;
+    const coursNom = document.getElementById('rCours').value;
+    if (!cadetNom||!coursNom) { showToast('Cadet et cours obligatoires','error'); return; }
+    const payload = { cadetNom, coursNom, points:parseInt(document.getElementById('rPoints').value)||0, pointsMax:parseInt(document.getElementById('rPointsMax').value)||0, date:document.getElementById('rDate').value, formateur:document.getElementById('rFormateur').value.trim(), performances:document.getElementById('rPerformances').value.trim(), commentaire:document.getElementById('rCommentaire').value.trim(), updatedAt:new Date().toISOString() };
+    try {
+      if (editingResultat) { await updateDoc(doc(db,'academie-resultats',editingResultat),payload); showToast('Résultat mis à jour ✓','success'); }
+      else { payload.createdAt=new Date().toISOString(); await addDoc(collection(db,'academie-resultats'),payload); showToast('Résultat enregistré ✓','success'); }
+      closeModal('modalResultat'); editingResultat=null; await loadResultats(); renderClasse();
+    } catch(e) { showToast('Erreur : '+e.message,'error'); }
+  };
+
+  window.deleteResultat = async function() {
+    if (!editingResultat||!confirm('Supprimer ce résultat ?')) return;
+    await deleteDoc(doc(db,'academie-resultats',editingResultat));
+    showToast('Supprimé','success'); closeModal('modalResultat'); editingResultat=null; await loadResultats(); renderClasse();
+  };
+
+  window.viewCadetDetail = function(nom) {
+    document.getElementById('filterCadetRes').value = nom;
+    switchTab('resultats');
+    renderResultats();
+  };
 </script>
 </body>
 </html>
