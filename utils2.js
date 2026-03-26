@@ -116,10 +116,11 @@ export async function initPage(auth, db, onAuthStateChanged, pageName) {
         try {
           const { doc: docM, onSnapshot: onSnapM } = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js");
           onSnapM(docM(db, 'config', 'maintenance'), function(snap) {
-            if (snap.exists() && snap.data().enabled === true && grade !== 'chef de police') {
-              const d = snap.data();
-              window.location.replace('maintenance.html?' + new URLSearchParams({ msg: d.message||'', eta: d.eta||'', reason: d.reason||'' }).toString());
-            }
+            if (!snap.exists() || snap.data().enabled !== true) return;
+            // Grades qui bypass la maintenance
+            if ((grade||'').toLowerCase().trim() === 'chef de police') return;
+            const d = snap.data();
+            window.location.replace('maintenance.html?' + new URLSearchParams({ msg: d.message||'', eta: d.eta||'', reason: d.reason||'' }).toString());
           });
         } catch(e) { console.warn('[Maintenance]', e); }
       }
@@ -230,10 +231,14 @@ export function buildSidebar(elementId, activePage, grade) {
 
   // ── Unités spéciales (selon spécialités de l'officier) ──
   const specs = JSON.parse(sessionStorage.getItem('lspd_specialites') || '[]');
-  const gradesSuperieurs = ['chef de police', 'chef assistant'];
-  const isSuperGrade = gradesSuperieurs.includes((grade||'').toLowerCase());
-  const hasSpec = s => isSuperGrade || specs.includes(s) || specs.includes(s.toLowerCase());
-  const hasAnySpec = isSuperGrade || specs.some(s => ['Académie','SWAT','Détective','Detective','K9','Police Maritime'].includes(s));
+  // Grades qui voient toutes les unités spéciales
+  const gradesSuperieurs = ['chef de police', 'chef assistant', 'chef adjoint', 'commandant'];
+  const gradeNorm = (grade||'').toLowerCase().trim();
+  const isSuperGrade = gradesSuperieurs.some(g => gradeNorm === g || gradeNorm.startsWith(g));
+  // Utiliser aussi canAdmin comme critère pour les grades supérieurs
+  const isAdmin = p.canAdmin === true;
+  const hasSpec = s => isSuperGrade || isAdmin || specs.includes(s) || specs.includes(s.toLowerCase());
+  const hasAnySpec = isSuperGrade || isAdmin || specs.some(s => ['Académie','SWAT','Détective','Detective','K9','Police Maritime'].includes(s));
   if (hasAnySpec) {
     h += `<div class="sb-divider"></div><div class="sb-section">Unités spéciales</div>`;
     if (hasSpec('Académie'))         h += nav('academie',  activePage, '🎓', 'Académie',         'academie.html');

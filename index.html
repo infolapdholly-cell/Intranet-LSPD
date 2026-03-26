@@ -207,29 +207,7 @@
   import { getAuth, signInWithEmailAndPassword, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
   import { getFirestore, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
-  // ── Vérifier maintenance DÈS l'arrivée sur la page login ──
-  (async () => {
-    try {
-      const _app = initializeApp({
-        apiKey:"AIzaSyA4GxYd32GNs5EDjjm2UI1a0d25YxigMVU",
-        authDomain:"lspd-intranet-2aed9.firebaseapp.com",
-        projectId:"lspd-intranet-2aed9",
-        storageBucket:"lspd-intranet-2aed9.firebasestorage.app",
-        messagingSenderId:"780922925382",
-        appId:"1:780922925382:web:a32d5e89bcff75bd8b3547"
-      });
-      const _db = getFirestore(_app);
-      const mSnap = await getDoc(doc(_db,'config','maintenance'));
-      if (mSnap.exists() && mSnap.data().enabled === true) {
-        const d = mSnap.data();
-        const params = new URLSearchParams({ msg: d.message||'', eta: d.eta||'', reason: d.reason||'' });
-        // Afficher overlay de maintenance sur la page login elle-même
-        document.body.style.opacity = '0';
-        window.location.replace('maintenance.html?' + params.toString());
-      }
-    } catch(e) { /* fail-open */ }
-  })();
-  // ──────────────────────────────────────────────────────────
+  // ── La vérification maintenance se fait après connexion dans onAuthStateChanged ──
 
   const firebaseConfig = {
     apiKey:"AIzaSyA4GxYd32GNs5EDjjm2UI1a0d25YxigMVU",
@@ -260,7 +238,7 @@
         return;
       }
 
-      // Vérifier maintenance — seulement Chef de Police passe
+      // Vérifier maintenance — grades supérieurs passent
       const mSnap = await getDoc(doc(db,'config','maintenance'));
       if (mSnap.exists() && mSnap.data().enabled === true) {
         const userGrade = uSnap.exists() ? (uSnap.data().grade||'cadet').toLowerCase() : 'cadet';
