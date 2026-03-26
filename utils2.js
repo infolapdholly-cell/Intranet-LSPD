@@ -242,9 +242,10 @@ export function buildSidebar(elementId, activePage, grade) {
   const gradeNorm = (grade||'').toLowerCase().trim();
   const isSuperGrade = gradesSuperieurs.some(g => gradeNorm === g || gradeNorm.startsWith(g));
   // Utiliser aussi canAdmin comme critère pour les grades supérieurs
-  const isAdmin = p.canAdmin === true;
-  const hasSpec = s => isSuperGrade || isAdmin || specs.includes(s) || specs.includes(s.toLowerCase());
-  const hasAnySpec = isSuperGrade || isAdmin || specs.some(s => ['Académie','SWAT','Détective','Detective','K9','Police Maritime'].includes(s));
+  const isAdmin  = p.canAdmin === true;
+  const isCadet  = gradeNorm === 'cadet';
+  const hasSpec  = s => isSuperGrade || isAdmin || specs.includes(s) || specs.includes(s.toLowerCase()) || (isCadet && s === 'Académie');
+  const hasAnySpec = isSuperGrade || isAdmin || isCadet || specs.some(s => ['Académie','SWAT','Détective','Detective','K9','Police Maritime'].includes(s));
   if (hasAnySpec) {
     h += `<div class="sb-divider"></div><div class="sb-section">Unités spéciales</div>`;
     if (hasSpec('Académie'))         h += nav('academie',  activePage, '⬡', 'Académie',         'academie.html');
