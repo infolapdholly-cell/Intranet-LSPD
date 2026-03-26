@@ -269,15 +269,15 @@
 
     document.getElementById('sMonGrade').textContent = grade || '—';
 
-    const gradesSup = ['Chef de Police','Chef Assistant','Chef Adjoint','Commandant','Capitaine'];
-    const isSuperieur = gradesSup.includes(grade);
+    const gradesSup = ['chef de police','chef assistant','chef adjoint','commandant','capitaine'];
+    const isSuperieur = gradesSup.includes(grade.toLowerCase());
 
     // Bouton demande — tous sauf Chef de Police
-    if (grade !== 'Chef de Police') {
+    if (grade.toLowerCase() !== 'chef de police') {
       document.getElementById('btnDemande').style.display = 'inline-flex';
     }
     // Bouton attribution — Commandant et +
-    if (perms.canAdmin || ['Chef de Police','Chef Assistant','Chef Adjoint','Commandant'].includes(grade)) {
+    if (perms.canAdmin || ['chef de police','chef assistant','chef adjoint','commandant'].includes(grade.toLowerCase())) {
       document.getElementById('btnAttribution').style.display = 'inline-flex';
     }
 
@@ -350,7 +350,7 @@
 
   function cardHTML(d) {
     const canDecide = userPerms.canAdmin ||
-      ['Chef de Police','Chef Assistant','Chef Adjoint','Commandant'].includes(userGrade);
+      ['chef de police','chef assistant','chef adjoint','commandant'].includes(userGrade.toLowerCase());
     const isMine = d.officierNom === userName;
 
     return `
@@ -439,7 +439,7 @@
     document.getElementById('dGradeActuel').value = userGrade || '';
     document.getElementById('dJustification').value = '';
     // Proposer les grades supérieurs au grade actuel
-    const idx = GRADES.indexOf(userGrade);
+    const idx = GRADES.findIndex(g => g.toLowerCase() === userGrade.toLowerCase());
     const sel = document.getElementById('dGradeDemande');
     sel.innerHTML = GRADES.slice(0, idx > 0 ? idx : GRADES.length)
       .map(g => `<option value="${g}">${g}</option>`).join('');
