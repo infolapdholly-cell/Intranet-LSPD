@@ -198,7 +198,8 @@
 
     <!-- PANEL : Plans de formation (formateurs) -->
     <div id="panelFormateurs" style="display:none">
-      <div style="display:flex;justify-content:flex-end;margin-bottom:14px">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;flex-wrap:wrap;gap:10px">
+        <div style="font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--text3);letter-spacing:2px">RÉFÉRENCE = 50 PTS — MAXIMUM = 100 PTS</div>
         <button id="btnNewCours" class="btn btn-primary">+ Nouveau cours</button>
       </div>
       <div id="coursList" style="display:flex;flex-direction:column;gap:12px"></div>
@@ -232,7 +233,6 @@
       <div class="form-grid g2" style="margin-bottom:12px">
         <div class="fg" style="grid-column:1/-1"><label>Nom du cours *</label><input id="cNom" placeholder="ex: Tir de précision, Procédure d'arrestation..."></div>
         <div class="fg"><label>Durée</label><input id="cDuree" placeholder="ex: 1h30, 2 séances..."></div>
-        <div class="fg"><label>Points maximum</label><input type="number" id="cPointsMax" placeholder="ex: 100" min="0"></div>
         <div class="fg"><label>Catégorie</label>
           <select id="cCategorie">
             <option value="Physique">Physique</option>
@@ -245,16 +245,19 @@
           </select>
         </div>
         <div class="fg"><label>Statut</label>
-          <select id="cStatut">
-            <option value="Actif">Actif</option>
-            <option value="Archivé">Archivé</option>
-          </select>
+          <select id="cStatut"><option value="Actif">Actif</option><option value="Archivé">Archivé</option></select>
         </div>
       </div>
-      <div class="fg" style="margin-bottom:12px"><label>Description / Objectifs</label><textarea id="cDescription" placeholder="Objectifs pédagogiques, contenu du cours..."></textarea></div>
-      <div class="fg">
-        <label>Références physiques / Barème</label>
-        <textarea id="cBareme" placeholder="ex: 30 pompes en 2 min = 20pts, 50 abdos = 15pts, Course 1.6km &lt; 8min = 25pts..."></textarea>
+      <div class="fg" style="margin-bottom:16px"><label>Description / Objectifs</label><textarea id="cDescription" placeholder="Objectifs pédagogiques, contenu du cours..."></textarea></div>
+
+      <!-- Exercices structurés -->
+      <div style="font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--gold);letter-spacing:2px;text-transform:uppercase;margin-bottom:10px">
+        Exercices &amp; Références <span style="color:var(--text3)">(référence = 50 pts, max = 100 pts)</span>
+      </div>
+      <div id="exercicesList" style="display:flex;flex-direction:column;gap:8px;margin-bottom:12px"></div>
+      <button type="button" onclick="addExercice()" style="width:100%;padding:8px;background:rgba(201,168,76,.05);border:1px dashed rgba(201,168,76,.3);border-radius:5px;color:var(--gold);font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:1px;cursor:pointer">+ AJOUTER UN EXERCICE</button>
+      <div style="margin-top:10px;padding:8px 12px;background:rgba(37,137,208,.06);border:1px solid rgba(37,137,208,.15);border-radius:5px;font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--accent-b)">
+        Total max du cours : <span id="cTotalPts" style="font-weight:700;font-size:12px">0</span> pts (barème automatique sur 100)
       </div>
     </div>
     <div class="modal-footer">
@@ -316,10 +319,19 @@
         <div class="fg"><label>Date</label><input type="date" id="rDate"></div>
         <div class="fg"><label>Formateur</label><input id="rFormateur" placeholder="Nom du formateur"></div>
       </div>
-      <div class="fg" style="margin-bottom:12px">
-        <label>Détail des performances (références)</label>
-        <textarea id="rPerformances" placeholder="ex: Pompes : 35/30 ✓, Abdos : 42/50 ✓, Course : 7m52s ✓..."></textarea>
+      <!-- Champs de perf dynamiques selon le cours sélectionné -->
+      <div id="rPerfFields" style="margin-bottom:12px"></div>
+
+      <!-- Points calculés automatiquement -->
+      <div id="rAutoScore" style="display:none;margin-bottom:12px;padding:10px 14px;background:rgba(201,168,76,.06);border:1px solid rgba(201,168,76,.2);border-radius:6px">
+        <div style="font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--gold);letter-spacing:2px;margin-bottom:4px">SCORE CALCULÉ AUTOMATIQUEMENT</div>
+        <div style="display:flex;align-items:center;gap:12px">
+          <div id="rAutoScoreVal" style="font-family:'JetBrains Mono',monospace;font-size:28px;font-weight:700;color:var(--gold)">—</div>
+          <div style="font-size:11px;color:var(--text2)">pts / 100<br><span id="rAutoScoreDetail" style="font-size:10px;color:var(--text3)"></span></div>
+          <button onclick="applyAutoScore()" style="margin-left:auto;padding:6px 12px;background:var(--gold);color:#0a0c12;border:none;border-radius:4px;font-family:'JetBrains Mono',monospace;font-size:9px;font-weight:700;cursor:pointer;letter-spacing:1px">APPLIQUER</button>
+        </div>
       </div>
+
       <div class="fg"><label>Commentaire</label><textarea id="rCommentaire" placeholder="Observations du formateur..."></textarea></div>
     </div>
     <div class="modal-footer">
@@ -366,6 +378,7 @@
     }
 
     await Promise.all([loadCadets(), loadCours(), loadAgenda(), loadResultats()]);
+    initCal();
   });
 
   // ── Chargement ────────────────────────────────────────────
@@ -647,10 +660,19 @@
           <button onclick="editCoursItem('${c.id}')" style="padding:6px 12px;background:rgba(201,168,76,.08);border:1px solid rgba(201,168,76,.2);border-radius:4px;color:var(--gold);font-size:11px;cursor:pointer;flex-shrink:0">✏️</button>
         </div>
         ${c.description?`<div style="padding:10px 16px;font-size:12px;color:var(--text2);border-bottom:1px solid var(--border);line-height:1.6">${c.description}</div>`:''}
-        ${c.bareme?`<div style="padding:10px 16px;background:rgba(201,168,76,.03)">
-          <div style="font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--gold);opacity:.6;letter-spacing:2px;margin-bottom:6px;text-transform:uppercase">Barème / Références</div>
-          <div style="font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--text2);line-height:1.8;white-space:pre-wrap">${c.bareme}</div>
-        </div>`:''}
+        ${Array.isArray(c.exercices) && c.exercices.length ? `<div style="padding:10px 16px;background:rgba(201,168,76,.03)">
+          <div style="font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--gold);opacity:.6;letter-spacing:2px;margin-bottom:8px;text-transform:uppercase">Exercices & Barème automatique</div>
+          <div style="display:flex;flex-direction:column;gap:6px">
+            ${c.exercices.map(ex=>`
+              <div style="display:flex;align-items:center;gap:10px;padding:6px 10px;background:var(--surface);border:1px solid var(--border);border-radius:4px;flex-wrap:wrap">
+                <span style="font-size:12px;color:var(--text);flex:1">${ex.nom||'—'}</span>
+                <span style="font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--text3)">${ex.type==='temps'?'⏱ Temps':'🔁 Répétitions'}</span>
+                <span style="font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--gold)">Ref: <b>${ex.type==='temps'?Math.floor(ex.ref/60)+'m'+String(Math.round(ex.ref%60)).padStart(2,'0')+'s':ex.ref}</b> = 50pts</span>
+                <span style="font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--success)">Max: <b>${ex.type==='temps'?Math.floor(ex.maxPerf/60)+'m'+String(Math.round(ex.maxPerf%60)).padStart(2,'0')+'s':ex.maxPerf}</b> = 100pts</span>
+                <span style="font-family:'JetBrains Mono',monospace;font-size:9px;padding:1px 6px;border-radius:3px;background:rgba(201,168,76,.1);color:var(--gold)">${ex.poids}%</span>
+              </div>`).join('')}
+          </div>
+        </div>` : ''}
       </div>`).join('');
   }
 
@@ -705,14 +727,16 @@
     document.getElementById('rCours').addEventListener('change', function() {
       const sel = this.options[this.selectedIndex];
       document.getElementById('rPointsMax').value = sel?.dataset.max || '';
+      buildPerfFields(this.value);
     });
   }
 
   // ── CRUD Cours ────────────────────────────────────────────
   document.getElementById('btnNewCours').addEventListener('click', () => {
     editingCours=null;
-    ['cNom','cDuree','cDescription','cBareme'].forEach(id=>document.getElementById(id).value='');
-    document.getElementById('cPointsMax').value='';
+    ['cNom','cDuree','cDescription'].forEach(id=>document.getElementById(id).value='');
+    document.getElementById('exercicesList').innerHTML = '';
+    updateTotalPts();
     document.getElementById('cCategorie').value='Physique';
     document.getElementById('cStatut').value='Actif';
     document.getElementById('modalCoursTitle').textContent='NOUVEAU COURS';
@@ -727,18 +751,22 @@
     document.getElementById('btnDeleteCours').style.display='inline-flex';
     document.getElementById('cNom').value         = c.nom||'';
     document.getElementById('cDuree').value       = c.duree||'';
-    document.getElementById('cPointsMax').value   = c.pointsMax||'';
     document.getElementById('cCategorie').value   = c.categorie||'Physique';
     document.getElementById('cStatut').value      = c.statut||'Actif';
     document.getElementById('cDescription').value = c.description||'';
-    document.getElementById('cBareme').value      = c.bareme||'';
+    // Charger les exercices
+    document.getElementById('exercicesList').innerHTML = '';
+    if (Array.isArray(c.exercices)) c.exercices.forEach(ex => addExercice(ex));
+    updateTotalPts();
     openModal('modalCours');
   };
 
   window.saveCours = async function() {
     const nom = document.getElementById('cNom').value.trim();
     if (!nom) { showToast('Le nom est obligatoire','error'); return; }
-    const payload = { nom, duree:document.getElementById('cDuree').value.trim(), pointsMax:parseInt(document.getElementById('cPointsMax').value)||0, categorie:document.getElementById('cCategorie').value, statut:document.getElementById('cStatut').value, description:document.getElementById('cDescription').value.trim(), bareme:document.getElementById('cBareme').value.trim(), updatedAt:new Date().toISOString() };
+    const exData = getExercicesFromForm();
+    const totalPts = exData.reduce((s,e)=>s+e.poids,0);
+    const payload = { nom, duree:document.getElementById('cDuree').value.trim(), pointsMax:Math.round(totalPts), categorie:document.getElementById('cCategorie').value, statut:document.getElementById('cStatut').value, description:document.getElementById('cDescription').value.trim(), exercices:exData, updatedAt:new Date().toISOString() };
     try {
       if (editingCours) { await updateDoc(doc(db,'academie-cours',editingCours),payload); showToast('Cours mis à jour ✓','success'); }
       else { payload.createdAt=new Date().toISOString(); await addDoc(collection(db,'academie-cours'),payload); showToast('Cours créé ✓','success'); }
@@ -847,6 +875,313 @@
     if (!editingResultat||!confirm('Supprimer ce résultat ?')) return;
     await deleteDoc(doc(db,'academie-resultats',editingResultat));
     showToast('Supprimé','success'); closeModal('modalResultat'); editingResultat=null; await loadResultats(); renderClasse();
+  };
+
+  // ════════════════════════════════════════════════════════
+  // CALENDRIER
+  // ════════════════════════════════════════════════════════
+  let calYear, calMonth, calSelectedDay = null;
+
+  function initCal() {
+    const now = new Date();
+    calYear = now.getFullYear();
+    calMonth = now.getMonth();
+    renderCal();
+  }
+
+  window.calPrev  = () => { calMonth--; if (calMonth<0){calMonth=11;calYear--;} renderCal(); };
+  window.calNext  = () => { calMonth++; if (calMonth>11){calMonth=0;calYear++;} renderCal(); };
+  window.calToday = () => { const n=new Date(); calYear=n.getFullYear(); calMonth=n.getMonth(); renderCal(); };
+
+  function renderCal() {
+    const MOIS = ['JANVIER','FÉVRIER','MARS','AVRIL','MAI','JUIN','JUILLET','AOÛT','SEPTEMBRE','OCTOBRE','NOVEMBRE','DÉCEMBRE'];
+    document.getElementById('calMonthLabel').textContent = MOIS[calMonth] + ' ' + calYear;
+
+    const firstDay = new Date(calYear, calMonth, 1);
+    const lastDay  = new Date(calYear, calMonth+1, 0);
+    // Lundi = 0
+    let startDow = firstDay.getDay() - 1; if (startDow < 0) startDow = 6;
+    const today = new Date(); today.setHours(0,0,0,0);
+
+    const grid = document.getElementById('calGrid');
+    let html = '';
+    const totalCells = Math.ceil((startDow + lastDay.getDate()) / 7) * 7;
+
+    for (let i = 0; i < totalCells; i++) {
+      const dayNum = i - startDow + 1;
+      const isCurrentMonth = dayNum >= 1 && dayNum <= lastDay.getDate();
+      const dateStr = isCurrentMonth ? `${calYear}-${String(calMonth+1).padStart(2,'0')}-${String(dayNum).padStart(2,'0')}` : null;
+      const isToday = dateStr && new Date(dateStr).toDateString() === today.toDateString();
+      const isSelected = dateStr && calSelectedDay === dateStr;
+      const dayEvents = dateStr ? agenda.filter(a => a.date && a.date.startsWith(dateStr)) : [];
+      const isWeekend = (i % 7 === 5 || i % 7 === 6);
+
+      html += `<div onclick="${dateStr?`selectCalDay('${dateStr}')`:''}" style="
+        min-height:80px; padding:6px 8px;
+        border-right:1px solid var(--border); border-bottom:1px solid var(--border);
+        background:${isSelected?'rgba(201,168,76,.08)':isToday?'rgba(37,137,208,.06)':'transparent'};
+        cursor:${dateStr?'pointer':'default'};
+        opacity:${isCurrentMonth?1:0.25};
+        transition:background .12s;
+      " onmouseover="if('${dateStr}'!='null')this.style.background='rgba(201,168,76,.05)'"
+         onmouseout="this.style.background='${isSelected?'rgba(201,168,76,.08)':isToday?'rgba(37,137,208,.06)':'transparent'}'">
+        <div style="font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:${isToday||isSelected?'700':'400'};
+          color:${isSelected?'var(--gold)':isToday?'var(--accent-b)':isWeekend?'var(--danger-l)':'var(--text2)'};
+          margin-bottom:4px">${isCurrentMonth?dayNum:''}</div>
+        ${dayEvents.slice(0,2).map(e=>`
+          <div style="font-size:9px;padding:2px 5px;margin-bottom:2px;border-radius:2px;background:rgba(201,168,76,.12);border-left:2px solid var(--gold);color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%">${e.titre||'Session'}</div>
+        `).join('')}
+        ${dayEvents.length>2?`<div style="font-size:8px;color:var(--text3);font-family:'JetBrains Mono',monospace">+${dayEvents.length-2}</div>`:''}
+      </div>`;
+    }
+    grid.innerHTML = html;
+
+    // Rafraîchir le panel du jour sélectionné
+    if (calSelectedDay) selectCalDay(calSelectedDay);
+  }
+
+  window.selectCalDay = function(dateStr) {
+    calSelectedDay = dateStr;
+    const panel = document.getElementById('calDayPanel');
+    const title = document.getElementById('calDayTitle');
+    const list  = document.getElementById('calDayList');
+    const d = new Date(dateStr);
+    const dayEvents = agenda.filter(a => a.date && a.date.startsWith(dateStr));
+
+    title.textContent = d.toLocaleDateString('fr-FR',{weekday:'long',day:'numeric',month:'long',year:'numeric'}).toUpperCase();
+
+    if (!dayEvents.length) {
+      panel.style.display = 'block';
+      list.innerHTML = `<div style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--text3)">Aucune session ce jour</div>`;
+    } else {
+      panel.style.display = 'block';
+      list.innerHTML = dayEvents.map(e=>`
+        <div style="display:flex;align-items:flex-start;gap:12px;padding:10px;background:var(--surface2);border-radius:6px;margin-bottom:8px">
+          <div style="flex:1">
+            <div style="font-size:13px;font-weight:600;color:var(--text);margin-bottom:4px">${e.titre||'—'}</div>
+            <div style="display:flex;gap:12px;flex-wrap:wrap">
+              ${e.date?`<div style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--gold)">${new Date(e.date).toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'})}</div>`:''}
+              ${e.formateur?`<div style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--text2)">👮 ${e.formateur}</div>`:''}
+              ${e.lieu?`<div style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--text2)">📍 ${e.lieu}</div>`:''}
+            </div>
+            ${e.notes?`<div style="font-size:11px;color:var(--text2);margin-top:4px">${e.notes}</div>`:''}
+          </div>
+          ${isFormateur?`<button onclick="editAgendaItem('${e.id}')" style="padding:4px 8px;background:transparent;border:1px solid var(--border);border-radius:4px;color:var(--text2);font-size:11px;cursor:pointer">✏️</button>`:''}
+        </div>`).join('');
+    }
+    renderCal();
+  };
+
+  // ════════════════════════════════════════════════════════
+  // EXERCICES STRUCTURÉS + CALCUL DE POINTS
+  // ════════════════════════════════════════════════════════
+  let exercices = [];
+
+  window.addExercice = function(ex = null) {
+    const id = 'ex_' + Date.now() + '_' + Math.random().toString(36).slice(2,6);
+    const div = document.createElement('div');
+    div.id = id;
+    div.style.cssText = 'background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:12px;position:relative';
+    div.innerHTML = `
+      <button onclick="removeExercice('${id}')" style="position:absolute;top:8px;right:8px;background:none;border:none;color:var(--text3);font-size:14px;cursor:pointer">×</button>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px">
+        <div class="fg" style="margin:0"><label style="font-size:9px">Nom de l'exercice</label><input class="ex-nom" placeholder="ex: Pompes, Course 1.6km, Tir 25m..." value="${ex?.nom||''}"></div>
+        <div class="fg" style="margin:0"><label style="font-size:9px">Type</label>
+          <select class="ex-type" onchange="updateExType('${id}')">
+            <option value="repetitions" ${ex?.type==='repetitions'?'selected':''}>Répétitions (pompes, abdos...)</option>
+            <option value="temps" ${ex?.type==='temps'?'selected':''}>Temps (course, nage...)</option>
+          </select>
+        </div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px">
+        <div class="fg" style="margin:0">
+          <label style="font-size:9px" id="lbl_ref_${id}">Référence (= 50 pts)</label>
+          <input class="ex-ref" type="number" placeholder="${ex?.type==='temps'?'ex: 480 (sec)':'ex: 30'}" value="${ex?.ref||''}" oninput="calcExPoints('${id}')">
+        </div>
+        <div class="fg" style="margin:0">
+          <label style="font-size:9px" id="lbl_max_${id}">Meilleure perf (= 100 pts)</label>
+          <input class="ex-max" type="number" placeholder="${ex?.type==='temps'?'ex: 360 (sec)':'ex: 60'}" value="${ex?.maxPerf||''}" oninput="calcExPoints('${id}')">
+        </div>
+        <div class="fg" style="margin:0">
+          <label style="font-size:9px">Poids dans le cours (%)</label>
+          <input class="ex-poids" type="number" placeholder="ex: 30" min="1" max="100" value="${ex?.poids||''}" oninput="updateTotalPts()">
+        </div>
+      </div>
+      <div id="ex_preview_${id}" style="margin-top:8px;font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--text3)"></div>
+    `;
+    document.getElementById('exercicesList').appendChild(div);
+    updateTotalPts();
+  };
+
+  window.removeExercice = function(id) {
+    document.getElementById(id)?.remove();
+    updateTotalPts();
+  };
+
+  window.updateExType = function(id) {
+    const div = document.getElementById(id);
+    const type = div.querySelector('.ex-type').value;
+    const isTemps = type === 'temps';
+    div.querySelector('.ex-ref').placeholder = isTemps ? 'ex: 480 (sec)' : 'ex: 30';
+    div.querySelector('.ex-max').placeholder = isTemps ? 'ex: 360 (sec)' : 'ex: 60';
+    document.getElementById('lbl_ref_'+id).textContent = isTemps ? 'Temps max admis (= 50 pts)' : 'Référence (= 50 pts)';
+    document.getElementById('lbl_max_'+id).textContent = isTemps ? 'Meilleur temps (= 100 pts)' : 'Meilleure perf (= 100 pts)';
+    calcExPoints(id);
+  };
+
+  window.calcExPoints = function(id) {
+    const div = document.getElementById(id);
+    if (!div) return;
+    const type = div.querySelector('.ex-type').value;
+    const ref  = parseFloat(div.querySelector('.ex-ref').value);
+    const maxP = parseFloat(div.querySelector('.ex-max').value);
+    const prev = document.getElementById('ex_preview_'+id);
+    if (!ref || !maxP || ref === maxP) { prev.textContent = ''; return; }
+
+    if (type === 'repetitions') {
+      // Plus de reps = plus de points
+      // ref = 50 pts, maxP = 100 pts, linéaire entre 0 et maxP
+      prev.innerHTML = `Échelle : 0 rép = 0 pts · ${Math.round(ref*0.5)} rép = 25 pts · <b style="color:var(--gold)">${ref} rép = 50 pts</b> · ${maxP} rép = 100 pts`;
+    } else {
+      // Moins de temps = plus de points
+      // ref = 50 pts (temps max admis), maxP = 100 pts (meilleur temps)
+      const refFmt = t => `${Math.floor(t/60)}m${String(Math.round(t%60)).padStart(2,'0')}s`;
+      prev.innerHTML = `Échelle : >${refFmt(ref)} = 0 pts · <b style="color:var(--gold)">${refFmt(ref)} = 50 pts</b> · ${refFmt((ref+maxP)/2)} = 75 pts · ${refFmt(maxP)} = 100 pts`;
+    }
+  };
+
+  window.updateTotalPts = function() {
+    const poids = Array.from(document.querySelectorAll('#exercicesList .ex-poids'))
+      .reduce((s,i) => s + (parseFloat(i.value)||0), 0);
+    const el = document.getElementById('cTotalPts');
+    if (el) {
+      el.textContent = Math.round(poids);
+      el.style.color = poids > 100 ? 'var(--danger-l)' : poids === 100 ? 'var(--success)' : 'var(--gold)';
+    }
+  };
+
+  function getExercicesFromForm() {
+    return Array.from(document.getElementById('exercicesList').children).map(div => ({
+      nom:     div.querySelector('.ex-nom')?.value?.trim() || '',
+      type:    div.querySelector('.ex-type')?.value || 'repetitions',
+      ref:     parseFloat(div.querySelector('.ex-ref')?.value) || 0,
+      maxPerf: parseFloat(div.querySelector('.ex-max')?.value) || 0,
+      poids:   parseFloat(div.querySelector('.ex-poids')?.value) || 0,
+    })).filter(e => e.nom);
+  }
+
+  // Calcul automatique des points d'un cadet pour un cours
+  window.calcPointsAuto = function(exercices, performances) {
+    // performances = [{nom, valeur}]
+    if (!exercices?.length) return null;
+    let total = 0;
+    exercices.forEach(ex => {
+      const perf = performances?.find(p => p.nom === ex.nom);
+      if (!perf || !ex.ref || !ex.maxPerf) return;
+      const val = parseFloat(perf.valeur);
+      let pts;
+      if (ex.type === 'repetitions') {
+        // Linéaire : 0 rép = 0, ref = 50, maxPerf = 100
+        pts = Math.min(100, Math.max(0, (val / ex.maxPerf) * 100));
+        // Ajustement pour que ref = 50
+        if (val <= ex.ref) pts = (val / ex.ref) * 50;
+        else pts = 50 + ((val - ex.ref) / (ex.maxPerf - ex.ref)) * 50;
+      } else {
+        // Temps : ref (lent) = 50, maxPerf (rapide) = 100, au-delà de ref = 0
+        if (val > ex.ref) pts = 0;
+        else if (val <= ex.maxPerf) pts = 100;
+        else pts = 50 + ((ex.ref - val) / (ex.ref - ex.maxPerf)) * 50;
+      }
+      total += (pts * (ex.poids / 100));
+    });
+    return Math.min(100, Math.round(total));
+  };
+
+  // ── Surcharger initCal après loadAgenda ──
+  const _origLoadAgenda = loadAgenda;
+
+  // Construire champs de performance dynamiques
+  window.buildPerfFields = function(coursNom) {
+    const c = cours.find(x => x.nom === coursNom);
+    const container = document.getElementById('rPerfFields');
+    const autoScore = document.getElementById('rAutoScore');
+    if (!c || !Array.isArray(c.exercices) || !c.exercices.length) {
+      container.innerHTML = `<div class="fg"><label>Performances détaillées</label><textarea id="rPerformances" placeholder="ex: Pompes : 35, Course : 7m52..."></textarea></div>`;
+      autoScore.style.display = 'none';
+      return;
+    }
+    container.innerHTML = `
+      <div style="font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--gold);letter-spacing:2px;text-transform:uppercase;margin-bottom:8px">Performances par exercice</div>
+      <div style="display:flex;flex-direction:column;gap:8px">
+        ${c.exercices.map(ex => `
+          <div style="display:flex;align-items:center;gap:10px;padding:8px 12px;background:var(--surface2);border:1px solid var(--border);border-radius:5px;flex-wrap:wrap">
+            <div style="flex:1;min-width:120px">
+              <div style="font-size:12px;color:var(--text);margin-bottom:2px">${ex.nom}</div>
+              <div style="font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--text3)">
+                ${ex.type==='temps'?`Ref: ${Math.floor(ex.ref/60)}m${String(Math.round(ex.ref%60)).padStart(2,'0')}s (50pts) — Meilleur: ${Math.floor(ex.maxPerf/60)}m${String(Math.round(ex.maxPerf%60)).padStart(2,'0')}s (100pts)`:
+                `Ref: ${ex.ref} rép (50pts) — Meilleur: ${ex.maxPerf} rép (100pts)`}
+              </div>
+            </div>
+            <div style="display:flex;align-items:center;gap:6px">
+              <input data-ex="${ex.nom}" data-type="${ex.type}" type="number" placeholder="${ex.type==='temps'?'sec (ex: 472)':'répétitions'}"
+                style="width:100px;padding:6px 8px;background:var(--surface);border:1px solid var(--border);border-radius:4px;color:var(--text);font-family:'JetBrains Mono',monospace;font-size:12px"
+                oninput="calcAutoScore()">
+              <span style="font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--text3)">${ex.type==='temps'?'sec':'rép'}</span>
+            </div>
+            <div data-score="${ex.nom}" style="font-family:'JetBrains Mono',monospace;font-size:12px;font-weight:700;color:var(--text2);min-width:40px;text-align:right">—</div>
+          </div>
+        `).join('')}
+      </div>`;
+    autoScore.style.display = 'none';
+  };
+
+  window.calcAutoScore = function() {
+    const coursNom = document.getElementById('rCours').value;
+    const c = cours.find(x => x.nom === coursNom);
+    if (!c || !Array.isArray(c.exercices)) return;
+
+    const inputs = document.querySelectorAll('#rPerfFields input[data-ex]');
+    let total = 0; let details = [];
+
+    c.exercices.forEach(ex => {
+      const inp = document.querySelector(`#rPerfFields input[data-ex="${ex.nom}"]`);
+      const scoreEl = document.querySelector(`#rPerfFields [data-score="${ex.nom}"]`);
+      if (!inp || !inp.value) { if (scoreEl) scoreEl.textContent = '—'; return; }
+      const val = parseFloat(inp.value);
+      let pts;
+      if (ex.type === 'repetitions') {
+        if (val <= 0) pts = 0;
+        else if (val <= ex.ref) pts = (val / ex.ref) * 50;
+        else pts = 50 + Math.min(50, ((val - ex.ref) / (ex.maxPerf - ex.ref)) * 50);
+      } else {
+        if (val > ex.ref) pts = 0;
+        else if (val <= ex.maxPerf) pts = 100;
+        else pts = 50 + ((ex.ref - val) / (ex.ref - ex.maxPerf)) * 50;
+      }
+      pts = Math.min(100, Math.max(0, Math.round(pts)));
+      const weighted = Math.round(pts * ex.poids / 100);
+      total += weighted;
+      if (scoreEl) { scoreEl.textContent = pts+'pts'; scoreEl.style.color = pts>=60?'var(--success)':pts>=40?'var(--gold)':'var(--danger-l)'; }
+      details.push(`${ex.nom}: ${pts}pts × ${ex.poids}%`);
+    });
+
+    total = Math.min(100, Math.round(total));
+    const autoScore = document.getElementById('rAutoScore');
+    const scoreVal  = document.getElementById('rAutoScoreVal');
+    const scoreDetail = document.getElementById('rAutoScoreDetail');
+    autoScore.style.display = 'block';
+    scoreVal.textContent = total;
+    scoreVal.style.color = total>=60?'var(--success)':total>=40?'var(--gold)':'var(--danger-l)';
+    scoreDetail.textContent = details.join(' · ');
+    document.getElementById('rPoints').value = total;
+    document.getElementById('rPointsMax').value = 100;
+  };
+
+  window.applyAutoScore = function() {
+    const val = document.getElementById('rAutoScoreVal').textContent;
+    document.getElementById('rPoints').value = val;
+    document.getElementById('rPointsMax').value = 100;
+    showToast('Score de ' + val + '/100 appliqué ✓', 'success');
   };
 
   window.viewCadetDetail = function(nom) {
