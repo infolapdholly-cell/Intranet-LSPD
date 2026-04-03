@@ -428,6 +428,18 @@
 
   // renderCal() remplacée par renderCal()
 
+  async function loadResultats() {
+    try {
+      const snap = await getDocs(collection(db,'academie-resultats'));
+      resultats = snap.docs.map(d=>({id:d.id,...d.data()}));
+      const tots = resultats.filter(r=>r.points && r.pointsMax);
+      const moy = tots.length ? Math.round(tots.reduce((s,r)=>s+(r.points/r.pointsMax*100),0)/tots.length) : 0;
+      const el = document.getElementById('sMoyenne');
+      if (el) el.textContent = moy ? moy+'%' : '—';
+      window.renderResultats();
+    } catch(e) { console.error(e); }
+  }
+
   function renderClasse() {
     const grid = document.getElementById('cadetGrid'); const empty = document.getElementById('cadetEmpty');
     if (!cadets.length) { grid.innerHTML=''; empty.style.display='flex'; return; }
