@@ -408,8 +408,13 @@
 
   // ── Calendrier ───────────────────────────────────────────
   let calYear = new Date().getFullYear();
-  let calMonth = new Date().getMonth(); // 0-based
+  let calMonth = new Date().getMonth();
   let calSelectedDay = null;
+
+  function initCal() { renderCal(); }
+  window.calPrev  = () => { calMonth--; if(calMonth<0){calMonth=11;calYear--;} renderCal(); };
+  window.calNext  = () => { calMonth++; if(calMonth>11){calMonth=0;calYear++;} renderCal(); };
+  window.calToday = () => { const n=new Date(); calYear=n.getFullYear(); calMonth=n.getMonth(); renderCal(); };
 
   async function loadAgenda() {
     try {
@@ -417,161 +422,12 @@
       agenda = snap.docs.map(d=>({id:d.id,...d.data()}))
         .sort((a,b)=>(a.date||'').localeCompare(b.date||''));
       document.getElementById('sFormations').textContent = agenda.length;
-      renderCalendar();
+      renderCal();
     } catch(e) { console.error(e); }
   }
 
-  function renderCalendar() {
-    const MOIS = ['Janvier','Février','Mars','Avril','Mai','Juin','Juillet','Août','Septembre','Octobre','Novembre','Décembre'];
-    document.getElementById('calMonthLabel').textContent = MOIS[calMonth] + ' ' + calYear;
+  // renderCal() remplacée par renderCal()
 
-    const firstDay = new Date(calYear, calMonth, 1);
-    const lastDay  = new Date(calYear, calMonth + 1, 0);
-    // Lundi = 0
-    let startDow = firstDay.getDay() - 1; if (startDow < 0) startDow = 6;
-
-    // Index des sessions par date
-    const byDate = {};
-    agenda.forEach(a => {
-      if (!a.date) return;
-      const d = a.date.split('T')[0];
-      if (!byDate[d]) byDate[d] = [];
-      byDate[d].push(a);
-    });
-
-    const today = new Date().toISOString().split('T')[0];
-    let cells = '';
-
-    // Cases vides avant le 1er
-    for (let i = 0; i < startDow; i++) {
-      cells += '<div style="min-height:80px;border-right:1px solid var(--border);border-bottom:1px solid var(--border);background:rgba(0,0,0,.15)"></div>';
-    }
-
-    for (let d = 1; d <= lastDay.getDate(); d++) {
-      const mm = String(calMonth+1).padStart(2,'0');
-      const dd = String(d).padStart(2,'0');
-      const dateStr = calYear+'-'+mm+'-'+dd;
-      const events  = byDate[dateStr] || [];
-      const isToday = dateStr === today;
-      const dow     = new Date(calYear, calMonth, d).getDay(); // 0=dim
-      const isWeekend = dow === 0 || dow === 6;
-      const isSelected = calSelectedDay === dateStr;
-
-      const evDots = events.slice(0,3).map(e => {
-        const c = {'Formation':'var(--gold)','Patrouille':'var(--accent-b)','Réunion':'var(--success)','Opération':'var(--danger)','Autre':'var(--text2)'}[e.type] || 'var(--gold)';
-        return `<div style="height:4px;border-radius:2px;background:${c};flex:1;min-width:4px;max-width:20px"></div>`;
-      }).join('');
-
-      cells += `<div onclick="selectDay('${dateStr}')" style="
-        min-height:80px;border-right:1px solid var(--border);border-bottom:1px solid var(--border);
-        padding:6px;cursor:pointer;transition:background .1s;
-        background:${isSelected?'rgba(201,168,76,.1)':isWeekend?'rgba(201,168,76,.02)':'transparent'};
-        position:relative;
-      " onmouseover="this.style.background='rgba(201,168,76,.07)'" onmouseout="this.style.background='${isSelected?'rgba(201,168,76,.1)':isWeekend?'rgba(201,168,76,.02)':'transparent'}'">
-        <div style="
-          font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:700;
-          color:${isToday?'var(--gold)':isWeekend?'rgba(201,168,76,.4)':'var(--text2)'};
-          ${isToday?'background:rgba(201,168,76,.15);border-radius:50%;width:22px;height:22px;display:flex;align-items:center;justify-content:center;':''}
-        ">${d}</div>
-        ${events.length ? `<div style="margin-top:4px;display:flex;flex-wrap:wrap;gap:2px">${evDots}</div>` : ''}
-        ${events.length > 3 ? `<div style="font-family:'JetBrains Mono',monospace;font-size:8px;color:var(--text3);margin-top:2px">+${events.length-3}</div>` : ''}
-        ${events.slice(0,2).map(e=>`<div style="font-size:9px;color:var(--text2);margin-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:100%">${e.titre||''}</div>`).join('')}
-      </div>`;
-    }
-
-    // Cases vides après le dernier
-    const lastDow = lastDay.getDay() - 1 < 0 ? 6 : lastDay.getDay() - 1;
-    for (let i = lastDow + 1; i < 7; i++) {
-      cells += '<div style="min-height:80px;border-right:1px solid var(--border);border-bottom:1px solid var(--border);background:rgba(0,0,0,.15)"></div>';
-    }
-
-    document.getElementById('calGrid').innerHTML = cells;
-  }
-
-  window.selectDay = function(dateStr) {
-    calSelectedDay = dateStr;
-    renderCalendar();
-    const events = agenda.filter(a => a.date && a.date.split('T')[0] === dateStr);
-    const panel  = document.getElementById('calDayPanel');
-    const label  = document.getElementById('calDayLabel');
-    const list   = document.getElementById('calDayEvents');
-    const d = new Date(dateStr + 'T12:00:00');
-    label.textContent = d.toLocaleDateString('fr-FR',{weekday:'long',day:'numeric',month:'long',year:'numeric'}).toUpperCase();
-    panel.style.display = 'block';
-
-    if (!events.length) {
-      list.innerHTML = `<div style="font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--text3);padding:12px 0">Aucune session ce jour.</div>
-        ${isFormateur ? `<button onclick="openNewAgendaOnDate('${dateStr}')" style="padding:6px 14px;background:rgba(201,168,76,.08);border:1px solid rgba(201,168,76,.2);border-radius:4px;color:var(--gold);font-size:11px;cursor:pointer;font-family:'JetBrains Mono',monospace">+ Ajouter une session</button>` : ''}`;
-      return;
-    }
-
-    const TYPE_C = {'Formation':'var(--gold)','Patrouille':'var(--accent-b)','Réunion':'var(--success)','Opération':'var(--danger)','Autre':'var(--text2)'};
-    list.innerHTML = events.map(e => `
-      <div style="background:var(--surface);border:1px solid var(--border);border-left:3px solid ${TYPE_C[e.type]||'var(--border)'};border-radius:6px;padding:12px 14px;display:flex;align-items:flex-start;justify-content:space-between;gap:10px">
-        <div style="flex:1">
-          <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;flex-wrap:wrap">
-            ${e.heure ? `<span style="font-family:'JetBrains Mono',monospace;font-size:10px;background:var(--surface2);padding:2px 7px;border-radius:3px;color:var(--text2)">${e.heure}</span>` : ''}
-            <span style="font-family:'JetBrains Mono',monospace;font-size:9px;color:${TYPE_C[e.type]||'var(--text2)'};background:${TYPE_C[e.type]||'var(--text2)'}18;padding:2px 7px;border-radius:3px;border:1px solid ${TYPE_C[e.type]||'var(--text2)'}33">${e.type||'—'}</span>
-          </div>
-          <div style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:4px">${e.titre||'—'}</div>
-          ${e.formateur ? `<div style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--text2)">👮 ${e.formateur}</div>` : ''}
-          ${e.lieu ? `<div style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--text2)">📍 ${e.lieu}</div>` : ''}
-          ${e.notes ? `<div style="font-size:11px;color:var(--text2);margin-top:6px">${e.notes}</div>` : ''}
-        </div>
-        ${isFormateur ? `<button onclick="editAgendaItem('${e.id}')" style="padding:5px 10px;background:transparent;border:1px solid var(--border);border-radius:4px;color:var(--text2);font-size:11px;cursor:pointer;flex-shrink:0">✏️</button>` : ''}
-      </div>`).join('');
-
-    if (isFormateur) {
-      list.innerHTML += `<button onclick="openNewAgendaOnDate('${dateStr}')" style="padding:6px 14px;background:rgba(201,168,76,.08);border:1px solid rgba(201,168,76,.2);border-radius:4px;color:var(--gold);font-size:11px;cursor:pointer;font-family:'JetBrains Mono',monospace;margin-top:4px">+ Ajouter une session</button>`;
-    }
-  };
-
-  window.prevMonth = function() {
-    calMonth--; if (calMonth < 0) { calMonth=11; calYear--; }
-    calSelectedDay=null; document.getElementById('calDayPanel').style.display='none';
-    renderCalendar();
-  };
-  window.nextMonth = function() {
-    calMonth++; if (calMonth > 11) { calMonth=0; calYear++; }
-    calSelectedDay=null; document.getElementById('calDayPanel').style.display='none';
-    renderCalendar();
-  };
-
-  window.openNewAgendaOnDate = function(dateStr) {
-    editingAgenda=null;
-    ['aTitre','aFormateur','aLieu','aNotes'].forEach(id=>document.getElementById(id).value='');
-    document.getElementById('aDate').value = dateStr;
-    document.getElementById('aHeure').value = '';
-    document.getElementById('aType').value = 'Formation';
-    document.getElementById('modalAgendaTitle').textContent='NOUVELLE SESSION';
-    document.getElementById('btnDeleteAgenda').style.display='none';
-    openModal('modalAgenda');
-  };
-
-  async function loadResultats() {
-    try {
-      const snap = await getDocs(collection(db,'academie-resultats'));
-      resultats = snap.docs.map(d=>({id:d.id,...d.data()}));
-      // Moyenne des points
-      const tots = resultats.filter(r=>r.points && r.pointsMax);
-      const moy = tots.length ? Math.round(tots.reduce((s,r)=>s+(r.points/r.pointsMax*100),0)/tots.length) : 0;
-      document.getElementById('sMoyenne').textContent = moy ? moy+'%' : '—';
-      renderResultats();
-    } catch(e) { console.error(e); }
-  }
-
-  // ── Onglets ───────────────────────────────────────────────
-  window.switchTab = function(tab) {
-    ['classe','agenda','formateurs','resultats'].forEach(t => {
-      document.getElementById('panel'+t.charAt(0).toUpperCase()+t.slice(1)).style.display = t===tab?'block':'none';
-      const btn = document.getElementById('tab'+t.charAt(0).toUpperCase()+t.slice(1));
-      if (btn) btn.classList.toggle('active', t===tab);
-    });
-    // Forcer le rendu du calendrier à chaque activation de l'onglet
-    if (tab === 'agenda') renderCalendar();
-  };
-
-  // ── Render Classe ─────────────────────────────────────────
   function renderClasse() {
     const grid = document.getElementById('cadetGrid'); const empty = document.getElementById('cadetEmpty');
     if (!cadets.length) { grid.innerHTML=''; empty.style.display='flex'; return; }
@@ -877,21 +733,7 @@
     showToast('Supprimé','success'); closeModal('modalResultat'); editingResultat=null; await loadResultats(); renderClasse();
   };
 
-  // ════════════════════════════════════════════════════════
-  // CALENDRIER
-  // ════════════════════════════════════════════════════════
-  let calYear, calMonth, calSelectedDay = null;
-
-  function initCal() {
-    const now = new Date();
-    calYear = now.getFullYear();
-    calMonth = now.getMonth();
-    renderCal();
-  }
-
-  window.calPrev  = () => { calMonth--; if (calMonth<0){calMonth=11;calYear--;} renderCal(); };
-  window.calNext  = () => { calMonth++; if (calMonth>11){calMonth=0;calYear++;} renderCal(); };
-  window.calToday = () => { const n=new Date(); calYear=n.getFullYear(); calMonth=n.getMonth(); renderCal(); };
+  // Calendrier initialisé ci-dessus
 
   function renderCal() {
     const MOIS = ['JANVIER','FÉVRIER','MARS','AVRIL','MAI','JUIN','JUILLET','AOÛT','SEPTEMBRE','OCTOBRE','NOVEMBRE','DÉCEMBRE'];
