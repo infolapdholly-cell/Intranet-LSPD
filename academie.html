@@ -533,6 +533,16 @@
   }
 
   // ── Render Résultats ──────────────────────────────────────
+  window.switchTab = function(tab) {
+    ['classe','agenda','formateurs','resultats'].forEach(t => {
+      const panel = document.getElementById('panel' + t.charAt(0).toUpperCase() + t.slice(1));
+      const btn   = document.getElementById('tab'   + t.charAt(0).toUpperCase() + t.slice(1));
+      if (panel) panel.style.display = (t === tab) ? 'block' : 'none';
+      if (btn)   btn.classList.toggle('active', t === tab);
+    });
+    if (tab === 'agenda') renderCal();
+  };
+
   window.renderResultats = function() {
     const list = document.getElementById('resultatList'); const empty = document.getElementById('resultatEmpty');
     const filterCadet = document.getElementById('filterCadetRes').value;
