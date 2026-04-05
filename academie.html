@@ -597,8 +597,6 @@
       if (btn)   btn.classList.toggle('active', t === tab);
     });
     if (tab === 'agenda') renderCal();
-    if (tab === 'archives') { renderArchives(); }
-    if (tab === 'resultats') { window.renderResultats(); }
   };
 
   window.renderResultats = function() {
@@ -1200,9 +1198,7 @@
       console.log('[Archive] docs dans Firestore:', snap.docs.length);
       archives = snap.docs.map(d=>({id:d.id,...d.data()}))
         .sort((a,b)=>(b.archivedAt||'').localeCompare(a.archivedAt||''));
-      // Toujours mettre à jour la variable; renderArchives si panel visible
-      const panel = document.getElementById('panelArchives');
-      if (panel && panel.style.display !== 'none') renderArchives();
+      // Ne pas render ici — appelé explicitement après
     } catch(e) { console.error(e); }
   }
 
@@ -1313,9 +1309,9 @@
       // Recharger les deux collections
       await loadResultats();
       await loadArchives();
-      // Forcer le rendu des archives et basculer sur l'onglet archives
-      renderArchives();
+      // Basculer sur archives AVANT de rendre pour que le panel soit visible
       switchTab('archives');
+      renderArchives();
       renderClasse();
     } catch(e) { showToast('Erreur : '+e.message,'error'); }
   };
