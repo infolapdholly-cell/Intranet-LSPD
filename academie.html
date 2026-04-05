@@ -668,6 +668,17 @@
     openModal('modalAgenda');
   });
 
+  window.newAgendaOnDate = function(dateStr) {
+    editingAgenda = null;
+    ['aTitre','aFormateur','aLieu','aNotes','aHeure'].forEach(id => { const el = document.getElementById(id); if(el) el.value=''; });
+    document.getElementById('aDate').value = dateStr;
+    document.getElementById('aCours').value = '';
+    document.getElementById('aType').value = 'Formation';
+    document.getElementById('modalAgendaTitle').textContent = 'NOUVELLE SESSION — ' + new Date(dateStr).toLocaleDateString('fr-FR',{weekday:'long',day:'numeric',month:'long'}).toUpperCase();
+    document.getElementById('btnDeleteAgenda').style.display = 'none';
+    openModal('modalAgenda');
+  };
+
   window.editAgendaItem = function(id) {
     const a = agenda.find(x=>x.id===id); if (!a) return;
     editingAgenda=id;
@@ -814,24 +825,31 @@
 
     title.textContent = d.toLocaleDateString('fr-FR',{weekday:'long',day:'numeric',month:'long',year:'numeric'}).toUpperCase();
 
+    panel.style.display = 'block';
     if (!dayEvents.length) {
-      panel.style.display = 'block';
-      list.innerHTML = `<div style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--text3)">Aucune session ce jour</div>`;
+      list.innerHTML = `
+        <div style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--text3);margin-bottom:10px">Aucune session ce jour</div>
+        ${isFormateur ? `<button onclick="newAgendaOnDate('${dateStr}')" style="padding:6px 14px;background:rgba(201,168,76,.08);border:1px solid rgba(201,168,76,.25);border-radius:5px;color:var(--gold);font-family:'JetBrains Mono',monospace;font-size:10px;cursor:pointer;letter-spacing:1px">+ AJOUTER UNE SESSION CE JOUR</button>` : ''}
+      `;
     } else {
-      panel.style.display = 'block';
       list.innerHTML = dayEvents.map(e=>`
-        <div style="display:flex;align-items:flex-start;gap:12px;padding:10px;background:var(--surface2);border-radius:6px;margin-bottom:8px">
-          <div style="flex:1">
-            <div style="font-size:13px;font-weight:600;color:var(--text);margin-bottom:4px">${e.titre||'—'}</div>
-            <div style="display:flex;gap:12px;flex-wrap:wrap">
-              ${e.date?`<div style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--gold)">${new Date(e.date).toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'})}</div>`:''}
+        <div style="display:flex;align-items:flex-start;gap:12px;padding:12px;background:var(--surface2);border:1px solid var(--border);border-radius:6px;margin-bottom:8px;transition:border-color .15s"
+             onmouseover="this.style.borderColor='var(--gold)'" onmouseout="this.style.borderColor='var(--border)'">
+          <div style="flex:1;min-width:0">
+            <div style="font-size:13px;font-weight:600;color:var(--text);margin-bottom:6px">${e.titre||'—'}</div>
+            <div style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:4px">
+              ${e.heure?`<div style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--gold)">⏰ ${e.heure}</div>`:''}
+              ${e.type?`<div style="font-family:'JetBrains Mono',monospace;font-size:9px;padding:1px 7px;border-radius:3px;background:rgba(37,137,208,.1);color:var(--accent-b);border:1px solid rgba(37,137,208,.2)">${e.type}</div>`:''}
               ${e.formateur?`<div style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--text2)">👮 ${e.formateur}</div>`:''}
               ${e.lieu?`<div style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--text2)">📍 ${e.lieu}</div>`:''}
+              ${e.cours?`<div style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--gold);opacity:.8">◈ ${e.cours}</div>`:''}
             </div>
-            ${e.notes?`<div style="font-size:11px;color:var(--text2);margin-top:4px">${e.notes}</div>`:''}
+            ${e.notes?`<div style="font-size:11px;color:var(--text2);font-style:italic;padding:4px 8px;background:var(--surface);border-radius:3px">${e.notes}</div>`:''}
           </div>
-          ${isFormateur?`<button onclick="editAgendaItem('${e.id}')" style="padding:4px 8px;background:transparent;border:1px solid var(--border);border-radius:4px;color:var(--text2);font-size:11px;cursor:pointer">✏️</button>`:''}
-        </div>`).join('');
+          ${isFormateur?`<button onclick="editAgendaItem('${e.id}')" title="Modifier cette session"
+            style="padding:6px 10px;background:rgba(201,168,76,.08);border:1px solid rgba(201,168,76,.2);border-radius:4px;color:var(--gold);font-size:13px;cursor:pointer;flex-shrink:0">✏️</button>`:''}
+        </div>`).join('')
+      + (isFormateur ? `<button onclick="newAgendaOnDate('${dateStr}')" style="margin-top:4px;padding:5px 12px;background:rgba(201,168,76,.05);border:1px dashed rgba(201,168,76,.25);border-radius:5px;color:var(--gold);font-family:'JetBrains Mono',monospace;font-size:9px;cursor:pointer;letter-spacing:1px">+ AJOUTER UNE SESSION CE JOUR</button>` : '');
     }
     renderCal();
   };
