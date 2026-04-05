@@ -478,9 +478,15 @@
 
   function renderClasse() {
     const grid = document.getElementById('cadetGrid'); const empty = document.getElementById('cadetEmpty');
-    if (!cadets.length) { grid.innerHTML=''; empty.style.display='flex'; return; }
+    // Si aucun cadet dans officiers, construire depuis les résultats
+    let displayCadets = cadets;
+    if (!displayCadets.length && resultats.length) {
+      const nomsUniques = [...new Set(resultats.map(r => r.cadetNom).filter(Boolean))];
+      displayCadets = nomsUniques.map(nom => ({ nom, grade:'Cadet', matricule:'', photoUrl:'' }));
+    }
+    if (!displayCadets.length) { grid.innerHTML=''; empty.style.display='flex'; return; }
     empty.style.display='none';
-    grid.innerHTML = cadets.map(c => {
+    grid.innerHTML = displayCadets.map(c => {
       const cadetRes = resultats.filter(r=>r.cadetNom===c.nom);
       const totalPts = cadetRes.reduce((s,r)=>s+(parseInt(r.points)||0),0);
       const totalMax = cadetRes.reduce((s,r)=>s+(parseInt(r.pointsMax)||0),0);
@@ -591,7 +597,8 @@
       if (btn)   btn.classList.toggle('active', t === tab);
     });
     if (tab === 'agenda') renderCal();
-    if (tab === 'archives') renderArchives();
+    if (tab === 'archives') { renderArchives(); }
+    if (tab === 'resultats') { window.renderResultats(); }
   };
 
   window.renderResultats = function() {
@@ -617,7 +624,7 @@
       const max   = res.reduce((s,r)=>s+(parseInt(r.pointsMax)||0),0);
       const pct   = max ? Math.round(total/max*100) : 0;
       const color = pct>=80?'var(--success)':pct>=60?'var(--gold)':'var(--danger-l)';
-      const uid   = 'eleve_' + nom.replace(/[^a-zA-Z0-9]/g,'_');
+      const uid   = 'eleve_' + nom.normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-zA-Z0-9]/g,'_');
       return `
         <div style="background:var(--surface);border:1px solid var(--border);border-radius:8px;overflow:hidden;margin-bottom:8px">
           <div onclick="toggleEleveDetail('${uid}')"
@@ -1192,7 +1199,9 @@
       const snap = await getDocs(collection(db,'academie-archives'));
       archives = snap.docs.map(d=>({id:d.id,...d.data()}))
         .sort((a,b)=>(b.archivedAt||'').localeCompare(a.archivedAt||''));
-      renderArchives();
+      // renderArchives seulement si panel visible
+      const panel = document.getElementById('panelArchives');
+      if (panel && panel.style.display !== 'none') renderArchives();
     } catch(e) { console.error(e); }
   }
 
@@ -1391,7 +1400,7 @@
     window.renderResultats();
     // Ouvrir automatiquement le panneau de cet élève
     setTimeout(() => {
-      const uid = 'eleve_' + nom.replace(/[^a-zA-Z0-9]/g,'_');
+      const uid = 'eleve_' + nom.normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-zA-Z0-9]/g,'_');
       const panel = document.getElementById(uid);
       const arrow = document.getElementById('arr_' + uid);
       if (panel && panel.style.display === 'none') {
