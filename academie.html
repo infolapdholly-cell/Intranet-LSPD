@@ -1209,67 +1209,94 @@
     if (!list) { console.log('[renderArchives] archiveGrid introuvable'); return; }
     const items = data || archives;
     console.log('[renderArchives] items à afficher:', items.length);
-    if (!items.length) { list.innerHTML=''; empty.style.display='flex'; return; }
-    empty.style.display='none';
 
-    // Grouper par ancien cadet
-    const byOfficier = {};
-    items.forEach(r => {
-      const k = r.cadetNom||'—';
-      if (!byOfficier[k]) byOfficier[k] = { officierNom:r.officierNom||k, archivedAt:r.archivedAt, resultats:[] };
-      byOfficier[k].resultats.push(r);
+    if (!items.length) {
+      list.innerHTML = '';
+      if (empty) empty.style.display = 'flex';
+      return;
+    }
+    if (empty) empty.style.display = 'none';
+
+    // Grouper par cadetNom
+    const groupes = {};
+    items.forEach(function(r) {
+      const k = r.cadetNom || '—';
+      if (!groupes[k]) groupes[k] = { archivedAt: r.archivedAt, resultats: [] };
+      groupes[k].resultats.push(r);
     });
 
-    list.innerHTML = Object.entries(byOfficier).map(([nom, data]) => {
-      const totalPts = data.resultats.reduce((s,r)=>s+(parseInt(r.points)||0),0);
-      const totalMax = data.resultats.reduce((s,r)=>s+(parseInt(r.pointsMax)||0),0);
-      const pct = totalMax ? Math.round(totalPts/totalMax*100) : 0;
-      const color = pct>=80?'var(--success)':pct>=60?'var(--gold)':'var(--danger-l)';
+    let html = '';
+    Object.keys(groupes).sort().forEach(function(nom) {
+      const data = groupes[nom];
+      const res  = data.resultats;
+      const total = res.reduce(function(s,r){ return s + (parseInt(r.points)||0); }, 0);
+      const max   = res.reduce(function(s,r){ return s + (parseInt(r.pointsMax)||0); }, 0);
+      const pct   = max ? Math.round(total/max*100) : 0;
+      const color = pct>=80 ? 'var(--success)' : pct>=60 ? 'var(--gold)' : 'var(--danger-l)';
+      const safeId = 'arch_' + nom.normalize('NFD').replace(/[̀-ͯ]/g,'').replace(/[^a-zA-Z0-9]/g,'_');
       const dateArch = data.archivedAt ? new Date(data.archivedAt).toLocaleDateString('fr-FR') : '—';
-      return `
-        <div style="background:var(--surface);border:1px solid var(--border);border-radius:8px;overflow:hidden">
-          <div style="display:flex;align-items:center;gap:14px;padding:14px 16px;background:var(--surface2);border-bottom:1px solid var(--border);cursor:pointer"
-               onclick="toggleArchiveDetail('arch_${nom.normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-zA-Z0-9]/g,'_')}')">
-            <div style="flex:1">
-              <div style="font-size:14px;font-weight:700;color:var(--text);margin-bottom:2px">${nom}</div>
-              <div style="font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--text3)">
-                Archivé le ${dateArch} — ${data.resultats.length} cours complété(s)
-              </div>
-            </div>
-            <div style="text-align:right;flex-shrink:0">
-              <div style="font-family:'JetBrains Mono',monospace;font-size:20px;font-weight:700;color:${color}">${pct}%</div>
-              <div style="font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--text3)">${totalPts}/${totalMax} pts</div>
-            </div>
-            <div style="font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--text3)">▾</div>
-          </div>
-          <div id="arch_${nom.normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-zA-Z0-9]/g,'_')}" style="display:none;padding:12px 16px">
-            ${data.resultats.map(r => {
-              const p = r.pointsMax ? Math.round(r.points/r.pointsMax*100) : null;
-              const s = p===null?'pending':p>=60?'pass':'fail';
-              return `
-                <div style="display:flex;align-items:center;gap:12px;padding:8px 0;border-bottom:1px solid var(--border);flex-wrap:wrap">
-                  <div style="flex:1">
-                    <div style="font-size:12px;color:var(--text);margin-bottom:2px">◈ ${r.coursNom||'—'}</div>
-                    ${r.performances?`<div style="font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--text3)">${r.performances}</div>`:''}
-                    ${r.commentaire?`<div style="font-size:11px;color:var(--text2);font-style:italic">💬 ${r.commentaire}</div>`:''}
-                    <div style="font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--text3);margin-top:2px">${r.formateur||''} ${r.date?'— '+new Date(r.date).toLocaleDateString('fr-FR'):''}</div>
-                  </div>
-                  <div style="text-align:center;flex-shrink:0">
-                    <div style="font-family:'JetBrains Mono',monospace;font-size:16px;font-weight:700;color:${s==='pass'?'var(--success)':s==='fail'?'var(--danger-l)':'var(--gold)'}">${r.points||0}</div>
-                    <div style="font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--text3)">/${r.pointsMax||'—'}</div>
-                  </div>
-                  ${userPerms.canDelete?`<button onclick="deleteArchive('${r.id}')" title="Supprimer ce résultat archivé"
-                    style="padding:4px 8px;background:rgba(184,48,48,.08);border:1px solid rgba(184,48,48,.2);border-radius:4px;color:var(--danger-l);font-size:11px;cursor:pointer">🗑</button>`:''}
-                </div>`;
-            }).join('')}
-          </div>
-        </div>`;
-    }).join('');
+
+      html += '<div style="background:var(--surface);border:1px solid var(--border);border-radius:8px;overflow:hidden;margin-bottom:10px">';
+
+      // En-tête
+      html += '<div onclick="toggleArchiveDetail('' + safeId + '')" style="display:flex;align-items:center;gap:14px;padding:14px 16px;cursor:pointer;transition:background .15s" onmouseover="this.style.background='var(--surface2)'" onmouseout="this.style.background=''">';
+      html += '<div style="width:40px;height:40px;border-radius:50%;background:rgba(37,137,208,.1);border:2px solid rgba(37,137,208,.25);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-family:'JetBrains Mono',monospace;font-size:14px;font-weight:700;color:var(--accent-b)">' + nom.charAt(0).toUpperCase() + '</div>';
+      html += '<div style="flex:1;min-width:0">';
+      html += '<div style="font-size:14px;font-weight:700;color:var(--text);margin-bottom:3px">' + nom + '</div>';
+      html += '<div style="font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--text3)">Archivé le ' + dateArch + ' — ' + res.length + ' cours</div>';
+      html += '</div>';
+      html += '<div style="text-align:right;flex-shrink:0">';
+      html += '<div style="font-family:'JetBrains Mono',monospace;font-size:22px;font-weight:700;color:' + color + '">' + pct + '%</div>';
+      html += '<div style="font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--text3)">' + total + '/' + max + ' pts</div>';
+      html += '</div>';
+      html += '<div id="arrarr_' + safeId + '" style="font-size:12px;color:var(--text3)">▸</div>';
+      html += '</div>';
+
+      // Détail (caché)
+      html += '<div id="' + safeId + '" style="display:none;border-top:1px solid var(--border)">';
+      res.forEach(function(r) {
+        const p = r.pointsMax ? Math.round(r.points/r.pointsMax*100) : null;
+        const s = p===null ? 'pending' : p>=60 ? 'pass' : 'fail';
+        const c = s==='pass' ? 'var(--success)' : s==='fail' ? 'var(--danger-l)' : 'var(--gold)';
+        const badge = s==='pass' ? '✓ Réussi' : s==='fail' ? '✗ Échoué' : '⏳ En attente';
+        const badgeClass = 'res-badge res-' + s;
+
+        html += '<div style="display:flex;align-items:flex-start;gap:12px;padding:12px 16px;border-bottom:1px solid var(--border)">';
+        html += '<div style="flex:1;min-width:0">';
+        html += '<div style="display:flex;align-items:center;gap:8px;margin-bottom:5px;flex-wrap:wrap">';
+        html += '<span style="font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:600;color:var(--gold)">◈ ' + (r.coursNom||'—') + '</span>';
+        html += '<span class="' + badgeClass + '">' + badge + '</span>';
+        if (r.date) html += '<span style="font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--text3)">' + new Date(r.date).toLocaleDateString('fr-FR') + '</span>';
+        html += '</div>';
+        if (r.performances) html += '<div style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--text2);padding:5px 8px;background:var(--surface);border-radius:4px;margin-bottom:5px;white-space:pre-wrap;line-height:1.7">' + r.performances + '</div>';
+        if (r.commentaire) html += '<div style="font-size:11px;color:var(--text2);font-style:italic">💬 ' + r.commentaire + '</div>';
+        if (r.formateur) html += '<div style="font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--text3);margin-top:3px">👮 ' + r.formateur + '</div>';
+        html += '</div>';
+        html += '<div style="text-align:center;flex-shrink:0;min-width:50px">';
+        html += '<div style="font-family:'JetBrains Mono',monospace;font-size:20px;font-weight:700;color:' + c + '">' + (r.points||0) + '</div>';
+        html += '<div style="font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--text3)">/' + (r.pointsMax||'—') + '</div>';
+        if (p!==null) html += '<div style="font-family:'JetBrains Mono',monospace;font-size:9px;color:' + c + '">' + p + '%</div>';
+        html += '</div>';
+        if (userPerms.canDelete) {
+          html += '<button onclick="deleteArchive('' + r.id + '')" style="padding:4px 8px;background:rgba(184,48,48,.08);border:1px solid rgba(184,48,48,.2);border-radius:4px;color:var(--danger-l);font-size:11px;cursor:pointer;align-self:flex-start;flex-shrink:0">🗑</button>';
+        }
+        html += '</div>';
+      });
+      html += '</div>'; // fin détail
+      html += '</div>'; // fin card
+    });
+
+    list.innerHTML = html;
+    console.log('[renderArchives] HTML injecté, longueur:', html.length);
   }
 
   window.toggleArchiveDetail = function(id) {
-    const el = document.getElementById(id);
-    if (el) el.style.display = el.style.display==='none' ? 'block' : 'none';
+    const el    = document.getElementById(id);
+    const arrow = document.getElementById('arrarr_' + id);
+    if (!el) return;
+    const open = el.style.display === 'none';
+    el.style.display = open ? 'block' : 'none';
+    if (arrow) arrow.textContent = open ? '▾' : '▸';
   };
 
   window.filterArchives = function() {
