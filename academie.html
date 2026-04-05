@@ -1217,73 +1217,73 @@
     }
     if (empty) empty.style.display = 'none';
 
+    const JM = "JetBrains Mono";
+
     // Grouper par cadetNom
     const groupes = {};
     items.forEach(function(r) {
-      const k = r.cadetNom || '—';
+      const k = r.cadetNom || "—";
       if (!groupes[k]) groupes[k] = { archivedAt: r.archivedAt, resultats: [] };
       groupes[k].resultats.push(r);
     });
 
-    let html = '';
+    let html = "";
     Object.keys(groupes).sort().forEach(function(nom) {
-      const data = groupes[nom];
-      const res  = data.resultats;
+      const grp   = groupes[nom];
+      const res   = grp.resultats;
       const total = res.reduce(function(s,r){ return s + (parseInt(r.points)||0); }, 0);
       const max   = res.reduce(function(s,r){ return s + (parseInt(r.pointsMax)||0); }, 0);
       const pct   = max ? Math.round(total/max*100) : 0;
-      const color = pct>=80 ? 'var(--success)' : pct>=60 ? 'var(--gold)' : 'var(--danger-l)';
-      const safeId = 'arch_' + nom.normalize('NFD').replace(/[̀-ͯ]/g,'').replace(/[^a-zA-Z0-9]/g,'_');
-      const dateArch = data.archivedAt ? new Date(data.archivedAt).toLocaleDateString('fr-FR') : '—';
+      const color = pct>=80 ? "var(--success)" : pct>=60 ? "var(--gold)" : "var(--danger-l)";
+      const safeId = "arch_" + nom.normalize("NFD").replace(/[̀-ͯ]/g,"").replace(/[^a-zA-Z0-9]/g,"_");
+      const dateArch = grp.archivedAt ? new Date(grp.archivedAt).toLocaleDateString("fr-FR") : "—";
+      const initiale = nom.charAt(0).toUpperCase();
 
-      html += '<div style="background:var(--surface);border:1px solid var(--border);border-radius:8px;overflow:hidden;margin-bottom:10px">';
+      html += "<div style=\"background:var(--surface);border:1px solid var(--border);border-radius:8px;overflow:hidden;margin-bottom:10px\">";
+      html += "<div onclick=\"toggleArchiveDetail('" + safeId + "')\" style=\"display:flex;align-items:center;gap:14px;padding:14px 16px;cursor:pointer\" onmouseover=\"this.style.background='var(--surface2)'\" onmouseout=\"this.style.background=''\">"; 
+      html += "<div style=\"width:40px;height:40px;border-radius:50%;background:rgba(37,137,208,.1);border:2px solid rgba(37,137,208,.25);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:14px;font-weight:700;color:var(--accent-b)\">" + initiale + "</div>";
+      html += "<div style=\"flex:1;min-width:0\">";
+      html += "<div style=\"font-size:14px;font-weight:700;color:var(--text);margin-bottom:3px\">" + nom + "</div>";
+      html += "<div style=\"font-size:9px;color:var(--text3)\">Archivé le " + dateArch + " — " + res.length + " cours</div>";
+      html += "</div>";
+      html += "<div style=\"text-align:right;flex-shrink:0\">";
+      html += "<div style=\"font-size:22px;font-weight:700;color:" + color + "\">" + pct + "%</div>";
+      html += "<div style=\"font-size:9px;color:var(--text3)\">" + total + "/" + max + " pts</div>";
+      html += "</div>";
+      html += "<div id=\"arrarr_" + safeId + "\" style=\"font-size:12px;color:var(--text3)\">▸</div>";
+      html += "</div>";
 
-      // En-tête
-      html += '<div onclick="toggleArchiveDetail('' + safeId + '')" style="display:flex;align-items:center;gap:14px;padding:14px 16px;cursor:pointer;transition:background .15s" onmouseover="this.style.background='var(--surface2)'" onmouseout="this.style.background=''">';
-      html += '<div style="width:40px;height:40px;border-radius:50%;background:rgba(37,137,208,.1);border:2px solid rgba(37,137,208,.25);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-family:'JetBrains Mono',monospace;font-size:14px;font-weight:700;color:var(--accent-b)">' + nom.charAt(0).toUpperCase() + '</div>';
-      html += '<div style="flex:1;min-width:0">';
-      html += '<div style="font-size:14px;font-weight:700;color:var(--text);margin-bottom:3px">' + nom + '</div>';
-      html += '<div style="font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--text3)">Archivé le ' + dateArch + ' — ' + res.length + ' cours</div>';
-      html += '</div>';
-      html += '<div style="text-align:right;flex-shrink:0">';
-      html += '<div style="font-family:'JetBrains Mono',monospace;font-size:22px;font-weight:700;color:' + color + '">' + pct + '%</div>';
-      html += '<div style="font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--text3)">' + total + '/' + max + ' pts</div>';
-      html += '</div>';
-      html += '<div id="arrarr_' + safeId + '" style="font-size:12px;color:var(--text3)">▸</div>';
-      html += '</div>';
-
-      // Détail (caché)
-      html += '<div id="' + safeId + '" style="display:none;border-top:1px solid var(--border)">';
+      html += "<div id=\"" + safeId + "\" style=\"display:none;border-top:1px solid var(--border)\">";
       res.forEach(function(r) {
         const p = r.pointsMax ? Math.round(r.points/r.pointsMax*100) : null;
-        const s = p===null ? 'pending' : p>=60 ? 'pass' : 'fail';
-        const c = s==='pass' ? 'var(--success)' : s==='fail' ? 'var(--danger-l)' : 'var(--gold)';
-        const badge = s==='pass' ? '✓ Réussi' : s==='fail' ? '✗ Échoué' : '⏳ En attente';
-        const badgeClass = 'res-badge res-' + s;
+        const s = p===null ? "pending" : p>=60 ? "pass" : "fail";
+        const c = s==="pass" ? "var(--success)" : s==="fail" ? "var(--danger-l)" : "var(--gold)";
+        const badge = s==="pass" ? "✓ Réussi" : s==="fail" ? "✗ Échoué" : "⏳ En attente";
+        const bClass = "res-badge res-" + s;
+        const dateStr = r.date ? new Date(r.date).toLocaleDateString("fr-FR") : "";
 
-        html += '<div style="display:flex;align-items:flex-start;gap:12px;padding:12px 16px;border-bottom:1px solid var(--border)">';
-        html += '<div style="flex:1;min-width:0">';
-        html += '<div style="display:flex;align-items:center;gap:8px;margin-bottom:5px;flex-wrap:wrap">';
-        html += '<span style="font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:600;color:var(--gold)">◈ ' + (r.coursNom||'—') + '</span>';
-        html += '<span class="' + badgeClass + '">' + badge + '</span>';
-        if (r.date) html += '<span style="font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--text3)">' + new Date(r.date).toLocaleDateString('fr-FR') + '</span>';
-        html += '</div>';
-        if (r.performances) html += '<div style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--text2);padding:5px 8px;background:var(--surface);border-radius:4px;margin-bottom:5px;white-space:pre-wrap;line-height:1.7">' + r.performances + '</div>';
-        if (r.commentaire) html += '<div style="font-size:11px;color:var(--text2);font-style:italic">💬 ' + r.commentaire + '</div>';
-        if (r.formateur) html += '<div style="font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--text3);margin-top:3px">👮 ' + r.formateur + '</div>';
-        html += '</div>';
-        html += '<div style="text-align:center;flex-shrink:0;min-width:50px">';
-        html += '<div style="font-family:'JetBrains Mono',monospace;font-size:20px;font-weight:700;color:' + c + '">' + (r.points||0) + '</div>';
-        html += '<div style="font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--text3)">/' + (r.pointsMax||'—') + '</div>';
-        if (p!==null) html += '<div style="font-family:'JetBrains Mono',monospace;font-size:9px;color:' + c + '">' + p + '%</div>';
-        html += '</div>';
-        if (userPerms.canDelete) {
-          html += '<button onclick="deleteArchive('' + r.id + '')" style="padding:4px 8px;background:rgba(184,48,48,.08);border:1px solid rgba(184,48,48,.2);border-radius:4px;color:var(--danger-l);font-size:11px;cursor:pointer;align-self:flex-start;flex-shrink:0">🗑</button>';
+        html += "<div style=\"display:flex;align-items:flex-start;gap:12px;padding:12px 16px;border-bottom:1px solid var(--border)\">";
+        html += "<div style=\"flex:1;min-width:0\">";
+        html += "<div style=\"display:flex;align-items:center;gap:8px;margin-bottom:5px;flex-wrap:wrap\">";
+        html += "<span style=\"font-size:11px;font-weight:600;color:var(--gold)\">◈ " + (r.coursNom||"—") + "</span>";
+        html += "<span class=\"" + bClass + "\">" + badge + "</span>";
+        if (dateStr) html += "<span style=\"font-size:9px;color:var(--text3)\">" + dateStr + "</span>";
+        html += "</div>";
+        if (r.performances) html += "<div style=\"font-size:10px;color:var(--text2);padding:5px 8px;background:var(--surface);border-radius:4px;margin-bottom:5px;white-space:pre-wrap;line-height:1.7\">" + r.performances + "</div>";
+        if (r.commentaire) html += "<div style=\"font-size:11px;color:var(--text2);font-style:italic\">💬 " + r.commentaire + "</div>";
+        if (r.formateur) html += "<div style=\"font-size:9px;color:var(--text3);margin-top:3px\">👮 " + r.formateur + "</div>";
+        html += "</div>";
+        html += "<div style=\"text-align:center;flex-shrink:0;min-width:50px\">";
+        html += "<div style=\"font-size:20px;font-weight:700;color:" + c + "\">" + (r.points||0) + "</div>";
+        html += "<div style=\"font-size:9px;color:var(--text3)\">/" + (r.pointsMax||"—") + "</div>";
+        if (p!==null) html += "<div style=\"font-size:9px;color:" + c + "\">" + p + "%</div>";
+        html += "</div>";
+        if (userPerms && userPerms.canDelete) {
+          html += "<button onclick=\"deleteArchive('" + r.id + "')\" style=\"padding:4px 8px;background:rgba(184,48,48,.08);border:1px solid rgba(184,48,48,.2);border-radius:4px;color:var(--danger-l);font-size:11px;cursor:pointer;align-self:flex-start;flex-shrink:0\">🗑</button>";
         }
-        html += '</div>';
+        html += "</div>";
       });
-      html += '</div>'; // fin détail
-      html += '</div>'; // fin card
+      html += "</div></div>";
     });
 
     list.innerHTML = html;
