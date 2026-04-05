@@ -248,7 +248,7 @@ export function buildSidebar(elementId, activePage, grade) {
   const hasAnySpec = isSuperGrade || isAdmin || isCadet || specs.some(s => ['Académie','SWAT','Détective','Detective','K9','Police Maritime'].includes(s));
   if (hasAnySpec) {
     h += `<div class="sb-divider"></div><div class="sb-section">Unités spéciales</div>`;
-    if (hasSpec('Académie'))         h += nav('academie',  activePage, '⬡', 'Académie',         'academie.html');
+    if (hasSpec('Académie'))         h += nav('academie',  activePage, '⬡', 'Académie',         'academie.html?v=2');
     if (hasSpec('SWAT'))             h += nav('swat',       activePage, '◈', 'SWAT',              'swat.html');
     if (hasSpec('Détective') || hasSpec('Detective')) h += nav('detective', activePage, '◎', 'Détective', 'detective.html');
     if (hasSpec('K9'))               h += nav('k9',         activePage, '⬧', 'K9',                'k9.html');
