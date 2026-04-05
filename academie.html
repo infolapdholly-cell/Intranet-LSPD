@@ -795,7 +795,9 @@
 
   function renderCal() {
     const MOIS = ['JANVIER','FÉVRIER','MARS','AVRIL','MAI','JUIN','JUILLET','AOÛT','SEPTEMBRE','OCTOBRE','NOVEMBRE','DÉCEMBRE'];
-    document.getElementById('calMonthLabel').textContent = MOIS[calMonth] + ' ' + calYear;
+    const mlabel = document.getElementById('calMonthLabel');
+    if (!mlabel) return;
+    mlabel.textContent = MOIS[calMonth] + ' ' + calYear;
 
     const firstDay = new Date(calYear, calMonth, 1);
     const lastDay  = new Date(calYear, calMonth+1, 0);
@@ -804,6 +806,7 @@
     const today = new Date(); today.setHours(0,0,0,0);
 
     const grid = document.getElementById('calGrid');
+    if (!grid) return;
     let html = '';
     const totalCells = Math.ceil((startDow + lastDay.getDate()) / 7) * 7;
 
@@ -843,8 +846,10 @@
   window.selectCalDay = function(dateStr) {
     calSelectedDay = dateStr;
     const panel = document.getElementById('calDayPanel');
-    const title = document.getElementById('calDayTitle');
-    const list  = document.getElementById('calDayList');
+    const title = document.getElementById('calDayLabel');
+    const list  = document.getElementById('calDayEvents');
+    // Null-safe : si les éléments n'existent pas encore, on stocke juste la date
+    if (!panel || !title || !list) return;
     const d = new Date(dateStr);
     const dayEvents = agenda.filter(a => a.date && a.date.startsWith(dateStr));
 
