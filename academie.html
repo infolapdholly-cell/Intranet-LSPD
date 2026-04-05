@@ -151,6 +151,7 @@
       <button class="acad-tab"        id="tabAgenda"     onclick="switchTab('agenda')">▦ Agenda</button>
       <button class="acad-tab"        id="tabFormateurs" onclick="switchTab('formateurs')" style="display:none">◈ Plans de formation</button>
       <button class="acad-tab"        id="tabResultats"  onclick="switchTab('resultats')" style="display:none">≣ Résultats détaillés</button>
+      <button class="acad-tab"        id="tabArchives"   onclick="switchTab('archives')"  style="display:none">⊟ Archives</button>
     </div>
 
     <!-- PANEL : Classe -->
@@ -221,6 +222,17 @@
   </div>
 </div>
 </div>
+
+    <!-- PANEL : Archives -->
+    <div id="panelArchives" style="display:none">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:10px">
+        <div style="font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--text3);letter-spacing:2px">ANCIENS CADETS DEVENUS OFFICIERS — RÉSULTATS ARCHIVÉS</div>
+        <input type="text" id="searchArchive" placeholder="Rechercher un ancien cadet..." oninput="filterArchives()"
+          style="padding:7px 12px;background:var(--surface);border:1px solid var(--border);border-radius:5px;color:var(--text);font-family:'JetBrains Mono',monospace;font-size:11px;width:220px">
+      </div>
+      <div id="archiveGrid" style="display:flex;flex-direction:column;gap:8px"></div>
+      <div id="archiveEmpty" style="display:none" class="empty-state"><div class="ei">⊟</div><p>Aucun résultat archivé</p></div>
+    </div>
 
 <!-- MODAL COURS (plan de formation) -->
 <div class="modal-bg" id="modalCours">
@@ -353,7 +365,7 @@
   const FC = { apiKey:"AIzaSyA4GxYd32GNs5EDjjm2UI1a0d25YxigMVU",authDomain:"lspd-intranet-2aed9.firebaseapp.com",projectId:"lspd-intranet-2aed9",storageBucket:"lspd-intranet-2aed9.firebasestorage.app",messagingSenderId:"780922925382",appId:"1:780922925382:web:a32d5e89bcff75bd8b3547" };
   const app = initializeApp(FC); const auth = getAuth(app); const db = getFirestore(app);
 
-  let cadets=[], cours=[], agenda=[], resultats=[];
+  let cadets=[], cours=[], agenda=[], resultats=[], archives=[];
   let editingCours=null, editingAgenda=null, editingResultat=null;
   let userGrade='', userName='', userPerms={};
   let isFormateur=false, isSuper=false;
@@ -374,10 +386,11 @@
     if (isFormateur) {
       document.getElementById('tabFormateurs').style.display = 'block';
       document.getElementById('tabResultats').style.display  = 'block';
+      document.getElementById('tabArchives').style.display   = 'block';
       document.getElementById('btnNewAgenda').style.display  = 'inline-flex';
     }
 
-    await Promise.all([loadCadets(), loadCours(), loadAgenda(), loadResultats()]);
+    await Promise.all([loadCadets(), loadCours(), loadAgenda(), loadResultats(), loadArchives()]);
     initCal();
   });
 
@@ -468,9 +481,10 @@
           </div>
           <div style="font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--text3);margin-bottom:4px">${nbCours} cours / ${cours.length} complétés</div>
           <div class="cadet-progress-bar"><div class="cadet-progress-fill" style="width:${pct}%;background:linear-gradient(90deg,${color},${color}aa)"></div></div>
-          ${isFormateur?`<div style="margin-top:10px;display:flex;gap:6px">
+          ${isFormateur?`<div style="margin-top:10px;display:flex;gap:6px;flex-wrap:wrap">
             <button onclick="openAddResultat('${c.nom}')" style="flex:1;padding:5px 8px;background:rgba(201,168,76,.08);border:1px solid rgba(201,168,76,.2);border-radius:4px;color:var(--gold);font-size:10px;cursor:pointer;font-family:'JetBrains Mono',monospace">+ Résultat</button>
             <button onclick="viewCadetDetail('${c.nom}')" style="padding:5px 10px;background:rgba(61,88,120,.15);border:1px solid rgba(61,88,120,.3);border-radius:4px;color:var(--text2);font-size:11px;cursor:pointer">◎</button>
+            <button onclick="if(confirm('Archiver tous les résultats de ${c.nom} ? (le cadet est devenu officier)')) archiveResultatsCadet('${c.nom}')" title="Archiver (officier)" style="padding:5px 10px;background:rgba(37,137,208,.08);border:1px solid rgba(37,137,208,.2);border-radius:4px;color:var(--accent-b);font-size:11px;cursor:pointer">⊟</button>
           </div>`:''}
         </div>`;
     }).join('');
@@ -553,6 +567,7 @@
       if (btn)   btn.classList.toggle('active', t === tab);
     });
     if (tab === 'agenda') renderCal();
+    if (tab === 'archives') renderArchives();
   };
 
   window.renderResultats = function() {
@@ -719,7 +734,8 @@
     editingResultat=null;
     document.getElementById('modalResultatTitle').textContent='AJOUTER UN RÉSULTAT';
     document.getElementById('btnDeleteResultat').style.display='none';
-    ['rPoints','rPointsMax','rDate','rPerformances','rCommentaire'].forEach(id=>document.getElementById(id).value='');
+    ['rPoints','rPointsMax','rDate','rCommentaire'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+    document.getElementById('rPerfFields').innerHTML='';
     document.getElementById('rCadet').value='';
     document.getElementById('rCours').value='';
     document.getElementById('rFormateur').value=userName;
@@ -737,14 +753,18 @@
     editingResultat=id;
     document.getElementById('modalResultatTitle').textContent='MODIFIER LE RÉSULTAT';
     document.getElementById('btnDeleteResultat').style.display='inline-flex';
-    document.getElementById('rCadet').value       = r.cadetNom    ||'';
-    document.getElementById('rCours').value       = r.coursNom    ||'';
-    document.getElementById('rPoints').value      = r.points      ||'';
-    document.getElementById('rPointsMax').value   = r.pointsMax   ||'';
-    document.getElementById('rDate').value        = r.date        ||'';
-    document.getElementById('rFormateur').value   = r.formateur   ||'';
-    document.getElementById('rPerformances').value= r.performances||'';
-    document.getElementById('rCommentaire').value = r.commentaire ||'';
+    document.getElementById('rCadet').value     = r.cadetNom ||'';
+    document.getElementById('rCours').value     = r.coursNom ||'';
+    document.getElementById('rPoints').value    = r.points   ||'';
+    document.getElementById('rPointsMax').value = r.pointsMax||'';
+    document.getElementById('rDate').value      = r.date     ||'';
+    document.getElementById('rFormateur').value = r.formateur||'';
+    document.getElementById('rCommentaire').value = r.commentaire||'';
+    // Reconstruire les champs de perf selon le cours
+    buildPerfFields(r.coursNom||'');
+    // Remplir rPerformances si textarea simple
+    const ta = document.getElementById('rPerformances');
+    if (ta) ta.value = r.performances||'';
     openModal('modalResultat');
   };
 
@@ -752,7 +772,7 @@
     const cadetNom = document.getElementById('rCadet').value;
     const coursNom = document.getElementById('rCours').value;
     if (!cadetNom||!coursNom) { showToast('Cadet et cours obligatoires','error'); return; }
-    const payload = { cadetNom, coursNom, points:parseInt(document.getElementById('rPoints').value)||0, pointsMax:parseInt(document.getElementById('rPointsMax').value)||0, date:document.getElementById('rDate').value, formateur:document.getElementById('rFormateur').value.trim(), performances:document.getElementById('rPerformances').value.trim(), commentaire:document.getElementById('rCommentaire').value.trim(), updatedAt:new Date().toISOString() };
+    const payload = { cadetNom, coursNom, points:parseInt(document.getElementById('rPoints').value)||0, pointsMax:parseInt(document.getElementById('rPointsMax').value)||0, date:document.getElementById('rDate').value, formateur:document.getElementById('rFormateur').value.trim(), performances:(document.getElementById('rPerformances')||{value:''}).value.trim(), commentaire:document.getElementById('rCommentaire').value.trim(), updatedAt:new Date().toISOString() };
     try {
       if (editingResultat) { await updateDoc(doc(db,'academie-resultats',editingResultat),payload); showToast('Résultat mis à jour ✓','success'); }
       else { payload.createdAt=new Date().toISOString(); await addDoc(collection(db,'academie-resultats'),payload); showToast('Résultat enregistré ✓','success'); }
@@ -760,10 +780,15 @@
     } catch(e) { showToast('Erreur : '+e.message,'error'); }
   };
 
-  window.deleteResultat = async function() {
-    if (!editingResultat||!confirm('Supprimer ce résultat ?')) return;
-    await deleteDoc(doc(db,'academie-resultats',editingResultat));
-    showToast('Supprimé','success'); closeModal('modalResultat'); editingResultat=null; await loadResultats(); renderClasse();
+  window.deleteResultat = async function(id) {
+    const targetId = id || editingResultat;
+    if (!targetId) return;
+    try {
+      await deleteDoc(doc(db,'academie-resultats',targetId));
+      showToast('Résultat supprimé','success');
+      if (!id) { closeModal('modalResultat'); editingResultat=null; }
+      await loadResultats(); renderClasse();
+    } catch(e) { showToast('Erreur : '+e.message,'error'); }
   };
 
   // Calendrier initialisé ci-dessus
@@ -1064,6 +1089,119 @@
     document.getElementById('rPoints').value = val;
     document.getElementById('rPointsMax').value = 100;
     showToast('Score de ' + val + '/100 appliqué ✓', 'success');
+  };
+
+
+  // ════════════════════════════════════════════════════════
+  // ARCHIVES
+  // ════════════════════════════════════════════════════════
+  async function loadArchives() {
+    try {
+      const snap = await getDocs(collection(db,'academie-archives'));
+      archives = snap.docs.map(d=>({id:d.id,...d.data()}))
+        .sort((a,b)=>(b.archivedAt||'').localeCompare(a.archivedAt||''));
+      renderArchives();
+    } catch(e) { console.error(e); }
+  }
+
+  function renderArchives(data) {
+    const list  = document.getElementById('archiveGrid');
+    const empty = document.getElementById('archiveEmpty');
+    if (!list) return;
+    const items = data || archives;
+    if (!items.length) { list.innerHTML=''; empty.style.display='flex'; return; }
+    empty.style.display='none';
+
+    // Grouper par ancien cadet
+    const byOfficier = {};
+    items.forEach(r => {
+      const k = r.cadetNom||'—';
+      if (!byOfficier[k]) byOfficier[k] = { officierNom:r.officierNom||k, archivedAt:r.archivedAt, resultats:[] };
+      byOfficier[k].resultats.push(r);
+    });
+
+    list.innerHTML = Object.entries(byOfficier).map(([nom, data]) => {
+      const totalPts = data.resultats.reduce((s,r)=>s+(parseInt(r.points)||0),0);
+      const totalMax = data.resultats.reduce((s,r)=>s+(parseInt(r.pointsMax)||0),0);
+      const pct = totalMax ? Math.round(totalPts/totalMax*100) : 0;
+      const color = pct>=80?'var(--success)':pct>=60?'var(--gold)':'var(--danger-l)';
+      const dateArch = data.archivedAt ? new Date(data.archivedAt).toLocaleDateString('fr-FR') : '—';
+      return `
+        <div style="background:var(--surface);border:1px solid var(--border);border-radius:8px;overflow:hidden">
+          <div style="display:flex;align-items:center;gap:14px;padding:14px 16px;background:var(--surface2);border-bottom:1px solid var(--border);cursor:pointer"
+               onclick="toggleArchiveDetail('arch_${nom.replace(/[^a-zA-Z0-9]/g,'_')}')">
+            <div style="flex:1">
+              <div style="font-size:14px;font-weight:700;color:var(--text);margin-bottom:2px">${nom}</div>
+              <div style="font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--text3)">
+                Archivé le ${dateArch} — ${data.resultats.length} cours complété(s)
+              </div>
+            </div>
+            <div style="text-align:right;flex-shrink:0">
+              <div style="font-family:'JetBrains Mono',monospace;font-size:20px;font-weight:700;color:${color}">${pct}%</div>
+              <div style="font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--text3)">${totalPts}/${totalMax} pts</div>
+            </div>
+            <div style="font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--text3)">▾</div>
+          </div>
+          <div id="arch_${nom.replace(/[^a-zA-Z0-9]/g,'_')}" style="display:none;padding:12px 16px">
+            ${data.resultats.map(r => {
+              const p = r.pointsMax ? Math.round(r.points/r.pointsMax*100) : null;
+              const s = p===null?'pending':p>=60?'pass':'fail';
+              return `
+                <div style="display:flex;align-items:center;gap:12px;padding:8px 0;border-bottom:1px solid var(--border);flex-wrap:wrap">
+                  <div style="flex:1">
+                    <div style="font-size:12px;color:var(--text);margin-bottom:2px">◈ ${r.coursNom||'—'}</div>
+                    ${r.performances?`<div style="font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--text3)">${r.performances}</div>`:''}
+                    ${r.commentaire?`<div style="font-size:11px;color:var(--text2);font-style:italic">💬 ${r.commentaire}</div>`:''}
+                    <div style="font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--text3);margin-top:2px">${r.formateur||''} ${r.date?'— '+new Date(r.date).toLocaleDateString('fr-FR'):''}</div>
+                  </div>
+                  <div style="text-align:center;flex-shrink:0">
+                    <div style="font-family:'JetBrains Mono',monospace;font-size:16px;font-weight:700;color:${s==='pass'?'var(--success)':s==='fail'?'var(--danger-l)':'var(--gold)'}">${r.points||0}</div>
+                    <div style="font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--text3)">/${r.pointsMax||'—'}</div>
+                  </div>
+                  ${userPerms.canDelete?`<button onclick="deleteArchive('${r.id}')" title="Supprimer ce résultat archivé"
+                    style="padding:4px 8px;background:rgba(184,48,48,.08);border:1px solid rgba(184,48,48,.2);border-radius:4px;color:var(--danger-l);font-size:11px;cursor:pointer">🗑</button>`:''}
+                </div>`;
+            }).join('')}
+          </div>
+        </div>`;
+    }).join('');
+  }
+
+  window.toggleArchiveDetail = function(id) {
+    const el = document.getElementById(id);
+    if (el) el.style.display = el.style.display==='none' ? 'block' : 'none';
+  };
+
+  window.filterArchives = function() {
+    const q = document.getElementById('searchArchive').value.toLowerCase();
+    renderArchives(q ? archives.filter(a=>(a.cadetNom||'').toLowerCase().includes(q)) : null);
+  };
+
+  window.deleteArchive = async function(id) {
+    if (!confirm('Supprimer définitivement ce résultat archivé ?')) return;
+    try {
+      await deleteDoc(doc(db,'academie-archives',id));
+      showToast('Résultat supprimé','success');
+      await loadArchives();
+    } catch(e) { showToast('Erreur : '+e.message,'error'); }
+  };
+
+  // Archiver tous les résultats d'un cadet (quand il devient officier)
+  window.archiveResultatsCadet = async function(cadetNom) {
+    const cadetRes = resultats.filter(r => r.cadetNom === cadetNom);
+    if (!cadetRes.length) { showToast('Aucun résultat à archiver pour '+cadetNom,'error'); return; }
+    const now = new Date().toISOString();
+    try {
+      for (const r of cadetRes) {
+        await addDoc(collection(db,'academie-archives'), {
+          ...r, archivedAt: now, officierNom: cadetNom
+        });
+        await deleteDoc(doc(db,'academie-resultats', r.id));
+      }
+      showToast(cadetRes.length+' résultat(s) archivés pour '+cadetNom+' ✓','success');
+      await loadResultats();
+      await loadArchives();
+    } catch(e) { showToast('Erreur : '+e.message,'error'); }
   };
 
   window.viewCadetDetail = function(nom) {
