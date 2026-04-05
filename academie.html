@@ -422,7 +422,7 @@
     try {
       const snap = await getDocs(collection(db,'officiers'));
       cadets = snap.docs.map(d=>({id:d.id,...d.data()}))
-        .filter(o => (o.grade||'').toLowerCase() === 'cadet')
+        .filter(o => { const g = (o.grade||'').toLowerCase().trim(); return g === 'cadet'; })
         .sort((a,b)=>(a.nom||'').localeCompare(b.nom||''));
       document.getElementById('sCadets').textContent = cadets.length;
       populateCadetSelects();

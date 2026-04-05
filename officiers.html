@@ -512,9 +512,44 @@
     };
     try {
       if (editingId) {
+        // Détecter si le cadet vient d'être promu officier
+        const ancienOfficier = allOfficiers.find(x => x.id === editingId);
+        const ancienGrade    = (ancienOfficier?.grade || '').toLowerCase();
+        const nouveauGrade   = (payload.grade || '').toLowerCase();
+        const promotionOfficier = ancienGrade === 'cadet' && nouveauGrade !== 'cadet';
+
         await updateDoc(doc(db,'officiers',editingId), payload);
-        await addLog(db,'Officier modifié',nom);
-        showToast('Officier mis à jour','success');
+        await addLog(db,'Officier modifié', nom + (promotionOfficier ? ' — Promu ' + payload.grade : ''));
+
+        // Si promu → archiver automatiquement les résultats académie
+        if (promotionOfficier) {
+          try {
+            const { collection: col2, getDocs: gd2, addDoc: ad2, deleteDoc: dd2, doc: d2 } =
+              await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js");
+            const snapRes = await gd2(col2(db, 'academie-resultats'));
+            const resultatsCAdet = snapRes.docs
+              .filter(d => d.data().cadetNom === nom)
+              .map(d => ({ id: d.id, ...d.data() }));
+            if (resultatsCAdet.length) {
+              const now = new Date().toISOString();
+              for (const r of resultatsCAdet) {
+                await ad2(col2(db, 'academie-archives'), {
+                  ...r, archivedAt: now, officierNom: nom,
+                  promuGrade: payload.grade
+                });
+                await dd2(d2(db, 'academie-resultats', r.id));
+              }
+              showToast(nom + ' promu ' + payload.grade + ' — ' + resultatsCAdet.length + ' résultat(s) archivés ✓', 'success');
+            } else {
+              showToast(nom + ' promu ' + payload.grade + ' ✓', 'success');
+            }
+          } catch(archErr) {
+            console.warn('Archivage résultats:', archErr);
+            showToast('Officier mis à jour (archivage échoué)', 'success');
+          }
+        } else {
+          showToast('Officier mis à jour','success');
+        }
       } else {
         payload.createdAt = new Date().toISOString();
         await addDoc(collection(db,'officiers'), payload);
