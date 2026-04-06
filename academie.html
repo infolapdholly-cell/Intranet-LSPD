@@ -5,7 +5,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
   <link rel="icon" type="image/png" href="https://r2.fivemanage.com/XEcvh0aBGRYhLzNNcRsQI/lspdnouveau.png">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>LSPD — Académie v4</title>
+  <title>LSPD — Académie v5</title>
   <link rel="stylesheet" href="style.css?v=15">
   <style>
     /* ── Hero banner ── */
@@ -228,7 +228,7 @@
         <input type="text" id="searchArchive" placeholder="Rechercher un ancien cadet..." oninput="filterArchives()"
           style="padding:7px 12px;background:var(--surface);border:1px solid var(--border);border-radius:5px;color:var(--text);font-family:'JetBrains Mono',monospace;font-size:11px;width:220px">
       </div>
-      <div id="archiveGrid" style="display:flex;flex-direction:column;gap:8px"></div>
+      <div id="archiveGrid" style="display:flex;flex-direction:column;gap:8px;min-height:20px"></div>
       <div id="archiveEmpty" style="display:none" class="empty-state"><div class="ei">⊟</div><p>Aucun résultat archivé</p></div>
     </div>
 
@@ -393,7 +393,7 @@
   let isFormateur=false, isSuper=false;
 
   startClock('tbClock'); setupModalClose();
-  console.log("ACADEMIE v4 CHARGÉE");
+  console.log("ACADEMIE v5 CHARGÉE");
   window.closeModal = closeModal; window.openModal = openModal;
 
   initPage(auth, db, onAuthStateChanged, 'academie').then(async ({ grade, name, perms }) => {
@@ -598,7 +598,6 @@
       if (btn)   btn.classList.toggle('active', t === tab);
     });
     if (tab === 'agenda') renderCal();
-    if (tab === 'archives') renderArchives();
   };
 
   window.renderResultats = function() {
@@ -1290,6 +1289,8 @@
 
     list.innerHTML = html;
     console.log('[renderArchives] HTML injecté, longueur:', html.length);
+    console.log('[renderArchives] Premier enfant:', list.firstElementChild?.tagName, list.childElementCount, 'enfants');
+    console.log('[renderArchives] Panel visible:', document.getElementById('panelArchives')?.style.display);
   }
 
   window.toggleArchiveDetail = function(id) {
@@ -1340,8 +1341,8 @@
       await loadArchives();
       // Basculer sur archives AVANT de rendre pour que le panel soit visible
       switchTab('archives');
-      renderArchives();
-      renderClasse();
+      setTimeout(function() { renderArchives(); }, 50);
+      setTimeout(function() { renderClasse(); }, 100);
     } catch(e) { showToast('Erreur : '+e.message,'error'); }
   };
 
