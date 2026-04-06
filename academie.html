@@ -591,13 +591,14 @@
 
   // ── Render Résultats ──────────────────────────────────────
   window.switchTab = function(tab) {
-    ['classe','agenda','formateurs','resultats'].forEach(t => {
+    ['classe','agenda','formateurs','resultats','archives'].forEach(t => {
       const panel = document.getElementById('panel' + t.charAt(0).toUpperCase() + t.slice(1));
       const btn   = document.getElementById('tab'   + t.charAt(0).toUpperCase() + t.slice(1));
       if (panel) panel.style.display = (t === tab) ? 'block' : 'none';
       if (btn)   btn.classList.toggle('active', t === tab);
     });
     if (tab === 'agenda') renderCal();
+    if (tab === 'archives') renderArchives();
   };
 
   window.renderResultats = function() {
