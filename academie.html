@@ -5,7 +5,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
   <link rel="icon" type="image/png" href="https://r2.fivemanage.com/XEcvh0aBGRYhLzNNcRsQI/lspdnouveau.png">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>LSPD — Académie</title>
+  <title>LSPD — Académie v4</title>
   <link rel="stylesheet" href="style.css?v=15">
   <style>
     /* ── Hero banner ── */
@@ -393,6 +393,7 @@
   let isFormateur=false, isSuper=false;
 
   startClock('tbClock'); setupModalClose();
+  console.log("ACADEMIE v4 CHARGÉE");
   window.closeModal = closeModal; window.openModal = openModal;
 
   initPage(auth, db, onAuthStateChanged, 'academie').then(async ({ grade, name, perms }) => {
